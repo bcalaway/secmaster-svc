@@ -1,0 +1,137 @@
+# Treasury constant-maturity (CMT) yields: the security master's seed for them
+# (mkt-data's docs/phase-2.md, Part B step 4; Bill, 2026-10-04).
+#
+# CMTs aren't in any feed, so this file is their source of truth. The seed job
+# (app/seed.py) applies it at every start and on POST /jobs/seed: it's
+# idempotent, keeps sec_ids stable by short name, closes identifiers and names
+# the file no longer lists rather than deleting them, and never touches an
+# instrument it doesn't list. Change it in a reviewed PR, never in the database.
+#
+# Identifier schemes are mkt-data's source names, and values are that source's
+# own keys, so quote-svc maps an observation (source, source_key) straight to
+# an instrument:
+#   UST-PAR  Treasury's daily par yield curve, element name (BC_10YEAR)
+#   H15-TCM  the Fed's H.15 release, series code (RIFLGFCY10_N.B); H.15 has
+#            no 1.5-, 2- or 4-month series
+#   FRED     St. Louis Fed's copy of H.15, for reference (DGS10)
+#
+# Dates in notes come from Treasury's and the Fed's published notes on the
+# series. Step B6 (the backfill) checks each against the captured data and
+# corrects this file where they differ.
+
+[defaults]
+type = "cmt_yield"
+currency = "USD"
+country = "US"
+curve = "UST"
+calendar = "SIFMA-US"
+
+# Notes that apply to every CMT.
+[[notes]]
+key = "par-curve-method-2021"
+date = "2021-12-06"
+text = "Treasury's par yield curve moved from a quasi-cubic Hermite spline to a monotone convex method. The series continues; values before and after aren't from the same method."
+
+[[instruments]]
+short_name = "UST-1M-CMT"
+tenor = "P1M"
+description = "US Treasury 1-month constant maturity yield"
+identifiers = { UST-PAR = "BC_1MONTH", H15-TCM = "RIFLGFCM01_N.B", FRED = "DGS1MO" }
+notes = [
+  { key = "first-published", date = "2001-07-31", text = "First published; no 1-month CMT before this date." },
+]
+
+[[instruments]]
+short_name = "UST-1.5M-CMT"
+aliases = ["UST-6W-CMT"]
+tenor = "P6W"
+description = "US Treasury 1.5-month (6-week) constant maturity yield"
+identifiers = { UST-PAR = "BC_1_5MONTH" }
+notes = [
+  { key = "first-published", date = "2025-02-18", text = "First published, after Treasury began issuing the 6-week bill. Treasury only; H.15 has no 1.5-month series." },
+]
+
+[[instruments]]
+short_name = "UST-2M-CMT"
+tenor = "P2M"
+description = "US Treasury 2-month constant maturity yield"
+identifiers = { UST-PAR = "BC_2MONTH" }
+notes = [
+  { key = "first-published", date = "2018-10-16", text = "First published, after Treasury began issuing the 8-week bill. Treasury only; H.15 has no 2-month series." },
+]
+
+[[instruments]]
+short_name = "UST-3M-CMT"
+tenor = "P3M"
+description = "US Treasury 3-month constant maturity yield"
+identifiers = { UST-PAR = "BC_3MONTH", H15-TCM = "RIFLGFCM03_N.B", FRED = "DGS3MO" }
+
+[[instruments]]
+short_name = "UST-4M-CMT"
+tenor = "P4M"
+description = "US Treasury 4-month constant maturity yield"
+identifiers = { UST-PAR = "BC_4MONTH" }
+notes = [
+  { key = "first-published", date = "2022-10-19", text = "First published, after Treasury began issuing the 17-week bill. Treasury only; H.15 has no 4-month series." },
+]
+
+[[instruments]]
+short_name = "UST-6M-CMT"
+tenor = "P6M"
+description = "US Treasury 6-month constant maturity yield"
+identifiers = { UST-PAR = "BC_6MONTH", H15-TCM = "RIFLGFCM06_N.B", FRED = "DGS6MO" }
+
+[[instruments]]
+short_name = "UST-1Y-CMT"
+tenor = "P1Y"
+description = "US Treasury 1-year constant maturity yield"
+identifiers = { UST-PAR = "BC_1YEAR", H15-TCM = "RIFLGFCY01_N.B", FRED = "DGS1" }
+
+[[instruments]]
+short_name = "UST-2Y-CMT"
+tenor = "P2Y"
+description = "US Treasury 2-year constant maturity yield"
+identifiers = { UST-PAR = "BC_2YEAR", H15-TCM = "RIFLGFCY02_N.B", FRED = "DGS2" }
+
+[[instruments]]
+short_name = "UST-3Y-CMT"
+tenor = "P3Y"
+description = "US Treasury 3-year constant maturity yield"
+identifiers = { UST-PAR = "BC_3YEAR", H15-TCM = "RIFLGFCY03_N.B", FRED = "DGS3" }
+
+[[instruments]]
+short_name = "UST-5Y-CMT"
+tenor = "P5Y"
+description = "US Treasury 5-year constant maturity yield"
+identifiers = { UST-PAR = "BC_5YEAR", H15-TCM = "RIFLGFCY05_N.B", FRED = "DGS5" }
+
+[[instruments]]
+short_name = "UST-7Y-CMT"
+tenor = "P7Y"
+description = "US Treasury 7-year constant maturity yield"
+identifiers = { UST-PAR = "BC_7YEAR", H15-TCM = "RIFLGFCY07_N.B", FRED = "DGS7" }
+
+[[instruments]]
+short_name = "UST-10Y-CMT"
+tenor = "P10Y"
+description = "US Treasury 10-year constant maturity yield"
+identifiers = { UST-PAR = "BC_10YEAR", H15-TCM = "RIFLGFCY10_N.B", FRED = "DGS10" }
+
+[[instruments]]
+short_name = "UST-20Y-CMT"
+tenor = "P20Y"
+description = "US Treasury 20-year constant maturity yield"
+identifiers = { UST-PAR = "BC_20YEAR", H15-TCM = "RIFLGFCY20_N.B", FRED = "DGS20" }
+notes = [
+  { key = "gap-1987-1993", date = "1987-01-01", text = "Not published from 1987-01-01 through 1993-09-30; resumed 1993-10-01." },
+  { key = "composite-before-2020", date = "2020-05-20", text = "The 20-year bond was reintroduced on this date. Before it, the 20-year CMT had no on-the-run 20-year issue among its inputs." },
+]
+
+[[instruments]]
+short_name = "UST-30Y-CMT"
+tenor = "P30Y"
+description = "US Treasury 30-year constant maturity yield"
+identifiers = { UST-PAR = "BC_30YEAR", H15-TCM = "RIFLGFCY30_N.B", FRED = "DGS30" }
+notes = [
+  { key = "gap-2002-2006", date = "2002-02-18", text = "Not published from 2002-02-18 through 2006-02-08, after Treasury stopped issuing the 30-year bond; resumed 2006-02-09." },
+]
