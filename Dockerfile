@@ -12,6 +12,7 @@ COPY app/ app/
 COPY proto/ proto/
 COPY gen_proto.sh alembic.ini start.sh ./
 COPY migrations/ migrations/
+COPY seeds/ seeds/
 # gRPC stubs (ADR-0020) are generated here, never committed.
 RUN ./gen_proto.sh
 

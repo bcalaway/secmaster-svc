@@ -10,6 +10,11 @@ set -e
 if [ -n "$POSTGRES_PASSWORD" ] || [ -n "$DATABASE_URL" ]; then
   echo "Applying database migrations..."
   alembic upgrade head
+  # The seed files (seeds/*.toml) are part of the image, so each deploy
+  # applies its own. Idempotent; a bad file stops the container, like a
+  # failed migration, instead of serving a half-applied security master.
+  echo "Applying seed files..."
+  python -m app.seed
 fi
 # --proxy-headers/--forwarded-allow-ips: Traefik terminates TLS and proxies
 # to the app over plain HTTP on the internal Docker network. Without this,
