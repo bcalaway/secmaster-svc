@@ -51,11 +51,11 @@ def test_the_cmt_seed_file(migrated_db):
     assert out["instruments"] == 14 and out["created"] == 14 and out["changed"]
     assert out["identifiers_added"] == 36  # 14 UST-PAR + 11 H15-TCM + 11 FRED
     assert _count(InstrumentName, InstrumentName.kind == "alias") == 1  # UST-6W-CMT
-    # The shared note lands on every instrument; the 20-year has two of its own.
+    # The shared note lands on every instrument; the 20-year has three of its own.
     with db.session() as s:
         twenty = s.scalar(select(InstrumentName.sec_id).where(InstrumentName.name == "UST-20Y-CMT"))
         keys = s.scalars(select(InstrumentNote.key).where(InstrumentNote.sec_id == twenty)).all()
-    assert sorted(keys) == ["composite-before-2020", "gap-1987-1993", "par-curve-method-2021"]
+    assert sorted(keys) == ["composite-before-2020", "gap-1987-1993", "h15-first", "par-curve-method-2021"]
 
 
 def test_reapplying_changes_nothing(migrated_db):

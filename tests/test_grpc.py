@@ -55,7 +55,8 @@ def test_securities(migrated_db):
         return ten, curve, resolved, found, errors
 
     ten, curve, resolved, found, errors = asyncio.run(_call(read))
-    assert ten.short_name == "UST-10Y-CMT" and len(ten.identifiers) == 3 and ten.notes[0].key == "par-curve-method-2021"
+    assert ten.short_name == "UST-10Y-CMT" and len(ten.identifiers) == 3
+    assert [n.key for n in ten.notes] == ["h15-first", "par-curve-method-2021"]  # by date
     assert len(curve.instruments) == 14 and curve.instruments[0].short_name == "UST-1M-CMT"
     assert [m.short_name for m in resolved.matches] == ["UST-10Y-CMT"] and list(resolved.unknown) == ["NOPE"]
     assert [i.short_name for i in found.instruments] == ["UST-1.5M-CMT"]

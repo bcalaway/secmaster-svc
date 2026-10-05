@@ -16,8 +16,10 @@
 #   FRED     St. Louis Fed's copy of H.15, for reference (DGS10)
 #
 # Dates in notes come from Treasury's and the Fed's published notes on the
-# series. Step B6 (the backfill) checks each against the captured data and
-# corrects this file where they differ.
+# series, checked against the captured history in step B6 (2026-10-05): the
+# first-published dates and the 20- and 30-year gaps match the data. The
+# h15-first notes are from the data itself: H.15 starts each series earlier
+# than Treasury's par curve, which begins 1990-01-02.
 
 [defaults]
 type = "cmt_yield"
@@ -65,6 +67,9 @@ short_name = "UST-3M-CMT"
 tenor = "P3M"
 description = "US Treasury 3-month constant maturity yield"
 identifiers = { UST-PAR = "BC_3MONTH", H15-TCM = "RIFLGFCM03_N.B", FRED = "DGS3MO" }
+notes = [
+  { key = "h15-first", date = "1981-09-01", text = "The H.15 series starts here. Before Treasury's par curve begins (1990-01-02), H.15 is the only source." },
+]
 
 [[instruments]]
 short_name = "UST-4M-CMT"
@@ -80,42 +85,63 @@ short_name = "UST-6M-CMT"
 tenor = "P6M"
 description = "US Treasury 6-month constant maturity yield"
 identifiers = { UST-PAR = "BC_6MONTH", H15-TCM = "RIFLGFCM06_N.B", FRED = "DGS6MO" }
+notes = [
+  { key = "h15-first", date = "1981-09-01", text = "The H.15 series starts here. Before Treasury's par curve begins (1990-01-02), H.15 is the only source." },
+]
 
 [[instruments]]
 short_name = "UST-1Y-CMT"
 tenor = "P1Y"
 description = "US Treasury 1-year constant maturity yield"
 identifiers = { UST-PAR = "BC_1YEAR", H15-TCM = "RIFLGFCY01_N.B", FRED = "DGS1" }
+notes = [
+  { key = "h15-first", date = "1962-01-02", text = "The H.15 series starts here. Before Treasury's par curve begins (1990-01-02), H.15 is the only source." },
+]
 
 [[instruments]]
 short_name = "UST-2Y-CMT"
 tenor = "P2Y"
 description = "US Treasury 2-year constant maturity yield"
 identifiers = { UST-PAR = "BC_2YEAR", H15-TCM = "RIFLGFCY02_N.B", FRED = "DGS2" }
+notes = [
+  { key = "h15-first", date = "1976-06-01", text = "The H.15 series starts here. Before Treasury's par curve begins (1990-01-02), H.15 is the only source." },
+]
 
 [[instruments]]
 short_name = "UST-3Y-CMT"
 tenor = "P3Y"
 description = "US Treasury 3-year constant maturity yield"
 identifiers = { UST-PAR = "BC_3YEAR", H15-TCM = "RIFLGFCY03_N.B", FRED = "DGS3" }
+notes = [
+  { key = "h15-first", date = "1962-01-02", text = "The H.15 series starts here. Before Treasury's par curve begins (1990-01-02), H.15 is the only source." },
+]
 
 [[instruments]]
 short_name = "UST-5Y-CMT"
 tenor = "P5Y"
 description = "US Treasury 5-year constant maturity yield"
 identifiers = { UST-PAR = "BC_5YEAR", H15-TCM = "RIFLGFCY05_N.B", FRED = "DGS5" }
+notes = [
+  { key = "h15-first", date = "1962-01-02", text = "The H.15 series starts here. Before Treasury's par curve begins (1990-01-02), H.15 is the only source." },
+]
 
 [[instruments]]
 short_name = "UST-7Y-CMT"
 tenor = "P7Y"
 description = "US Treasury 7-year constant maturity yield"
 identifiers = { UST-PAR = "BC_7YEAR", H15-TCM = "RIFLGFCY07_N.B", FRED = "DGS7" }
+notes = [
+  { key = "h15-first", date = "1969-07-01", text = "The H.15 series starts here. Before Treasury's par curve begins (1990-01-02), H.15 is the only source." },
+]
 
 [[instruments]]
 short_name = "UST-10Y-CMT"
 tenor = "P10Y"
 description = "US Treasury 10-year constant maturity yield"
 identifiers = { UST-PAR = "BC_10YEAR", H15-TCM = "RIFLGFCY10_N.B", FRED = "DGS10" }
+notes = [
+  { key = "h15-first", date = "1962-01-02", text = "The H.15 series starts here. Before Treasury's par curve begins (1990-01-02), H.15 is the only source." },
+]
 
 [[instruments]]
 short_name = "UST-20Y-CMT"
@@ -123,6 +149,7 @@ tenor = "P20Y"
 description = "US Treasury 20-year constant maturity yield"
 identifiers = { UST-PAR = "BC_20YEAR", H15-TCM = "RIFLGFCY20_N.B", FRED = "DGS20" }
 notes = [
+  { key = "h15-first", date = "1962-01-02", text = "The H.15 series starts here. Before Treasury's par curve begins (1990-01-02), H.15 is the only source." },
   { key = "gap-1987-1993", date = "1987-01-01", text = "Not published from 1987-01-01 through 1993-09-30; resumed 1993-10-01." },
   { key = "composite-before-2020", date = "2020-05-20", text = "The 20-year bond was reintroduced on this date. Before it, the 20-year CMT had no on-the-run 20-year issue among its inputs." },
 ]
@@ -133,5 +160,6 @@ tenor = "P30Y"
 description = "US Treasury 30-year constant maturity yield"
 identifiers = { UST-PAR = "BC_30YEAR", H15-TCM = "RIFLGFCY30_N.B", FRED = "DGS30" }
 notes = [
-  { key = "gap-2002-2006", date = "2002-02-18", text = "Not published from 2002-02-18 through 2006-02-08, after Treasury stopped issuing the 30-year bond; resumed 2006-02-09." },
+  { key = "h15-first", date = "1977-02-15", text = "The H.15 series starts here. Before Treasury's par curve begins (1990-01-02), H.15 is the only source." },
+  { key = "gap-2002-2006", date = "2002-02-18", text = "Not published from 2002-02-18 through 2006-02-08, after Treasury stopped issuing the 30-year bond; resumed 2006-02-09. H.15 has values on these dates, but they aren't Treasury-published market values, so golden leaves the gap (quote-svc's GOLDEN_EXCLUDE; Bill, 2026-10-05)." },
 ]
