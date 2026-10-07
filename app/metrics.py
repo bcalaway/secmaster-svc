@@ -17,7 +17,16 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import SQLAlchemyError
 
 from app import db
-from app.models import Identifier, Instrument, InstrumentName, LoadRun, SecurityTerms, SeedRun, UntypedRecord
+from app.models import (
+    FigiLookup,
+    Identifier,
+    Instrument,
+    InstrumentName,
+    LoadRun,
+    SecurityTerms,
+    SeedRun,
+    UntypedRecord,
+)
 from app.treasuries import check_code
 
 router = APIRouter()
@@ -117,6 +126,9 @@ def render(s) -> str:
     out.metric("secmaster_svc_security_checks", "gauge",
                "Treasury securities with each kind of check that didn't pass, by security type and check.",
                [({"security_type": t, "check": c}, n) for (t, c), n in sorted(codes.items())])
+    figis = s.execute(select(FigiLookup.outcome, func.count()).group_by(FigiLookup.outcome)).all()
+    out.metric("secmaster_svc_figi_lookups", "gauge", "CUSIPs looked up on OpenFIGI, by outcome.",
+               [({"outcome": o}, n) for o, n in sorted(figis)])
     return out.text()
 
 

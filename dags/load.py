@@ -4,7 +4,8 @@
 `mkt_data_treasury_securities` (its capture DAG, after TreasuryDirect's
 records change), and nightly as a catch-up. The work runs in the
 secmaster-svc container (POST /jobs/load), which re-reads only the months
-whose newest capture moved. `secmaster_svc__rebuild` (manual) re-reads every
+whose newest capture moved, then asks OpenFIGI about any new CUSIPs (POST
+/jobs/figi). `secmaster_svc__rebuild` (manual) re-reads every
 month, after a change to how records are typed. Both only call the job API
 (ADR-0031 in nyc_pa_aws_gitops); a failed run retries, and Grafana's
 "Airflow task failed" alert fires if retries run out.
@@ -52,7 +53,12 @@ def load():
     def run() -> dict:
         return report(call_app_job("secmaster-svc", "load", timeout=3600))
 
-    run()
+    @task(retries=2, retry_delay=timedelta(minutes=15))
+    def map_figis() -> dict:
+        """New CUSIPs to OpenFIGI (FIGI, composite FIGI, ticker); a failure here never holds up the load."""
+        return call_app_job("secmaster-svc", "figi", timeout=1800)
+
+    run() >> map_figis()
 
 
 @dag(

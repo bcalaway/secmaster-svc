@@ -348,3 +348,18 @@ class StrippedAmount(Base):
     capture_id: Mapped[int] = mapped_column(Integer)
     loaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     removed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class FigiLookup(Base):
+    """What OpenFIGI said about a CUSIP, so each is asked once (app/figi.py)."""
+
+    __tablename__ = "figi_lookup"
+
+    cusip: Mapped[str] = mapped_column(String(9), primary_key=True)
+    sec_id: Mapped[int] = mapped_column(ForeignKey("instrument.sec_id"))
+    outcome: Mapped[str] = mapped_column(String(10))  # found | not_found | error
+    figi: Mapped[str | None] = mapped_column(String(12))
+    composite_figi: Mapped[str | None] = mapped_column(String(12))
+    ticker: Mapped[str | None] = mapped_column(String(60))
+    detail: Mapped[dict | None] = mapped_column(JSON_DOC)
+    looked_up_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

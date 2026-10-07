@@ -47,5 +47,9 @@ class Settings:
     # mkt-data's gRPC server, for its near-raw records (Treasury securities, phase 3).
     mkt_data_grpc: str = os.environ.get("MKT_DATA_GRPC", "mkt-data:9090")
 
+    # OpenFIGI API key (SSM /home-platform/secmaster-svc/openfigi-api-key). Optional: without it the
+    # FIGI job runs at OpenFIGI's keyless limits and does a few hundred CUSIPs a run.
+    openfigi_api_key: str | None = os.environ.get("OPENFIGI_API_KEY")
+
 
 settings = Settings()
