@@ -25,7 +25,7 @@ SOURCE = "TD-SECURITIES"
 # Bump when how records become terms changes (a new derived term, a fixed rule,
 # reworded checks): the next load re-derives every security's terms from its
 # stored auctions, so existing securities get the change without a rebuild.
-TYPING_VERSION = 2
+TYPING_VERSION = 3  # 3: annual coupons (foreign-targeted notes)
 # Checks that only mean "more history to load", left out of the load's notable list.
 EXPECTED_CHECKS = {"original-not-loaded", "term-unknown"}
 
@@ -35,7 +35,9 @@ TYPES = {
     "Note": ("ust_note", "note"), "Bond": ("ust_bond", "bond"),
     "TIPS": ("ust_tips", "tips"), "FRN": ("ust_frn", "frn"),
 }
-FREQUENCY = {"Semi-Annual": 2, "Quarterly": 4}
+# "Annual": the foreign-targeted notes of 1984-1986, sold to foreign investors alongside
+# domestic notes with the same coupon and maturity but paying once a year.
+FREQUENCY = {"Annual": 1, "Semi-Annual": 2, "Quarterly": 4}
 DAY_COUNT = {"bill": "ACT/360", "frn": "ACT/360", "note": "ACT/ACT-ICMA", "bond": "ACT/ACT-ICMA",
              "tips": "ACT/ACT-ICMA"}
 FRN_INDEX = "13-week bill high rate"

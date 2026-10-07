@@ -131,3 +131,15 @@ def test_untypable():
                                          "interestRate": "n/a"})
     with pytest.raises(tr.Untypable, match="maturityDate"):
         tr.type_auction("X/2026-01-01", {"cusip": "912810UW6", "type": "Bond"})
+
+
+def test_an_annual_foreign_targeted_note():
+    """1984-1986's foreign-targeted notes paid once a year (912827TG7, the 8.875% of 1996-02-15)."""
+    base = next(a for a in Y1980["912827KM3"])
+    ftn = tr.Auction(**{**base.__dict__, "source_key": "912827TG7/1986-02-15", "cusip": "912827TG7",
+                        "frequency": "Annual", "dated_date": date(1986, 2, 15), "maturity_date": date(1996, 2, 15),
+                        "first_coupon_date": date(1987, 2, 15), "first_period_type": "Normal",
+                        "coupon_rate": Decimal("0.08875"), "issue_date": date(1986, 2, 18)})
+    t = tr.build_terms([ftn])
+    assert t.values["coupon_frequency"] == 1 and t.checks == []
+    assert t.values["penultimate_coupon_date"] == date(1995, 2, 15)
