@@ -294,3 +294,57 @@ class LoadRun(Base):
     finished_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     outcome: Mapped[str] = mapped_column(String(8))
     detail: Mapped[str] = mapped_column(Text)  # JSON summary, or the error
+
+
+class Strip(Base):
+    """A Treasury STRIPS instrument's own facts (mkt-data's docs/phase-3.md, step 3c).
+
+    One row per strip instrument, kept in line with its sources on every load:
+    principal or interest, TIPS or nominal, the date it pays, and the security
+    it came from (principal: its security; interest: the security whose record
+    introduced the date). `provenance` and `checks` as for security_terms.
+    """
+
+    __tablename__ = "strip"
+
+    sec_id: Mapped[int] = mapped_column(ForeignKey("instrument.sec_id"), primary_key=True)
+    cusip: Mapped[str] = mapped_column(String(9))
+    kind: Mapped[str] = mapped_column(String(10))  # principal | interest
+    tips: Mapped[bool] = mapped_column(Boolean)
+    payment_date: Mapped[date | None] = mapped_column(Date)
+    underlying_cusip: Mapped[str | None] = mapped_column(String(9))
+    underlying_sec_id: Mapped[int | None] = mapped_column(ForeignKey("instrument.sec_id"))
+    provenance: Mapped[dict] = mapped_column(JSON_DOC)
+    checks: Mapped[list] = mapped_column(JSON_DOC)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class StrippedAmount(Base):
+    """A strippable security's amounts at a month-end, from the MSPD's stripped-securities table.
+
+    Dollars (the MSPD prints thousands). One row per MSPD line (`source_key`:
+    principal STRIPS CUSIP/record date); the table's subtotal lines aren't kept.
+    """
+
+    __tablename__ = "stripped_amount"
+    __table_args__ = (
+        Index("uq_stripped_amount_key", "source_key", unique=True),
+        Index("ix_stripped_amount_underlying", "underlying_cusip", "record_date"),
+        Index("ix_stripped_amount_period", "period"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    period: Mapped[str] = mapped_column(String(10))
+    source_key: Mapped[str] = mapped_column(String(40))
+    strip_cusip: Mapped[str] = mapped_column(String(9))
+    underlying_cusip: Mapped[str] = mapped_column(String(9))
+    record_date: Mapped[date] = mapped_column(Date)
+    outstanding: Mapped[Decimal | None] = mapped_column(Numeric)
+    unstripped: Mapped[Decimal | None] = mapped_column(Numeric)
+    stripped: Mapped[Decimal | None] = mapped_column(Numeric)
+    reconstituted: Mapped[Decimal | None] = mapped_column(Numeric)
+    fields: Mapped[dict] = mapped_column(JSON_DOC)
+    record_id: Mapped[int] = mapped_column(Integer)
+    capture_id: Mapped[int] = mapped_column(Integer)
+    loaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    removed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
