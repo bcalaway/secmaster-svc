@@ -4,6 +4,8 @@ OpenFIGI's mapping API (https://api.openfigi.com/v3/mapping) turns a CUSIP
 into its FIGI, composite FIGI and Bloomberg-style ticker ("T 4 1/4 08/15/35").
 Each CUSIP is asked once: `figi_lookup` remembers the answer, and a CUSIP
 OpenFIGI didn't know is asked again after RETRY_AFTER (it may have been added).
+A CUSIP OpenFIGI answered with an error (anything but data or "No identifier
+found") is asked again after RETRY_ERROR_AFTER, since an error may be passing.
 
 Limits (OpenFIGI's documentation, checked 2026-10-07): with an API key, 25
 requests per 6 seconds of up to 100 CUSIPs each; without, 25 per minute of up
@@ -21,6 +23,7 @@ import httpx2
 URL = "https://api.openfigi.com/v3/mapping"
 TIMEOUT_SECONDS = 60
 RETRY_AFTER = timedelta(days=30)
+RETRY_ERROR_AFTER = timedelta(days=1)
 MAX_WITHOUT_KEY = 250
 USER_AGENT = "secmaster-svc/1 (personal market data platform; bcalaway)"
 
@@ -109,4 +112,6 @@ def due(last: datetime | None, outcome: str | None, now: datetime) -> bool:
         return True
     if last.tzinfo is None:  # SQLite (tests) hands back naive UTC times
         last = last.replace(tzinfo=UTC)
-    return outcome != "found" and now - last >= RETRY_AFTER
+    if outcome == "found":
+        return False
+    return now - last >= (RETRY_ERROR_AFTER if outcome == "error" else RETRY_AFTER)

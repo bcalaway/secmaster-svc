@@ -40,6 +40,13 @@ def report(result: dict) -> dict:
     return out
 
 
+def report_figi(result: dict) -> dict:
+    """One log line per CUSIP OpenFIGI answered with an error."""
+    for e in result.get("errors", []):
+        print(f"figi error: {e.get('cusip')}: {e.get('detail')}")
+    return result
+
+
 @dag(
     dag_id="secmaster_svc__load",
     schedule=AssetOrTimeSchedule(
@@ -62,7 +69,7 @@ def load():
     @task(retries=2, retry_delay=timedelta(minutes=15))
     def map_figis() -> dict:
         """New CUSIPs to OpenFIGI (FIGI, composite FIGI, ticker); a failure here never holds up the load."""
-        return call_app_job("secmaster-svc", "figi", timeout=1800)
+        return report_figi(call_app_job("secmaster-svc", "figi", timeout=1800))
 
     run() >> map_figis()
 
