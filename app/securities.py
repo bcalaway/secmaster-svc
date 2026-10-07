@@ -12,7 +12,16 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
-from app.models import Auction, Identifier, Instrument, InstrumentName, InstrumentNote, SecurityTerms
+from app.models import (
+    Auction,
+    Identifier,
+    Instrument,
+    InstrumentName,
+    InstrumentNote,
+    SecurityTerms,
+    Strip,
+    StrippedAmount,
+)
 
 NEW_YORK = ZoneInfo("America/New_York")
 
@@ -109,6 +118,17 @@ def get(s: Session, sec_id: int | None = None, name: str = "", as_of: date | Non
             for a in s.scalars(select(Auction).where(Auction.sec_id == inst.sec_id, Auction.removed_at.is_(None))
                                .order_by(Auction.issue_date, Auction.source_key))
         ]
+        out["stripped_amounts"] = [
+            _plain(a, skip=("id", "fields", "period", "source_key", "record_id", "capture_id", "loaded_at",
+                            "removed_at", "underlying_cusip"))
+            for a in s.scalars(select(StrippedAmount).where(
+                StrippedAmount.underlying_cusip == terms.cusip, StrippedAmount.removed_at.is_(None))
+                .order_by(StrippedAmount.record_date.desc()).limit(12))
+        ]
+    strip = s.get(Strip, inst.sec_id)
+    if strip is not None:
+        out["strip"] = _plain(strip, skip=("sec_id", "provenance", "checks", "updated_at"))
+        out["provenance"], out["checks"] = strip.provenance, strip.checks
     return out
 
 

@@ -29,12 +29,13 @@ re-read every period (`rebuild` clears the watermarks).
 
 import json
 from datetime import UTC, date, datetime
+from decimal import Decimal, InvalidOperation
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
-from app import otr
+from app import otr, strips
 from app import treasuries as tr
 from app.models import (
     Auction,
@@ -44,11 +45,13 @@ from app.models import (
     LoadRun,
     SecurityTerms,
     SourcePeriod,
+    Strip,
+    StrippedAmount,
     UntypedRecord,
 )
 from app.upstream import Rec, Upstream
 
-SOURCES = ["TD-SECURITIES"]
+SOURCES = ["TD-SECURITIES", "FD-MSPD-STRIPS"]
 NEW_YORK = ZoneInfo("America/New_York")
 TERM_COLUMNS = [c.name for c in SecurityTerms.__table__.columns
                 if c.name not in ("id", "sec_id", "provenance", "checks", "recorded_at", "superseded_at")]
@@ -320,6 +323,142 @@ def notable_checks(s: Session, limit: int = 25) -> list[dict]:
     return out
 
 
+def _thousands(fields: dict, k: str):
+    v = fields.get(k)
+    if v in (None, "", "null"):
+        return None
+    try:
+        return Decimal(v) * 1000
+    except InvalidOperation:
+        raise tr.Untypable(f"{k}: {v!r} isn't a number") from None
+
+
+def apply_mspd_period(s: Session, source: str, period: str, recs: list[Rec], now: datetime, today: date) -> dict:
+    """One month-end of the MSPD's stripped-securities table into stripped_amount. Flushes, doesn't commit.
+
+    The strip instruments themselves are synced once per load (sync_strips), from these and the terms.
+    """
+    have = {a.source_key: a for a in s.scalars(select(StrippedAmount).where(StrippedAmount.period == period))}
+    out = {"records": len(recs), "added": 0, "updated": 0, "removed": 0, "untyped": 0, "created": 0,
+           "terms_recorded": 0}
+    seen = set()
+    for r in recs:
+        if r.record_type != "stripped_security":
+            continue  # the table's subtotal lines
+        f = r.fields
+        try:
+            if not f.get("cusip") or f.get("security_class2_desc") in (None, "", "null"):
+                raise tr.Untypable("no principal STRIPS or underlying CUSIP")
+            values = {
+                "strip_cusip": f["cusip"], "underlying_cusip": f["security_class2_desc"],
+                "record_date": date.fromisoformat(f["record_date"][:10]),
+                "outstanding": _thousands(f, "outstanding_amt"), "unstripped": _thousands(f, "portion_unstripped_amt"),
+                "stripped": _thousands(f, "portion_stripped_amt"), "reconstituted": _thousands(f, "reconstituted_amt"),
+            }
+        except (tr.Untypable, ValueError, KeyError) as e:
+            _untyped(s, source, period, r.source_key, str(e), now)
+            out["untyped"] += 1
+            continue
+        seen.add(r.source_key)
+        row = have.get(r.source_key)
+        if row is None:
+            s.add(StrippedAmount(period=period, source_key=r.source_key, **values, fields=f, record_id=r.record_id,
+                                 capture_id=r.capture_id, loaded_at=now))
+            out["added"] += 1
+        elif row.removed_at is not None or row.fields != f:
+            for k, v in values.items():
+                setattr(row, k, v)
+            row.fields, row.removed_at, row.loaded_at = f, None, now
+            out["updated"] += 1
+        row = have.get(r.source_key)
+        if row is not None:
+            row.record_id, row.capture_id = r.record_id, r.capture_id
+    for key, row in have.items():
+        if key not in seen and row.removed_at is None:
+            row.removed_at = now
+            out["removed"] += 1
+    s.flush()
+    return out
+
+
+APPLY = {"TD-SECURITIES": apply_period, "FD-MSPD-STRIPS": apply_mspd_period}
+
+
+def sync_strips(s: Session, today: date, now: datetime) -> dict:
+    """Principal and interest STRIPS as instruments, from the terms, the auctions' tint CUSIPs and the MSPD.
+
+    A strip is created the first time a source names it and kept in line after
+    that (its row in `strip`, CUSIP and ISIN identifiers, short name, status).
+    """
+    specs: list[strips.StripSpec] = []
+    terms = {t.sec_id: t for t in s.scalars(select(SecurityTerms).where(SecurityTerms.superseded_at.is_(None)))}
+    for t in terms.values():
+        src = (t.provenance or {}).get("corpus_cusip", "")
+        key = src.split(" ")[2] if src.startswith("published:") else t.cusip
+        spec = strips.from_security(t.cusip, t.security_type, t.maturity_date, t.corpus_cusip, key)
+        if spec:
+            specs.append(spec)
+    tint = Auction.fields["tintCusip1"].as_string()
+    for sec_id, key, fields in s.execute(select(Auction.sec_id, Auction.source_key, Auction.fields)
+                                         .where(Auction.removed_at.is_(None), tint.is_not(None), tint != "")):
+        t = terms.get(sec_id)
+        if t is not None:
+            specs.extend(strips.from_auction(t.cusip, t.security_type, t.maturity_date, fields, key))
+    latest = select(StrippedAmount.strip_cusip, func.max(StrippedAmount.id).label("id")).where(
+        StrippedAmount.removed_at.is_(None)).group_by(StrippedAmount.strip_cusip).subquery()
+    for key, fields in s.execute(select(StrippedAmount.source_key, StrippedAmount.fields)
+                                 .join(latest, StrippedAmount.id == latest.c.id)):
+        spec = strips.from_mspd(fields, key)
+        if spec:
+            specs.append(spec)
+    merged = strips.merge(specs)
+    by_cusip = dict(s.execute(select(Identifier.value, Identifier.sec_id).where(
+        Identifier.scheme == "CUSIP", Identifier.removed_at.is_(None))).all())
+    rows = {r.cusip: r for r in s.scalars(select(Strip))}
+    out = {"strips_created": 0, "strips_updated": 0}
+    for cusip, spec in sorted(merged.items()):
+        sec_id = by_cusip.get(cusip)
+        if sec_id is None:
+            inst = Instrument(type=strips.KINDS[spec.kind], currency="USD", country="US", curve="UST", tenor=None,
+                              calendar="SIFMA-US", status="active", description="")
+            s.add(inst)
+            s.flush()
+            sec_id = inst.sec_id
+            s.add(Identifier(sec_id=sec_id, scheme="CUSIP", value=cusip))
+            out["strips_created"] += 1
+        under_id = by_cusip.get(spec.underlying_cusip) if spec.underlying_cusip else None
+        if spec.underlying_cusip and under_id is None:
+            spec.checks = sorted(set(spec.checks + ["underlying-not-loaded: its security isn't in the security master"]))
+        values = {"cusip": cusip, "kind": spec.kind, "tips": spec.tips, "payment_date": spec.payment_date,
+                  "underlying_cusip": spec.underlying_cusip, "underlying_sec_id": under_id,
+                  "provenance": spec.provenance, "checks": spec.checks}
+        row = rows.get(cusip)
+        if row is None:
+            s.add(Strip(sec_id=sec_id, **values, updated_at=now))
+        elif any(getattr(row, k) != v for k, v in values.items()):
+            for k, v in values.items():
+                setattr(row, k, v)
+            row.updated_at = now
+            out["strips_updated"] += 1
+        inst = s.get(Instrument, sec_id)
+        under_name = s.scalar(select(InstrumentName.name).where(
+            InstrumentName.sec_id == under_id, InstrumentName.kind == "short",
+            InstrumentName.removed_at.is_(None))) if under_id else None
+        status = "matured" if spec.payment_date and spec.payment_date < today else "active"
+        attrs = {"type": strips.KINDS[spec.kind], "description": strips.describe(spec, under_name or spec.underlying_cusip),
+                 "status": status}
+        if any(getattr(inst, k) != v for k, v in attrs.items()):
+            for k, v in attrs.items():
+                setattr(inst, k, v)
+            inst.updated_at = now
+        _ensure_identifier(s, sec_id, "ISIN", tr.isin(cusip))
+        _set_short_name(s, sec_id, strips.short_name(spec), cusip, now)
+        by_cusip[cusip] = sec_id
+    s.flush()
+    out["strips"] = len(merged)
+    return out
+
+
 def _load(s: Session, up: Upstream, now: datetime, today: date, progress: dict) -> None:
     for source in SOURCES:
         marks = dict(s.execute(select(SourcePeriod.period, SourcePeriod.capture_id)
@@ -330,7 +469,7 @@ def _load(s: Session, up: Upstream, now: datetime, today: date, progress: dict) 
         gone = sorted(set(marks) - listed)
         progress["periods_skipped"] += len(periods) - len(todo)
         for p in todo:
-            result = apply_period(s, source, p.period, up.get_period(source, p.period), now, today)
+            result = APPLY[source](s, source, p.period, up.get_period(source, p.period), now, today)
             mark = s.get(SourcePeriod, (source, p.period))
             if mark is None:
                 s.add(SourcePeriod(source=source, period=p.period, capture_id=p.latest_capture_id,
@@ -343,7 +482,7 @@ def _load(s: Session, up: Upstream, now: datetime, today: date, progress: dict) 
             for k in ("added", "updated", "removed", "untyped", "created", "terms_recorded"):
                 progress[k] += result[k]
         for period in gone:
-            result = apply_period(s, source, period, [], now, today)
+            result = APPLY[source](s, source, period, [], now, today)
             s.execute(delete(SourcePeriod).where(SourcePeriod.source == source, SourcePeriod.period == period))
             s.commit()
             progress["periods_read"] += 1
@@ -352,6 +491,7 @@ def _load(s: Session, up: Upstream, now: datetime, today: date, progress: dict) 
         progress["retyped_terms_recorded"] = retype_all(s, now, today)
     progress["status"] = refresh_status(s, today, now)
     progress |= sync_otr(s, today, now)
+    progress |= sync_strips(s, today, now)
     s.commit()
 
 

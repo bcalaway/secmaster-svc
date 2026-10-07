@@ -27,21 +27,27 @@ class FakeMktData:
     """mkt-data's Records service: periods of TreasuryDirect records, each with a capture id."""
 
     def __init__(self):
-        self.periods: dict[str, tuple[int, list[dict]]] = {}
+        self.sources: dict[str, dict[str, tuple[int, list[dict]]]] = {"TD-SECURITIES": {}, "FD-MSPD-STRIPS": {}}
         self.reads: list[str] = []
         self._next = 1
 
-    def put(self, period: str, rows: list[dict]) -> None:
+    @property
+    def periods(self):
+        return self.sources["TD-SECURITIES"]
+
+    def put(self, period: str, rows: list[dict], source: str = "TD-SECURITIES") -> None:
         self._next += 1
-        self.periods[period] = (self._next, rows)
+        self.sources[source][period] = (self._next, rows)
 
     def list_periods(self, source):
-        assert source == "TD-SECURITIES"
-        return [Period(p, cap, len(rows)) for p, (cap, rows) in sorted(self.periods.items())]
+        return [Period(p, cap, len(rows)) for p, (cap, rows) in sorted(self.sources[source].items())]
 
     def get_period(self, source, period):
         self.reads.append(period)
-        cap, rows = self.periods[period]
+        cap, rows = self.sources[source][period]
+        if source == "FD-MSPD-STRIPS":
+            return [Rec(i + 1, "stripped_total" if r["cusip"] == "null" else "stripped_security",
+                        f"{r['cusip']}/{r['record_date']}", r["record_date"], r, cap) for i, r in enumerate(rows)]
         return [Rec(i + 1, "auction", f"{r['cusip']}/{r['issueDate'][:10]}", r["auctionDate"][:10], r, cap)
                 for i, r in enumerate(rows)]
 
@@ -64,7 +70,8 @@ def test_first_load(migrated_db, mkt):
     assert out["periods_read"] == 2 and out["added"] == 45 and out["created"] == 45 and out["untyped"] == 0
     with db.session() as s:
         assert s.scalar(select(func.count()).select_from(SecurityTerms)) == 45
-        assert s.scalar(select(func.count()).select_from(Identifier).where(Identifier.scheme == "ISIN")) == 45
+        isins = select(func.count()).select_from(Identifier).join(Instrument, Instrument.sec_id == Identifier.sec_id)
+        assert s.scalar(isins.where(Identifier.scheme == "ISIN", Instrument.type.in_(load.TREASURY_TYPES))) == 45
         note = securities.get(s, name="UST-3.75-2033-02-28")
         assert note["type"] == "ust_note" and note["tenor"] == "P7Y" and note["status"] == "active"
         assert Decimal(note["terms"]["coupon_rate"]) == Decimal("0.0375")
@@ -75,7 +82,8 @@ def test_first_load(migrated_db, mkt):
         # Found by CUSIP too.
         assert securities.resolve(s, "CUSIP", ["91282CQC8"])["matches"][0]["short_name"] == "UST-3.75-2033-02-28"
         assert [i["short_name"] for i in securities.search(s, "91282CQC8")] == ["UST-3.75-2033-02-28"]
-        types = dict(s.execute(select(Instrument.type, func.count()).group_by(Instrument.type)).all())
+        types = dict(s.execute(select(Instrument.type, func.count()).where(Instrument.type.in_(load.TREASURY_TYPES))
+                               .group_by(Instrument.type)).all())
         rows = _records("td_securities_2026_02_capture1319.json") + _records("td_securities_2026_10_capture1261.json")
         want = Counter(tr.TYPES[t][0] for t in {r["cusip"]: r["type"] for r in rows}.values())
         assert types == want and types["ust_tips"] == 1 and types["ust_frn"] == 1
