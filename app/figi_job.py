@@ -3,7 +3,8 @@
 Schemes: FIGI, COMPOSITE-FIGI (when OpenFIGI gives one) and TICKER (Bloomberg
 style: "T 4 1/4 08/15/35"). A ticker two instruments share (principal STRIPS
 of a note and a bond due the same day can) is kept on the first and listed in
-the job's answer, not treated as an error.
+the job's answer, not treated as an error. Each CUSIP OpenFIGI answered with an
+error is listed in the answer with OpenFIGI's own words, so the DAG's log names it.
 """
 
 import json
@@ -46,7 +47,7 @@ def run(s: Session, api_key: str | None, now: datetime | None = None, mapper=Non
     limit = MAX_WITH_KEY if api_key else figi.MAX_WITHOUT_KEY
     batch = todo[:limit]
     out = {"asked": len(batch), "left": len(todo) - len(batch), "with_key": bool(api_key),
-           "found": 0, "not_found": 0, "error": 0, "shared_tickers": []}
+           "found": 0, "not_found": 0, "error": 0, "errors": [], "shared_tickers": []}
     answers = mapper(batch, api_key) if batch else []
     for a in answers:
         sec_id = cusips[a.cusip]
@@ -56,6 +57,8 @@ def run(s: Session, api_key: str | None, now: datetime | None = None, mapper=Non
         row.detail, row.looked_up_at = json.loads(json.dumps(a.detail)) if a.detail else None, now
         s.merge(row)
         out[a.outcome] += 1
+        if a.outcome == "error":
+            out["errors"].append({"cusip": a.cusip, "detail": row.detail})
         if a.outcome == "found":
             _soft_identifier(s, sec_id, "FIGI", a.figi)
             if a.composite_figi and a.composite_figi != a.figi:
@@ -64,5 +67,6 @@ def run(s: Session, api_key: str | None, now: datetime | None = None, mapper=Non
                 out["shared_tickers"].append({"cusip": a.cusip, "ticker": a.ticker})
     s.commit()
     out["shared_tickers"] = out["shared_tickers"][:20]
+    out["errors"] = out["errors"][:20]
     out["mapped"] = s.scalar(select(func.count()).select_from(FigiLookup).where(FigiLookup.outcome == "found"))
     return out

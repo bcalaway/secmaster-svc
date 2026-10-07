@@ -84,6 +84,8 @@ def test_due():
     assert not figi.due(NOW, "found", NOW + timedelta(days=400))
     assert not figi.due(NOW, "not_found", NOW + timedelta(days=10))
     assert figi.due(NOW, "not_found", NOW + timedelta(days=31))
+    assert not figi.due(NOW, "error", NOW + timedelta(hours=12))
+    assert figi.due(NOW, "error", NOW + timedelta(days=1))
 
 
 def test_job(migrated_db):
@@ -123,3 +125,21 @@ def test_job_without_a_key_does_a_few_hundred(migrated_db, monkeypatch):
     with db.session() as s:
         out = figi_job.run(s, None, NOW, lambda cs, k: [figi.Answer(c, "not_found") for c in cs])
     assert out["asked"] == 5 and out["left"] > 0 and out["with_key"] is False
+
+
+def test_job_names_errors_and_retries_them_the_next_day(migrated_db):
+    mkt = FakeMktData()
+    mkt.put("2026-02", _records("td_securities_2026_02_capture1319.json"))
+    with db.session() as s:
+        load.run(s, mkt, NOW, TODAY)
+    bad = {"error": "Invalid idValue format"}
+
+    def mapper(cusips, key):
+        return [figi.Answer(c, "error", detail=bad) if c == "912797TB3" else figi.Answer(c, "not_found", detail=MISSING)
+                for c in cusips]
+
+    with db.session() as s:
+        out = figi_job.run(s, "k", NOW, mapper)
+        assert out["error"] == 1 and out["errors"] == [{"cusip": "912797TB3", "detail": bad}]
+        assert figi_job.run(s, "k", NOW + timedelta(hours=1), mapper)["asked"] == 0
+        assert figi_job.run(s, "k", NOW + timedelta(days=1), mapper)["asked"] == 1
