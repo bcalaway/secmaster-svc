@@ -80,6 +80,18 @@ def run_rebuild() -> dict:
         raise HTTPException(502, str(e)) from None
 
 
+@router.post("/figi", dependencies=[Depends(require_token)])
+def run_figi() -> dict:
+    """Ask OpenFIGI about Treasury CUSIPs not looked up yet; keep FIGI, composite FIGI and ticker. 502 if unreachable."""
+    from app import figi, figi_job
+
+    try:
+        with db.session() as s:
+            return figi_job.run(s, settings.openfigi_api_key)
+    except figi.FigiError as e:
+        raise HTTPException(502, str(e)) from None
+
+
 @router.get("/instruments", dependencies=[Depends(require_read_token)])
 def instruments(type: str = "", curve: str = "", include_inactive: bool = False) -> dict:
     with db.session() as s:
