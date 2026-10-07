@@ -31,7 +31,13 @@ def report(result: dict) -> dict:
     """One log line per notable check, so a long answer stays readable in the task log."""
     for item in result.get("notable_checks", []):
         print(f"check: {item.get('short_name')}: {'; '.join(item.get('checks', []))}")
-    return {k: v for k, v in result.items() if k != "notable_checks"}
+    cpi = result.get("tips_cpi") or {}
+    for m in cpi.get("mismatches", []):
+        print(f"tips cpi: {m.get('auction')}: {m.get('what')}: ours {m.get('ours')}, TreasuryDirect {m.get('treasurydirect')}")
+    out = {k: v for k, v in result.items() if k != "notable_checks"}
+    if cpi:
+        out["tips_cpi"] = {k: v for k, v in cpi.items() if k != "mismatches"}
+    return out
 
 
 @dag(

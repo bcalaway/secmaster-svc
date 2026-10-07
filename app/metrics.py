@@ -126,6 +126,11 @@ def render(s) -> str:
     out.metric("secmaster_svc_security_checks", "gauge",
                "Treasury securities with each kind of check that didn't pass, by security type and check.",
                [({"security_type": t, "check": c}, n) for (t, c), n in sorted(codes.items())])
+    if ok is not None:
+        cpi = json.loads(ok.detail).get("tips_cpi") or {}
+        out.metric("secmaster_svc_tips_cpi_checks", "gauge",
+                   "TreasuryDirect's published TIPS reference CPIs and index ratios against ours, at the last load.",
+                   [({"outcome": k}, cpi[k]) for k in ("matched", "mismatched", "not_computable") if k in cpi])
     figis = s.execute(select(FigiLookup.outcome, func.count()).group_by(FigiLookup.outcome)).all()
     out.metric("secmaster_svc_figi_lookups", "gauge", "CUSIPs looked up on OpenFIGI, by outcome.",
                [({"outcome": o}, n) for o, n in sorted(figis)])

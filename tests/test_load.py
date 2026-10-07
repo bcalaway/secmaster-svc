@@ -12,7 +12,7 @@ from sqlalchemy import func, select
 from app import db, load, securities
 from app import treasuries as tr
 from app.models import Auction, Identifier, Instrument, InstrumentName, LoadRun, SecurityTerms, UntypedRecord
-from app.upstream import Period, Rec
+from app.upstream import Obs, Period, Rec
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 NOW = datetime(2026, 10, 7, 12, tzinfo=UTC)
@@ -28,6 +28,7 @@ class FakeMktData:
 
     def __init__(self):
         self.sources: dict[str, dict[str, tuple[int, list[dict]]]] = {"TD-SECURITIES": {}, "FD-MSPD-STRIPS": {}}
+        self.obs: dict[str, tuple[int, list]] = {}  # BLS-CPI: year -> (capture id, [(month, value)])
         self.reads: list[str] = []
         self._next = 1
 
@@ -41,6 +42,18 @@ class FakeMktData:
 
     def list_periods(self, source):
         return [Period(p, cap, len(rows)) for p, (cap, rows) in sorted(self.sources[source].items())]
+
+    def put_cpi(self, year: str, months: list[tuple[str, str]]) -> None:
+        self._next += 1
+        self.obs = {**self.obs, year: (self._next, months)}
+
+    def list_obs_periods(self, source):
+        assert source == "BLS-CPI"
+        return [Period(y, cap, len(v)) for y, (cap, v) in sorted(self.obs.items())]
+
+    def get_obs_period(self, source, period):
+        cap, months = self.obs[period]
+        return [Obs(i + 1, "CUUR0000SA0", f"{m}-01", "index", v, cap) for i, (m, v) in enumerate(months)]
 
     def get_period(self, source, period):
         self.reads.append(period)

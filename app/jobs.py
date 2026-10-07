@@ -118,6 +118,17 @@ def on_the_run(as_of: date | None = None) -> dict:
         return {"as_of": on.isoformat(), "on_the_run": securities.on_the_run(s, on)}
 
 
+@router.get("/reference-cpi", dependencies=[Depends(require_read_token)])
+def reference_cpi(on: date | None = None) -> dict:
+    """Treasury's TIPS reference CPI on a date (default today), and whether it used a fallback month."""
+    day = on or securities.today_ny()
+    with db.session() as s:
+        got = securities.reference_cpi(s, day)
+    if got is None:
+        raise HTTPException(404, f"no reference CPI for {day}: its CPI months aren't loaded")
+    return got
+
+
 @router.get("/resolve", dependencies=[Depends(require_read_token)])
 def resolve(scheme: str, value: Annotated[list[str], Query()], as_of: date | None = None) -> dict:
     with db.session() as s:
