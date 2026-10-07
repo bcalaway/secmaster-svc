@@ -44,5 +44,8 @@ class Settings:
     # mkt-data's READ_TOKEN. Optional; the Airflow token works there too.
     read_token: str | None = os.environ.get("READ_TOKEN")
 
+    # mkt-data's gRPC server, for its near-raw records (Treasury securities, phase 3).
+    mkt_data_grpc: str = os.environ.get("MKT_DATA_GRPC", "mkt-data:9090")
+
 
 settings = Settings()

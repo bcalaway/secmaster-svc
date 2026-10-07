@@ -15,7 +15,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 
-from app import db, securities, seed
+from app import db, load, securities, seed
 from app.config import settings
 
 router = APIRouter(prefix="/jobs")
@@ -49,6 +49,35 @@ def run_seed() -> dict:
             return {"seeds": seed.apply_all(s)}
     except seed.SeedError as e:
         raise HTTPException(422, f"seed failed: {e}") from None
+
+
+def _upstream():
+    from app.upstream import GrpcRecords
+
+    return GrpcRecords(settings.mkt_data_grpc)
+
+
+@router.post("/load", dependencies=[Depends(require_token)])
+def run_load() -> dict:
+    """Load Treasury securities from mkt-data's near-raw records: only periods whose newest capture moved.
+
+    502 when mkt-data can't be read or the load fails part way (what's done is kept).
+    """
+    try:
+        with db.session() as s, _upstream() as up:
+            return load.run(s, up)
+    except load.LoadError as e:
+        raise HTTPException(502, str(e)) from None
+
+
+@router.post("/rebuild", dependencies=[Depends(require_token)])
+def run_rebuild() -> dict:
+    """Re-read every period from mkt-data (watermarks cleared). sec_ids are kept."""
+    try:
+        with db.session() as s, _upstream() as up:
+            return load.rebuild(s, up)
+    except load.LoadError as e:
+        raise HTTPException(502, str(e)) from None
 
 
 @router.get("/instruments", dependencies=[Depends(require_read_token)])

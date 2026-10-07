@@ -11,7 +11,7 @@ from datetime import date
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
-from app.models import Identifier, Instrument, InstrumentName, InstrumentNote
+from app.models import Auction, Identifier, Instrument, InstrumentName, InstrumentNote, SecurityTerms
 
 
 class UnknownInstrument(LookupError):
@@ -85,7 +85,33 @@ def get(s: Session, sec_id: int | None = None, name: str = "") -> dict:
         inst = s.get(Instrument, row.sec_id) if row else None
     if inst is None:
         raise UnknownInstrument(f"no instrument {sec_id or name!r}")
-    return _describe(s, [inst], full=True)[0]
+    out = _describe(s, [inst], full=True)[0]
+    terms = s.scalar(select(SecurityTerms).where(SecurityTerms.sec_id == inst.sec_id,
+                                                 SecurityTerms.superseded_at.is_(None)))
+    if terms is not None:
+        out["terms"] = _plain(terms, skip=("id", "sec_id", "provenance", "checks", "superseded_at"))
+        out["provenance"], out["checks"] = terms.provenance, terms.checks
+        out["auctions"] = [
+            _plain(a, skip=("id", "sec_id", "fields", "source", "period", "loaded_at", "updated_at", "removed_at"))
+            for a in s.scalars(select(Auction).where(Auction.sec_id == inst.sec_id, Auction.removed_at.is_(None))
+                               .order_by(Auction.issue_date, Auction.source_key))
+        ]
+    return out
+
+
+def _plain(row, skip=()) -> dict:
+    """A row's columns as JSON-ready values: dates ISO, decimals as strings exactly as stored."""
+    out = {}
+    for c in row.__table__.columns:
+        if c.name in skip:
+            continue
+        v = getattr(row, c.name)
+        if hasattr(v, "isoformat"):
+            v = v.isoformat()
+        elif v is not None and not isinstance(v, (bool, int, str, dict, list)):
+            v = format(v, "f")
+        out[c.name] = v
+    return out
 
 
 def list_instruments(s: Session, type: str = "", curve: str = "", include_inactive: bool = False,

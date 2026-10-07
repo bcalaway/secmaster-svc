@@ -17,7 +17,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import SQLAlchemyError
 
 from app import db
-from app.models import Identifier, Instrument, InstrumentName, SeedRun
+from app.models import Identifier, Instrument, InstrumentName, LoadRun, SecurityTerms, SeedRun, UntypedRecord
 
 router = APIRouter()
 
@@ -85,6 +85,29 @@ def render(s) -> str:
         changes.append(({"seed": k}, int(bool(summary.get("changed")))))
     out.metric("secmaster_svc_seed_last_changed", "gauge",
                "1 if the last successful run of each seed file changed anything.", changes)
+
+    # Treasury securities (phase 3): the load from mkt-data, untyped records, terms that don't add up.
+    runs = list(s.scalars(select(LoadRun).order_by(LoadRun.id.desc()).limit(50)))
+    ok = next((r for r in runs if r.outcome == "ok"), None)
+    out.metric("secmaster_svc_load_last_success_timestamp_seconds", "gauge",
+               "When the last successful load from mkt-data finished.", [({}, _epoch(ok.finished_at))] if ok else [])
+    out.metric("secmaster_svc_load_ok", "gauge", "1 if the latest load from mkt-data succeeded, 0 if it failed.",
+               [({}, int(runs[0].outcome == "ok"))] if runs else [])
+    untyped = s.execute(select(UntypedRecord.source, func.count()).group_by(UntypedRecord.source)).all()
+    out.metric("secmaster_svc_untyped_records", "gauge",
+               "Near-raw records the load couldn't read as a security, by source.",
+               [({"source": src}, n) for src, n in sorted(untyped)])
+    by_type: dict[str, list[int]] = {}
+    for sec_type, checks in s.execute(select(SecurityTerms.security_type, SecurityTerms.checks)
+                                      .where(SecurityTerms.superseded_at.is_(None))):
+        counts = by_type.setdefault(sec_type, [0, 0])
+        counts[0] += 1
+        counts[1] += int(bool(checks))
+    out.metric("secmaster_svc_securities", "gauge", "Treasury securities with current terms, by security type.",
+               [({"security_type": t}, n) for t, (n, _) in sorted(by_type.items())])
+    out.metric("secmaster_svc_securities_with_checks", "gauge",
+               "Treasury securities whose terms have a check that didn't pass, by security type.",
+               [({"security_type": t}, c) for t, (_, c) in sorted(by_type.items())])
     return out.text()
 
 
