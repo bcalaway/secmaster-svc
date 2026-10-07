@@ -26,6 +26,9 @@ service Securities {
   // provenance and checks, every auction, on-the-run aliases, a TIPS's index
   // ratio. NOT_FOUND if there's none or it isn't a Treasury security.
   rpc GetSecurity(GetSecurityRequest) returns (Security);
+  // The auction calendar: auctions held or announced from start to end, by
+  // auction date; announced ones without results yet.
+  rpc ListAuctions(ListAuctionsRequest) returns (ListAuctionsResponse);
 }
 
 message GetInstrumentRequest {
@@ -159,4 +162,23 @@ message OnTheRun {
   string alias = 1;
   string since = 2;  // YYYY-MM-DD
   string until = 3;  // empty when open
+}
+
+message ListAuctionsRequest {
+  string start = 1;  // YYYY-MM-DD, inclusive
+  string end = 2;    // YYYY-MM-DD, inclusive
+  int32 limit = 3;   // 0 means 500
+}
+
+message ListAuctionsResponse {
+  string start = 1;
+  string end = 2;
+  repeated AuctionRow auctions = 3;
+}
+
+message AuctionRow {
+  int32 sec_id = 1;
+  string short_name = 2;
+  map<string, string> fields = 3;  // cusip, security_type, term, reopening, announcement_date, auction_date,
+                                   // issue_date, offering_amount, total_accepted, bid_to_cover, high_yield, ...
 }

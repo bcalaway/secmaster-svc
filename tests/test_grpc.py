@@ -79,6 +79,7 @@ def test_treasury_securities(migrated_db):
         listed = await stub.ListSecurities(pb.ListSecuritiesRequest(as_of=TODAY.isoformat()))
         notes = await stub.ListSecurities(pb.ListSecuritiesRequest(security_type="note", as_of=TODAY.isoformat()))
         one = await stub.GetSecurity(pb.GetSecurityRequest(name="UST-3.75-2033-02-28", as_of=TODAY.isoformat()))
+        week = await stub.ListAuctions(pb.ListAuctionsRequest(start="2026-02-23", end="2026-02-27"))
         errors = []
         for call in (stub.GetSecurity(pb.GetSecurityRequest(name="NOPE")),
                      stub.ListSecurities(pb.ListSecuritiesRequest(maturing_from="soon"))):
@@ -87,9 +88,10 @@ def test_treasury_securities(migrated_db):
                 errors.append(None)
             except grpc.aio.AioRpcError as e:
                 errors.append(e.code())
-        return listed, notes, one, errors
+        return listed, notes, one, week, errors
 
-    listed, notes, one, errors = asyncio.run(_call(read))
+    listed, notes, one, week, errors = asyncio.run(_call(read))
+    assert week.auctions and all("2026-02-23" <= a.fields["auction_date"] <= "2026-02-27" for a in week.auctions)
     assert listed.total == len(listed.securities) >= 10
     assert {x.security_type for x in notes.securities} == {"note"}
     assert one.instrument.short_name == "UST-3.75-2033-02-28" and one.terms["cusip"] == "91282CQC8"
