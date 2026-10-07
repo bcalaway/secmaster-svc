@@ -10,7 +10,11 @@ Treasury's rule (31 CFR 356, Appendix B):
   security's own reference CPI on its dated date (its base, published by
   TreasuryDirect).
 - A month BLS doesn't publish (October 2025, during the shutdown) is replaced
-  by the CFR's fallback: CPI(M-1) x (CPI(M-1) / CPI(M-13)) ^ (1/12).
+  by the CFR's fallback: CPI(M-1) x (CPI(M-1) / CPI(M-13)) ^ (1/12). Only a
+  gap of at most MAX_FALLBACK_MONTHS is a month BLS didn't publish; a longer
+  one is history mkt-data hasn't loaded yet, left empty, so the days that
+  need it have no reference CPI (and the TIPS check counts them as not
+  computable) rather than a chain of fallbacks standing in for real CPIs.
 
 Rounding: TreasuryDirect publishes reference CPIs and index ratios to five
 decimals ("324.05886", "0.99991"), so both are rounded half-up to five; the
@@ -23,6 +27,7 @@ from datetime import date, timedelta
 from decimal import ROUND_HALF_UP, Decimal, localcontext
 
 FIVE = Decimal("0.00001")
+MAX_FALLBACK_MONTHS = 1
 
 
 def _month(d: date, delta: int = 0) -> date:
@@ -41,7 +46,10 @@ class MonthCpi:
 
 
 def fill_months(published: dict[date, Decimal]) -> dict[date, MonthCpi]:
-    """Every month from the first published one to the last, with the fallback for any gap."""
+    """Every month from the first published one to the last, with the fallback for a month BLS didn't publish.
+
+    A gap longer than MAX_FALLBACK_MONTHS is history not loaded yet: its months are left out.
+    """
     if not published:
         return {}
     out: dict[date, MonthCpi] = {}
@@ -49,6 +57,8 @@ def fill_months(published: dict[date, Decimal]) -> dict[date, MonthCpi]:
     while m <= last:
         if m in published:
             out[m] = MonthCpi(published[m], "published")
+        elif _gap(published, m) > MAX_FALLBACK_MONTHS:
+            pass  # not loaded: no CPI, so no reference CPI for the days that need it
         else:
             prev, year_before = out.get(_month(m, -1)), out.get(_month(m, -13))
             if prev is None or year_before is None:
@@ -59,6 +69,17 @@ def fill_months(published: dict[date, Decimal]) -> dict[date, MonthCpi]:
             out[m] = MonthCpi(round(value, 3), "fallback")  # BLS prints three decimals
         m = _month(m, 1)
     return out
+
+
+def _gap(published: dict[date, Decimal], m: date) -> int:
+    """How many months in a row, around m, have no published CPI."""
+    n, k = 1, _month(m, -1)
+    while k not in published and k >= min(published):
+        n, k = n + 1, _month(k, -1)
+    k = _month(m, 1)
+    while k not in published and k <= max(published):
+        n, k = n + 1, _month(k, 1)
+    return n
 
 
 @dataclass(frozen=True)
