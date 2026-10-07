@@ -56,6 +56,44 @@ def _search(query: str, limit: int) -> securities_pb2.ListInstrumentsResponse:
     return securities_pb2.ListInstrumentsResponse(instruments=[_instrument(r) for r in rows])
 
 
+def _strings(d: dict | None) -> dict[str, str]:
+    """A dict as proto map<string, string>: None as "", booleans as true/false."""
+    out = {}
+    for k, v in (d or {}).items():
+        if v is None:
+            out[k] = ""
+        elif isinstance(v, bool):
+            out[k] = "true" if v else "false"
+        else:
+            out[k] = str(v)
+    return out
+
+
+def _date(text: str) -> date | None:
+    return date.fromisoformat(text) if text else None
+
+
+def _list_securities(r) -> securities_pb2.ListSecuritiesResponse:
+    with db.session() as s:
+        got = securities.list_securities(s, r.security_type, r.include_inactive, _date(r.maturing_from),
+                                         _date(r.maturing_to), _date(r.as_of), r.limit)
+    return securities_pb2.ListSecuritiesResponse(
+        as_of=got["as_of"], total=got["total"],
+        securities=[securities_pb2.SecuritySummary(**x) for x in got["securities"]])
+
+
+def _get_security(sec_id: int, name: str, as_of: date | None) -> securities_pb2.Security:
+    with db.session() as s:
+        d = securities.security(s, sec_id=sec_id, name=name, as_of=as_of)
+    return securities_pb2.Security(
+        instrument=_instrument(d), terms=_strings(d.get("terms")), provenance=_strings(d.get("provenance")),
+        checks=[str(c) for c in d.get("checks") or []],
+        auctions=[securities_pb2.Auction(fields=_strings(a)) for a in d.get("auctions", [])],
+        on_the_run=[securities_pb2.OnTheRun(**o) for o in d["on_the_run"]],
+        index_ratio=_strings(d.get("index_ratio")), strip=_strings(d.get("strip")),
+    )
+
+
 class Securities(securities_pb2_grpc.SecuritiesServicer):
     # The database work is synchronous SQLAlchemy, so it runs in a thread.
     async def GetInstrument(self, request, context):
@@ -76,6 +114,24 @@ class Securities(securities_pb2_grpc.SecuritiesServicer):
 
     async def Search(self, request, context):
         return await asyncio.to_thread(_search, request.query, request.limit)
+
+    async def ListSecurities(self, request, context):
+        try:
+            for f in (request.maturing_from, request.maturing_to, request.as_of):
+                _date(f)
+        except ValueError:
+            await context.abort(grpc.StatusCode.INVALID_ARGUMENT, "dates are YYYY-MM-DD")
+        return await asyncio.to_thread(_list_securities, request)
+
+    async def GetSecurity(self, request, context):
+        try:
+            as_of = _date(request.as_of)
+        except ValueError:
+            await context.abort(grpc.StatusCode.INVALID_ARGUMENT, f"as_of {request.as_of!r} isn't YYYY-MM-DD")
+        try:
+            return await asyncio.to_thread(_get_security, request.sec_id, request.name, as_of)
+        except securities.UnknownInstrument as e:
+            await context.abort(grpc.StatusCode.NOT_FOUND, str(e))
 
 
 async def start_grpc_server(port: int) -> tuple[grpc.aio.Server, int]:

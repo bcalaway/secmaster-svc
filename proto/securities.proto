@@ -18,6 +18,14 @@ service Securities {
   rpc Resolve(ResolveRequest) returns (ResolveResponse);
   // Instruments whose name, alias, identifier or description contains the query.
   rpc Search(SearchRequest) returns (ListInstrumentsResponse);
+  // Treasury securities by maturity (mkt-data's docs/phase-3.md, step 9):
+  // outstanding ones unless include_inactive, with the terms a list shows and
+  // their on-the-run aliases on as_of.
+  rpc ListSecurities(ListSecuritiesRequest) returns (ListSecuritiesResponse);
+  // One Treasury security or STRIPS in full: instrument, terms with their
+  // provenance and checks, every auction, on-the-run aliases, a TIPS's index
+  // ratio. NOT_FOUND if there's none or it isn't a Treasury security.
+  rpc GetSecurity(GetSecurityRequest) returns (Security);
 }
 
 message GetInstrumentRequest {
@@ -89,4 +97,66 @@ message InstrumentNote {
   string key = 1;
   string date = 2;  // YYYY-MM-DD
   string text = 3;
+}
+
+message ListSecuritiesRequest {
+  string security_type = 1;  // bill, note, bond, tips, frn; empty for all
+  bool include_inactive = 2;  // matured, called, withdrawn too
+  string maturing_from = 3;  // YYYY-MM-DD, inclusive; empty for any
+  string maturing_to = 4;
+  string as_of = 5;  // YYYY-MM-DD for the on-the-run aliases; empty for today (New York)
+  int32 limit = 6;  // 0 means 1000; at most 6000
+}
+
+message ListSecuritiesResponse {
+  string as_of = 1;
+  int32 total = 2;  // every match; at most `limit` are listed
+  repeated SecuritySummary securities = 3;
+}
+
+message SecuritySummary {
+  int32 sec_id = 1;
+  string short_name = 2;  // UST-4.25-2035-08-15
+  string cusip = 3;
+  string security_type = 4;  // bill, note, bond, tips, frn
+  bool cmb = 5;  // cash management bill
+  string term = 6;  // the auction program: 10-Year, 26-Week
+  string original_term = 7;  // exact: 5-Year 2-Month
+  string coupon_rate = 8;  // decimal, 0.0425; empty for bills and FRNs
+  string frn_spread = 9;  // decimal; FRNs only
+  string issue_date = 10;  // YYYY-MM-DD
+  string dated_date = 11;
+  string maturity_date = 12;
+  string status = 13;  // active, matured, called, withdrawn
+  string description = 14;
+  repeated string on_the_run = 15;  // UST-10Y-OTR, UST-10Y-OTR-ISSUED
+}
+
+message GetSecurityRequest {
+  oneof key {
+    int32 sec_id = 1;
+    string name = 2;  // short name, alias, CUSIP alias or on-the-run name (as of as_of)
+  }
+  string as_of = 3;  // YYYY-MM-DD; empty for today (New York)
+}
+
+message Security {
+  Instrument instrument = 1;
+  map<string, string> terms = 2;  // every stored term, dates ISO, decimals as stored; empty for none
+  map<string, string> provenance = 3;  // term -> "published: TD-SECURITIES <key> <field>" or "derived: <rule>"
+  repeated string checks = 4;
+  repeated Auction auctions = 5;  // by issue date
+  repeated OnTheRun on_the_run = 6;
+  map<string, string> index_ratio = 7;  // TIPS on as_of: ref_cpi, base_cpi, index_ratio, method
+  map<string, string> strip = 8;  // STRIPS: kind, maturity, underlying
+}
+
+message Auction {
+  map<string, string> fields = 1;  // auction_date, issue_date, reopening, offering_amount, high_yield, ...
+}
+
+message OnTheRun {
+  string alias = 1;
+  string since = 2;  // YYYY-MM-DD
+  string until = 3;  // empty when open
 }

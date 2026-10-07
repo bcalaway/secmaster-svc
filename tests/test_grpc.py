@@ -61,3 +61,37 @@ def test_securities(migrated_db):
     assert [m.short_name for m in resolved.matches] == ["UST-10Y-CMT"] and list(resolved.unknown) == ["NOPE"]
     assert [i.short_name for i in found.instruments] == ["UST-1.5M-CMT"]
     assert errors == [grpc.StatusCode.NOT_FOUND, grpc.StatusCode.INVALID_ARGUMENT]
+
+
+def test_treasury_securities(migrated_db):
+    from app import db, load
+    from app.grpc_gen import securities_pb2 as pb
+    from app.grpc_gen import securities_pb2_grpc
+    from tests.test_load import NOW, TODAY, FakeMktData, _records
+
+    mkt = FakeMktData()
+    mkt.put("2026-02", _records("td_securities_2026_02_capture1319.json"))
+    with db.session() as s:
+        load.run(s, mkt, NOW, TODAY)
+
+    async def read(channel):
+        stub = securities_pb2_grpc.SecuritiesStub(channel)
+        listed = await stub.ListSecurities(pb.ListSecuritiesRequest(as_of=TODAY.isoformat()))
+        notes = await stub.ListSecurities(pb.ListSecuritiesRequest(security_type="note", as_of=TODAY.isoformat()))
+        one = await stub.GetSecurity(pb.GetSecurityRequest(name="UST-3.75-2033-02-28", as_of=TODAY.isoformat()))
+        errors = []
+        for call in (stub.GetSecurity(pb.GetSecurityRequest(name="NOPE")),
+                     stub.ListSecurities(pb.ListSecuritiesRequest(maturing_from="soon"))):
+            try:
+                await call
+                errors.append(None)
+            except grpc.aio.AioRpcError as e:
+                errors.append(e.code())
+        return listed, notes, one, errors
+
+    listed, notes, one, errors = asyncio.run(_call(read))
+    assert listed.total == len(listed.securities) >= 10
+    assert {x.security_type for x in notes.securities} == {"note"}
+    assert one.instrument.short_name == "UST-3.75-2033-02-28" and one.terms["cusip"] == "91282CQC8"
+    assert one.auctions and one.auctions[0].fields["cusip"] == "91282CQC8"
+    assert errors == [grpc.StatusCode.NOT_FOUND, grpc.StatusCode.INVALID_ARGUMENT]
