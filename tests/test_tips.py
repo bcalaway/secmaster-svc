@@ -68,3 +68,14 @@ def test_load_checks_tips_against_treasurydirect(migrated_db):
         again = load.run(s, mkt, NOW, TODAY)
     assert again["cpi_months_changed"] == 1 and again["tips_cpi"]["mismatched"] == 3
     assert again["tips_cpi"]["mismatches"][0]["treasurydirect"].startswith("324.05886")
+
+
+def test_a_long_gap_is_history_not_loaded_not_a_chain_of_fallbacks():
+    # BLS 1996-2015 and 2026 loaded, 2016-2025 not yet (the hub on 2026-10-07): no fallback across the gap.
+    published = {tips._month(date(2014, 1, 1), i): Decimal("236.000") for i in range(24)}
+    published |= {tips._month(date(2026, 1, 1), i): Decimal("325.000") for i in range(8)}
+    filled = tips.fill_months(published)
+    assert all(v.method == "published" for v in filled.values()) and date(2016, 1, 1) not in filled
+    assert tips.ref_cpi(date(2017, 2, 28), filled) is None  # needs Nov and Dec 2016
+    assert tips.ref_cpi(date(2016, 2, 29), filled).value == Decimal("236.00000")  # Nov and Dec 2015: loaded
+    assert tips.ref_cpi(date(2016, 3, 1), filled) is None  # Jan 2016: not loaded
