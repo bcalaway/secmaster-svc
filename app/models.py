@@ -10,8 +10,25 @@ skip it.
 """
 
 from datetime import date, datetime
+from decimal import Decimal
 
-from sqlalchemy import Date, DateTime, ForeignKey, Index, Integer, String, Text, func, text
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    CheckConstraint,
+    Date,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    SmallInteger,
+    String,
+    Text,
+    func,
+    text,
+)
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -23,7 +40,7 @@ class Instrument(Base):
     __tablename__ = "instrument"
 
     sec_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    type: Mapped[str] = mapped_column(String(20))  # cmt_yield in phase 2; bond, future, fixing later
+    type: Mapped[str] = mapped_column(String(20))  # cmt_yield; ust_bill, ust_note, ust_bond, ust_tips, ust_frn
     currency: Mapped[str] = mapped_column(String(3))
     country: Mapped[str] = mapped_column(String(2))
     curve: Mapped[str | None] = mapped_column(String(20))  # UST
@@ -124,3 +141,156 @@ class SeedRun(Base):
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     outcome: Mapped[str] = mapped_column(String(10))  # ok | error
     summary: Mapped[str] = mapped_column(Text, server_default="")  # JSON
+
+
+# JSONB on Postgres (the hub); plain JSON on SQLite (tests).
+JSON_DOC = JSON().with_variant(JSONB(), "postgresql")
+
+
+class SecurityTerms(Base):
+    """A Treasury security's terms (mkt-data's docs/phase-3.md, step 3), with history.
+
+    One current row per security (superseded_at null). When what we know
+    changes (results replace an announcement, a published field is revised),
+    the row is superseded and a new one recorded, so any past view can be
+    rebuilt. `provenance` says where each term came from: "published:
+    TD-SECURITIES <record key> <field>" or "derived: <rule>". `checks` lists
+    anything that doesn't add up (a first coupon off the regular schedule, an
+    original auction not loaded yet). Rates are decimals (0.0425).
+    """
+
+    __tablename__ = "security_terms"
+    __table_args__ = (
+        Index("uq_security_terms_current", "sec_id", unique=True,
+              postgresql_where=text("superseded_at IS NULL"), sqlite_where=text("superseded_at IS NULL")),
+        Index("ix_security_terms_maturity", "maturity_date"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sec_id: Mapped[int] = mapped_column(ForeignKey("instrument.sec_id"))
+    cusip: Mapped[str] = mapped_column(String(9))
+    security_type: Mapped[str] = mapped_column(String(10))  # bill, note, bond, tips, frn
+    cmb: Mapped[bool] = mapped_column(Boolean)
+    term: Mapped[str | None] = mapped_column(String(20))  # the auction program: 10-Year, 26-Week
+    original_term: Mapped[str | None] = mapped_column(String(30))  # exact: 5-Year 2-Month
+    announcement_date: Mapped[date | None] = mapped_column(Date)
+    auction_date: Mapped[date | None] = mapped_column(Date)
+    issue_date: Mapped[date | None] = mapped_column(Date)
+    dated_date: Mapped[date | None] = mapped_column(Date)  # accrual start
+    maturity_date: Mapped[date] = mapped_column(Date)
+    coupon_rate: Mapped[Decimal | None] = mapped_column(Numeric)
+    coupon_frequency: Mapped[int] = mapped_column(SmallInteger)  # 0 bills, 2, 4 FRNs
+    day_count: Mapped[str] = mapped_column(String(16))
+    first_coupon_date: Mapped[date | None] = mapped_column(Date)
+    first_period_type: Mapped[str | None] = mapped_column(String(10))  # Normal, Short, Long
+    penultimate_coupon_date: Mapped[date | None] = mapped_column(Date)
+    end_of_month: Mapped[bool | None] = mapped_column(Boolean)
+    redemption: Mapped[Decimal] = mapped_column(Numeric)
+    settlement_days: Mapped[int] = mapped_column(SmallInteger)
+    calendar: Mapped[str] = mapped_column(String(20))
+    callable: Mapped[bool | None] = mapped_column(Boolean)
+    call_date: Mapped[date | None] = mapped_column(Date)
+    called_date: Mapped[date | None] = mapped_column(Date)
+    strippable: Mapped[bool | None] = mapped_column(Boolean)
+    corpus_cusip: Mapped[str | None] = mapped_column(String(9))
+    tips_base_cpi: Mapped[Decimal | None] = mapped_column(Numeric)
+    cpi_base_period: Mapped[str | None] = mapped_column(String(20))
+    frn_spread: Mapped[Decimal | None] = mapped_column(Numeric)
+    frn_index: Mapped[str | None] = mapped_column(String(40))
+    provenance: Mapped[dict] = mapped_column(JSON_DOC)
+    checks: Mapped[list] = mapped_column(JSON_DOC)
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    superseded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class Auction(Base):
+    """One auction of a Treasury security: its original issue or a reopening.
+
+    Typed from mkt-data's near-raw record (`source_key`: CUSIP/issue date), with
+    the record's fields as published in `fields` and its lineage. Results fill
+    in on auction day (the row is updated); a record mkt-data drops gets
+    `removed_at`. Rates are decimals; prices per 100; amounts in dollars.
+    """
+
+    __tablename__ = "auction"
+    __table_args__ = (
+        Index("uq_auction_key", "source", "source_key", unique=True),
+        Index("ix_auction_sec_id", "sec_id"),
+        Index("ix_auction_period", "source", "period"),
+        Index("ix_auction_term_date", "security_type", "term", "auction_date"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sec_id: Mapped[int] = mapped_column(ForeignKey("instrument.sec_id"))
+    source: Mapped[str] = mapped_column(String(20))  # TD-SECURITIES
+    period: Mapped[str] = mapped_column(String(10))  # mkt-data's period: month of auction
+    source_key: Mapped[str] = mapped_column(String(40))
+    cusip: Mapped[str] = mapped_column(String(9))
+    security_type: Mapped[str] = mapped_column(String(10))
+    reopening: Mapped[bool] = mapped_column(Boolean)
+    term: Mapped[str | None] = mapped_column(String(20))  # the program auctioned: 13-Week, 30-Year
+    security_term: Mapped[str | None] = mapped_column(String(30))
+    announcement_date: Mapped[date | None] = mapped_column(Date)
+    auction_date: Mapped[date | None] = mapped_column(Date)
+    issue_date: Mapped[date | None] = mapped_column(Date)
+    offering_amount: Mapped[Decimal | None] = mapped_column(Numeric)
+    total_tendered: Mapped[Decimal | None] = mapped_column(Numeric)
+    total_accepted: Mapped[Decimal | None] = mapped_column(Numeric)
+    bid_to_cover: Mapped[Decimal | None] = mapped_column(Numeric)
+    high_yield: Mapped[Decimal | None] = mapped_column(Numeric)
+    high_discount_rate: Mapped[Decimal | None] = mapped_column(Numeric)
+    high_investment_rate: Mapped[Decimal | None] = mapped_column(Numeric)
+    high_discount_margin: Mapped[Decimal | None] = mapped_column(Numeric)
+    high_price: Mapped[Decimal | None] = mapped_column(Numeric)
+    price_per_100: Mapped[Decimal | None] = mapped_column(Numeric)
+    accrued_interest_per_1000: Mapped[Decimal | None] = mapped_column(Numeric)
+    adjusted_accrued_interest_per_1000: Mapped[Decimal | None] = mapped_column(Numeric)
+    index_ratio_on_issue_date: Mapped[Decimal | None] = mapped_column(Numeric)
+    ref_cpi_on_issue_date: Mapped[Decimal | None] = mapped_column(Numeric)
+    frn_index_rate: Mapped[Decimal | None] = mapped_column(Numeric)
+    frn_index_determination_date: Mapped[date | None] = mapped_column(Date)
+    currently_outstanding: Mapped[Decimal | None] = mapped_column(Numeric)
+    fields: Mapped[dict] = mapped_column(JSON_DOC)
+    record_id: Mapped[int] = mapped_column(Integer)  # mkt-data's record.id
+    capture_id: Mapped[int] = mapped_column(Integer)  # mkt-data's capture.id
+    loaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    removed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class SourcePeriod(Base):
+    """Watermark: the newest mkt-data capture each source's period was loaded from."""
+
+    __tablename__ = "source_period"
+
+    source: Mapped[str] = mapped_column(String(20), primary_key=True)
+    period: Mapped[str] = mapped_column(String(10), primary_key=True)
+    capture_id: Mapped[int] = mapped_column(Integer)
+    records: Mapped[int] = mapped_column(Integer)
+    loaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class UntypedRecord(Base):
+    """A near-raw record the load couldn't read as a security: reported, not loaded."""
+
+    __tablename__ = "untyped_record"
+
+    source: Mapped[str] = mapped_column(String(20), primary_key=True)
+    source_key: Mapped[str] = mapped_column(String(80), primary_key=True)
+    period: Mapped[str] = mapped_column(String(10))
+    problem: Mapped[str] = mapped_column(Text)
+    first_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    last_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class LoadRun(Base):
+    """Each load from mkt-data: when, how it went, and what it did (metrics and the job's answer)."""
+
+    __tablename__ = "load_run"
+    __table_args__ = (CheckConstraint("outcome IN ('ok', 'error')", name="ck_load_run_outcome"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    outcome: Mapped[str] = mapped_column(String(8))
+    detail: Mapped[str] = mapped_column(Text)  # JSON summary, or the error
