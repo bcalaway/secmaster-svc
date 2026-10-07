@@ -121,3 +121,14 @@ def test_auction_results_overdue_in_the_metrics(migrated_db, monkeypatch):
         text = metrics.render(s)
     assert "secmaster_svc_auction_results_overdue 1" in text
     assert f'cusip="{a.cusip}",auction_date="2026-02-26"' in text
+
+
+def test_the_auction_calendar(migrated_db):
+    _loaded()
+    with db.session() as s:
+        got = securities.list_auctions(s, date(2026, 2, 23), date(2026, 2, 27))
+    rows = got["auctions"]
+    assert rows and [r["auction_date"] for r in rows] == sorted(r["auction_date"] for r in rows)
+    assert all("2026-02-23" <= r["auction_date"] <= "2026-02-27" for r in rows)
+    note = next(r for r in rows if r["short_name"] == "UST-3.75-2033-02-28")
+    assert note["security_type"] == "note" and note["reopening"] in ("true", "false") and note["total_accepted"]

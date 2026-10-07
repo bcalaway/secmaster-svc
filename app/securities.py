@@ -311,3 +311,35 @@ def security(s: Session, sec_id: int | None = None, name: str = "", as_of: date 
         raise UnknownInstrument(f"{out['short_name']} isn't a Treasury security")
     out["on_the_run"] = _otr(s, [out["sec_id"]], as_of or today_ny())[out["sec_id"]]
     return out
+
+
+AUCTION_FIELDS = ("cusip", "security_type", "term", "security_term", "reopening", "announcement_date",
+                  "auction_date", "issue_date", "offering_amount", "total_accepted", "bid_to_cover", "high_yield",
+                  "high_discount_rate", "high_discount_margin", "price_per_100")
+
+
+def list_auctions(s: Session, start: date, end: date, limit: int = 500) -> dict:
+    """Auctions held (or announced) from start to end, by auction date: the auction calendar.
+
+    Announced auctions are listed before they're held (TreasuryDirect announces
+    them a week or so ahead), without results; held ones with their results.
+    """
+    rows = list(s.scalars(select(Auction).where(
+        Auction.removed_at.is_(None), Auction.auction_date >= start, Auction.auction_date <= end)
+        .order_by(Auction.auction_date, Auction.security_type, Auction.cusip).limit(limit)))
+    names = _names(s, {a.sec_id for a in rows})
+    out = []
+    for a in rows:
+        row = {"sec_id": a.sec_id, "short_name": names[a.sec_id]["short_name"]}
+        for f in AUCTION_FIELDS:
+            v = getattr(a, f)
+            if isinstance(v, bool):
+                row[f] = "true" if v else "false"
+            elif hasattr(v, "isoformat"):
+                row[f] = v.isoformat()
+            elif v is None:
+                row[f] = ""
+            else:
+                row[f] = _dec(v) if not isinstance(v, str) else v
+        out.append(row)
+    return {"start": start.isoformat(), "end": end.isoformat(), "auctions": out}

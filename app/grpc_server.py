@@ -94,6 +94,15 @@ def _get_security(sec_id: int, name: str, as_of: date | None) -> securities_pb2.
     )
 
 
+def _list_auctions(start: date, end: date, limit: int) -> securities_pb2.ListAuctionsResponse:
+    with db.session() as s:
+        got = securities.list_auctions(s, start, end, limit or 500)
+    return securities_pb2.ListAuctionsResponse(start=got["start"], end=got["end"], auctions=[
+        securities_pb2.AuctionRow(sec_id=a["sec_id"], short_name=a["short_name"],
+                                  fields={k: v for k, v in a.items() if k not in ("sec_id", "short_name")})
+        for a in got["auctions"]])
+
+
 class Securities(securities_pb2_grpc.SecuritiesServicer):
     # The database work is synchronous SQLAlchemy, so it runs in a thread.
     async def GetInstrument(self, request, context):
@@ -122,6 +131,13 @@ class Securities(securities_pb2_grpc.SecuritiesServicer):
         except ValueError:
             await context.abort(grpc.StatusCode.INVALID_ARGUMENT, "dates are YYYY-MM-DD")
         return await asyncio.to_thread(_list_securities, request)
+
+    async def ListAuctions(self, request, context):
+        try:
+            start, end = date.fromisoformat(request.start), date.fromisoformat(request.end)
+        except ValueError:
+            await context.abort(grpc.StatusCode.INVALID_ARGUMENT, "start and end are YYYY-MM-DD")
+        return await asyncio.to_thread(_list_auctions, start, end, request.limit)
 
     async def GetSecurity(self, request, context):
         try:
