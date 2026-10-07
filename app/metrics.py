@@ -10,14 +10,15 @@ quote-svc, which sees the keys (phase 2, step B5).
 """
 
 import json
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Response
 from sqlalchemy import func, select
 from sqlalchemy.exc import SQLAlchemyError
 
-from app import db
+from app import db, securities
 from app.models import (
+    Auction,
     FigiLookup,
     Identifier,
     Instrument,
@@ -28,6 +29,9 @@ from app.models import (
     UntypedRecord,
 )
 from app.treasuries import check_code
+
+# Auctions whose missing results count as overdue: the last this many days.
+OVERDUE_DAYS = 30
 
 router = APIRouter()
 
@@ -130,7 +134,23 @@ def render(s) -> str:
         cpi = json.loads(ok.detail).get("tips_cpi") or {}
         out.metric("secmaster_svc_tips_cpi_checks", "gauge",
                    "TreasuryDirect's published TIPS reference CPIs and index ratios against ours, at the last load.",
-                   [({"outcome": k}, cpi[k]) for k in ("matched", "mismatched", "not_computable") if k in cpi])
+                   [({"outcome": k}, cpi[k]) for k in ("matched", "mismatched", "known_exception", "not_computable")
+                    if k in cpi])
+    # Auctions held but with no results yet: TreasuryDirect posts them within the hour, and the capture runs at
+    # 7:15 p.m., so an auction from an earlier day without them is overdue. Only the last OVERDUE_DAYS count:
+    # some 1980s records never carried every result.
+    today = securities.today_ny()
+    overdue = list(s.execute(select(Auction.cusip, Auction.auction_date, Auction.security_type)
+                             .where(Auction.removed_at.is_(None), Auction.total_accepted.is_(None),
+                                    Auction.auction_date < today,
+                                    Auction.auction_date >= today - timedelta(days=OVERDUE_DAYS))
+                             .order_by(Auction.auction_date, Auction.cusip)))
+    out.metric("secmaster_svc_auction_results_overdue", "gauge",
+               f"Auctions in the last {OVERDUE_DAYS} days held before today with no results (amount accepted) yet.",
+               [({}, len(overdue))])
+    out.metric("secmaster_svc_auction_result_overdue", "gauge",
+               "1 for each auction with results overdue (the first 10), by CUSIP and auction date.",
+               [({"cusip": c, "auction_date": d.isoformat(), "security_type": k}, 1) for c, d, k in overdue[:10]])
     figis = s.execute(select(FigiLookup.outcome, func.count()).group_by(FigiLookup.outcome)).all()
     out.metric("secmaster_svc_figi_lookups", "gauge", "CUSIPs looked up on OpenFIGI, by outcome.",
                [({"outcome": o}, n) for o, n in sorted(figis)])

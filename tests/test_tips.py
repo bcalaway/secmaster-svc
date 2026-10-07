@@ -79,3 +79,10 @@ def test_a_long_gap_is_history_not_loaded_not_a_chain_of_fallbacks():
     assert tips.ref_cpi(date(2017, 2, 28), filled) is None  # needs Nov and Dec 2016
     assert tips.ref_cpi(date(2016, 2, 29), filled).value == Decimal("236.00000")  # Nov and Dec 2015: loaded
     assert tips.ref_cpi(date(2016, 3, 1), filled) is None  # Jan 2016: not loaded
+
+
+def test_known_exceptions_hold_only_while_treasury_prints_the_same_figure():
+    assert load._known_exception("9128275W8/2000-07-17", "ref CPI on issue date", "171.251610")
+    assert load._known_exception("912810FH6/2000-10-16", "index ratio on issue date", "1.050220")
+    assert not load._known_exception("9128275W8/2000-07-17", "ref CPI on issue date", "171.40323")  # corrected
+    assert not load._known_exception("9128275W8/2000-07-17", "ref CPI on dated date", "171.251610")
