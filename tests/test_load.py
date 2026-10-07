@@ -214,3 +214,22 @@ def test_on_the_run_aliases(migrated_db, mkt):
     # A second load with nothing new leaves the aliases alone.
     out = _run(mkt)
     assert out["otr_added"] == 0 and out["otr_removed"] == 0
+
+
+def test_a_new_typing_version_re_derives_every_security(migrated_db, mkt, monkeypatch):
+    first = _run(mkt)
+    assert first["typing_version"] == tr.TYPING_VERSION and "retyped_terms_recorded" in first
+    assert _run(mkt).get("retyped_terms_recorded") is None  # same version: nothing re-derived
+    monkeypatch.setattr(tr, "TYPING_VERSION", tr.TYPING_VERSION + 1)
+    real = tr.build_terms
+
+    def reworded(auctions):
+        t = real(auctions)
+        t.checks.append("schedule-unchecked: reworded for the test")
+        return t
+
+    monkeypatch.setattr(tr, "build_terms", reworded)
+    out = _run(mkt)
+    assert out["periods_read"] == 0 and out["retyped_terms_recorded"] == 45
+    assert len(out["notable_checks"]) == 25 and out["notable_checks"][0]["checks"] == [
+        "schedule-unchecked: reworded for the test"]

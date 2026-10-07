@@ -284,6 +284,42 @@ def sync_otr(s: Session, today: date, now: datetime) -> dict:
     return out
 
 
+def _typing_version(s: Session) -> int | None:
+    """The typing version the last successful load ran with (none before version 2 recorded it)."""
+    for detail in s.scalars(select(LoadRun.detail).where(LoadRun.outcome == "ok").order_by(LoadRun.id.desc()).limit(1)):
+        return json.loads(detail).get("typing_version")
+    return None
+
+
+def retype_all(s: Session, now: datetime, today: date) -> int:
+    """Re-derive every Treasury security's terms from its stored auctions (no upstream reads). Commits."""
+    ids = list(s.scalars(select(Auction.sec_id).distinct().order_by(Auction.sec_id)))
+    recorded = 0
+    for n, sec_id in enumerate(ids, 1):
+        recorded += rebuild_security(s, sec_id, now, today)["terms_recorded"]
+        if n % 500 == 0:
+            s.commit()
+            s.expunge_all()
+    s.commit()
+    return recorded
+
+
+def notable_checks(s: Session, limit: int = 25) -> list[dict]:
+    """Securities whose checks say more than "load more history": for reading in the job's answer."""
+    out = []
+    rows = s.execute(select(SecurityTerms.sec_id, SecurityTerms.checks).where(SecurityTerms.superseded_at.is_(None))
+                     .order_by(SecurityTerms.sec_id))
+    for sec_id, checks in rows:
+        notable = [c for c in checks or [] if tr.check_code(c) not in tr.EXPECTED_CHECKS]
+        if notable:
+            name = s.scalar(select(InstrumentName.name).where(
+                InstrumentName.sec_id == sec_id, InstrumentName.kind == "short", InstrumentName.removed_at.is_(None)))
+            out.append({"short_name": name, "checks": notable})
+            if len(out) >= limit:
+                break
+    return out
+
+
 def _load(s: Session, up: Upstream, now: datetime, today: date, progress: dict) -> None:
     for source in SOURCES:
         marks = dict(s.execute(select(SourcePeriod.period, SourcePeriod.capture_id)
@@ -312,6 +348,8 @@ def _load(s: Session, up: Upstream, now: datetime, today: date, progress: dict) 
             s.commit()
             progress["periods_read"] += 1
             progress["removed"] += result["removed"]
+    if _typing_version(s) != tr.TYPING_VERSION:
+        progress["retyped_terms_recorded"] = retype_all(s, now, today)
     progress["status"] = refresh_status(s, today, now)
     progress |= sync_otr(s, today, now)
     s.commit()
@@ -333,6 +371,8 @@ def run(s: Session, up: Upstream, now: datetime | None = None, today: date | Non
         raise LoadError(f"load failed after {progress['periods_read']} periods: {e}") from e
     progress["securities"] = s.scalar(select(func.count()).select_from(SecurityTerms)
                                       .where(SecurityTerms.superseded_at.is_(None)))
+    progress["typing_version"] = tr.TYPING_VERSION
+    progress["notable_checks"] = notable_checks(s)
     s.add(LoadRun(started_at=now, finished_at=datetime.now(UTC), outcome="ok", detail=json.dumps(progress)))
     s.commit()
     return progress

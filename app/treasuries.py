@@ -22,6 +22,12 @@ from datetime import date
 from decimal import Decimal, InvalidOperation
 
 SOURCE = "TD-SECURITIES"
+# Bump when how records become terms changes (a new derived term, a fixed rule,
+# reworded checks): the next load re-derives every security's terms from its
+# stored auctions, so existing securities get the change without a rebuild.
+TYPING_VERSION = 2
+# Checks that only mean "more history to load", left out of the load's notable list.
+EXPECTED_CHECKS = {"original-not-loaded", "term-unknown"}
 
 # TreasuryDirect's `type` -> (instrument type, security type)
 TYPES = {
