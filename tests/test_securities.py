@@ -63,3 +63,44 @@ def test_search(seeded):
 
 def test_tenor_days_orders_weeks_and_months():
     assert securities.tenor_days("P1M") < securities.tenor_days("P6W") < securities.tenor_days("P2M")
+
+
+# --- Treasury securities for the screens (step 9) ---
+
+def _loaded():
+    from app import load
+    from tests.test_load import NOW, TODAY, FakeMktData, _records
+
+    mkt = FakeMktData()
+    mkt.put("2026-02", _records("td_securities_2026_02_capture1319.json"))
+    with db.session() as s:
+        load.run(s, mkt, NOW, TODAY)
+    return TODAY
+
+
+def test_list_securities_by_maturity_with_on_the_run(migrated_db):
+    today = _loaded()
+    with db.session() as s:
+        got = securities.list_securities(s, as_of=today)
+        assert got["total"] == len(got["securities"]) >= 10
+        mats = [x["maturity_date"] for x in got["securities"]]
+        assert mats == sorted(mats) and all(x["status"] == "active" for x in got["securities"])
+        note = next(x for x in got["securities"] if x["short_name"] == "UST-3.75-2033-02-28")
+        assert note["security_type"] == "note" and note["coupon_rate"] == "0.0375" and note["cusip"] == "91282CQC8"
+        assert any("OTR" in a for x in got["securities"] for a in x["on_the_run"])
+        # Matured bills too, at most 3 listed: total counts them all.
+        bills = securities.list_securities(s, security_type="bill", include_inactive=True, as_of=today, limit=3)
+        assert {x["security_type"] for x in bills["securities"]} == {"bill"} and len(bills["securities"]) == 3
+        assert bills["total"] > 3 and "matured" in {x["status"] for x in bills["securities"]}
+        later = securities.list_securities(s, maturing_from=date(2030, 1, 1), as_of=today)
+        assert all(x["maturity_date"] >= "2030-01-01" for x in later["securities"])
+
+
+def test_one_security_in_full(migrated_db):
+    today = _loaded()
+    with db.session() as s:
+        got = securities.security(s, name="UST-3.75-2033-02-28", as_of=today)
+        assert got["terms"]["cusip"] == "91282CQC8" and got["auctions"] and isinstance(got["on_the_run"], list)
+        assert got["provenance"]["coupon_rate"].startswith("published")
+        with pytest.raises(securities.UnknownInstrument):
+            securities.security(s, name="NOPE")

@@ -233,3 +233,81 @@ def search(s: Session, query: str, limit: int = 20) -> list[dict]:
     ids |= set(s.scalars(select(Instrument.sec_id).where(Instrument.description.ilike(like))))
     insts = _order(list(s.scalars(select(Instrument).where(Instrument.sec_id.in_(ids))))) if ids else []
     return _describe(s, insts[:limit], full=False)
+
+
+# --- Treasury securities (mkt-data's docs/phase-3.md, step 9): lists for screens, and one security in full ---
+
+SECURITY_TYPES = ("bill", "note", "bond", "tips", "frn")
+LIST_LIMIT = 1000
+LIST_MAX = 6000
+
+
+def _dec(v) -> str:
+    """A decimal as plain text without trailing zeros (0.0375, not 0.0375000000); "" for none."""
+    return "" if v is None else format(v.normalize(), "f")
+
+
+def _otr(s: Session, sec_ids, on: date) -> dict[int, list[dict]]:
+    """Each security's on-the-run aliases valid on a date."""
+    out: dict[int, list[dict]] = {i: [] for i in sec_ids}
+    if not out:
+        return out
+    for r in s.scalars(select(Identifier).where(
+            Identifier.scheme == "OTR", Identifier.removed_at.is_(None), Identifier.sec_id.in_(list(out)),
+            or_(Identifier.valid_from.is_(None), Identifier.valid_from <= on),
+            or_(Identifier.valid_to.is_(None), Identifier.valid_to >= on)).order_by(Identifier.value)):
+        out[r.sec_id].append({"alias": r.value, "since": _iso(r.valid_from), "until": _iso(r.valid_to)})
+    return out
+
+
+def list_securities(s: Session, security_type: str = "", include_inactive: bool = False,
+                    maturing_from: date | None = None, maturing_to: date | None = None,
+                    as_of: date | None = None, limit: int = 0) -> dict:
+    """Treasury securities by maturity: outstanding ones (active) unless include_inactive, of one type or all.
+
+    Each with the terms a list shows (CUSIP, type, coupon, dates) and its
+    on-the-run aliases on `as_of` (default today). `total` counts every match;
+    at most `limit` (default LIST_LIMIT, at most LIST_MAX) come back.
+    """
+    on = as_of or today_ny()
+    limit = min(limit or LIST_LIMIT, LIST_MAX)
+    q = (select(SecurityTerms, Instrument.status, Instrument.description)
+         .join(Instrument, Instrument.sec_id == SecurityTerms.sec_id)
+         .where(SecurityTerms.superseded_at.is_(None)))
+    if security_type:
+        q = q.where(SecurityTerms.security_type == security_type.lower())
+    if not include_inactive:
+        q = q.where(Instrument.status == "active")
+    if maturing_from:
+        q = q.where(SecurityTerms.maturity_date >= maturing_from)
+    if maturing_to:
+        q = q.where(SecurityTerms.maturity_date <= maturing_to)
+    rows = s.execute(q.order_by(SecurityTerms.maturity_date, SecurityTerms.security_type, SecurityTerms.cusip)).all()
+    shown = rows[:limit]
+    ids = [t.sec_id for t, _, _ in shown]
+    names = _names(s, ids)
+    otr = _otr(s, ids, on)
+    out = []
+    for t, status, description in shown:
+        out.append({
+            "sec_id": t.sec_id, "short_name": names[t.sec_id]["short_name"], "cusip": t.cusip,
+            "security_type": t.security_type, "cmb": bool(t.cmb), "term": t.term or "",
+            "original_term": t.original_term or "",
+            "coupon_rate": _dec(t.coupon_rate), "frn_spread": _dec(t.frn_spread),
+            "issue_date": _iso(t.issue_date), "dated_date": _iso(t.dated_date), "maturity_date": _iso(t.maturity_date),
+            "status": status, "description": description or "",
+            "on_the_run": [o["alias"] for o in otr[t.sec_id]],
+        })
+    return {"as_of": on.isoformat(), "total": len(rows), "securities": out}
+
+
+def security(s: Session, sec_id: int | None = None, name: str = "", as_of: date | None = None) -> dict:
+    """One Treasury security in full (get's answer) plus its on-the-run aliases on `as_of` (default today).
+
+    UnknownInstrument if there's none, or if the instrument isn't a Treasury security or STRIPS.
+    """
+    out = get(s, sec_id=sec_id, name=name, as_of=as_of)
+    if "terms" not in out and "strip" not in out:
+        raise UnknownInstrument(f"{out['short_name']} isn't a Treasury security")
+    out["on_the_run"] = _otr(s, [out["sec_id"]], as_of or today_ny())[out["sec_id"]]
+    return out
