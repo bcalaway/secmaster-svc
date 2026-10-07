@@ -18,6 +18,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app import db
 from app.models import Identifier, Instrument, InstrumentName, LoadRun, SecurityTerms, SeedRun, UntypedRecord
+from app.treasuries import check_code
 
 router = APIRouter()
 
@@ -108,6 +109,14 @@ def render(s) -> str:
     out.metric("secmaster_svc_securities_with_checks", "gauge",
                "Treasury securities whose terms have a check that didn't pass, by security type.",
                [({"security_type": t}, c) for t, (_, c) in sorted(by_type.items())])
+    codes: dict[tuple[str, str], int] = {}
+    for sec_type, checks in s.execute(select(SecurityTerms.security_type, SecurityTerms.checks)
+                                      .where(SecurityTerms.superseded_at.is_(None))):
+        for code in {check_code(c) for c in checks or []}:
+            codes[(sec_type, code)] = codes.get((sec_type, code), 0) + 1
+    out.metric("secmaster_svc_security_checks", "gauge",
+               "Treasury securities with each kind of check that didn't pass, by security type and check.",
+               [({"security_type": t, "check": c}, n) for (t, c), n in sorted(codes.items())])
     return out.text()
 
 

@@ -80,7 +80,7 @@ def test_frn_reopening_without_its_original():
     # The original auction (2026-01) isn't in this month: its issue date comes from the reopening.
     assert v["issue_date"] == date(2026, 2, 2) and v["auction_date"] is None and v["term"] == "2-Year"
     assert v["penultimate_coupon_date"] == date(2027, 10, 31)
-    assert t.checks == ["original auction not loaded: original issue terms from a reopening"]
+    assert [tr.check_code(c) for c in t.checks] == ["original-not-loaded"]
     assert [a.results["frn_index_rate"] for a in FEB["91282CPX3"]] == [Decimal("0.0359")]
 
 
@@ -120,7 +120,7 @@ def test_a_reopening_and_its_original_together():
     t = tr.build_terms([reopen, orig])
     assert t.values["issue_date"] == date(2026, 3, 2) and t.values["original_term"] == "7-Year" and t.checks == []
     other = tr.Auction(**{**reopen.__dict__, "coupon_rate": Decimal("0.04")})
-    assert any("disagree on coupon_rate" in c for c in tr.build_terms([orig, other]).checks)
+    assert any(c.startswith("auctions-disagree: on coupon_rate") for c in tr.build_terms([orig, other]).checks)
 
 
 def test_untypable():
