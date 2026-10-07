@@ -34,6 +34,7 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
+from app import otr
 from app import treasuries as tr
 from app.models import (
     Auction,
@@ -246,6 +247,43 @@ def refresh_status(s: Session, today: date, now: datetime) -> dict:
     return counts
 
 
+def sync_otr(s: Session, today: date, now: datetime) -> dict:
+    """Recompute the on-the-run aliases from every current auction and bring `identifier` (scheme OTR) in line.
+
+    An interval that's still right is left alone; one that changed (a new
+    auction ended it, or it went stale) is replaced: the old row gets
+    removed_at, the new one is added.
+    """
+    maturity = dict(s.execute(select(SecurityTerms.sec_id, SecurityTerms.maturity_date)
+                              .where(SecurityTerms.superseded_at.is_(None))).all())
+    rows = s.execute(select(Auction.sec_id, Auction.security_type, Auction.term, Auction.auction_date,
+                            Auction.issue_date, Auction.fields["type"].as_string(),
+                            Auction.fields["cashManagementBillCMB"].as_string())
+                     .where(Auction.removed_at.is_(None))).all()
+    auctions = [otr.Auctioned(sec_id, sec_type, term, a_date, i_date, maturity[sec_id])
+                for sec_id, sec_type, term, a_date, i_date, td_type, cmb in rows
+                if sec_id in maturity and td_type != "CMB" and cmb != "Yes"]
+    want = {(i.alias, i.valid_from): i for i in otr.intervals(auctions, today)}
+    have = {(r.value, r.valid_from): r for r in s.scalars(select(Identifier).where(
+        Identifier.scheme == otr.SCHEME, Identifier.removed_at.is_(None)))}
+    out = {"otr_added": 0, "otr_removed": 0}
+    for key, row in have.items():
+        i = want.get(key)
+        if i is None or (row.sec_id, row.valid_to) != (i.sec_id, i.valid_to):
+            row.removed_at = now
+            out["otr_removed"] += 1
+    s.flush()
+    for key, i in want.items():
+        row = have.get(key)
+        if row is None or row.removed_at is not None:
+            s.add(Identifier(sec_id=i.sec_id, scheme=otr.SCHEME, value=i.alias, valid_from=i.valid_from,
+                             valid_to=i.valid_to, created_at=now))
+            out["otr_added"] += 1
+    s.flush()
+    out["otr_current"] = sum(1 for i in want.values() if i.valid_to is None)
+    return out
+
+
 def _load(s: Session, up: Upstream, now: datetime, today: date, progress: dict) -> None:
     for source in SOURCES:
         marks = dict(s.execute(select(SourcePeriod.period, SourcePeriod.capture_id)
@@ -275,6 +313,7 @@ def _load(s: Session, up: Upstream, now: datetime, today: date, progress: dict) 
             progress["periods_read"] += 1
             progress["removed"] += result["removed"]
     progress["status"] = refresh_status(s, today, now)
+    progress |= sync_otr(s, today, now)
     s.commit()
 
 

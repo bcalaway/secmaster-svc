@@ -265,7 +265,7 @@ def regular_schedule(maturity: date, frequency: int, start: date) -> list[date]:
 class Terms:
     values: dict  # term name -> value (dates, Decimals, ints, strings, bools)
     provenance: dict  # term name -> "published: TD-SECURITIES <key> <field>" or "derived: <rule>"
-    checks: list[str]  # anything that doesn't add up, for the metrics and a look by hand
+    checks: list[str]  # anything that doesn't add up, "<code>: <detail>"; codes count in the metrics
 
 
 def build_terms(auctions: list[Auction]) -> Terms:
@@ -295,11 +295,11 @@ def build_terms(auctions: list[Auction]) -> Terms:
     for attr in ("maturity_date", "coupon_rate", "inst_type", "frn_spread"):
         seen = {getattr(a, attr) for a in auctions}
         if len(seen) > 1:
-            checks.append(f"auctions disagree on {attr}: {sorted(map(str, seen))}")
+            checks.append(f"auctions-disagree: on {attr}: {sorted(map(str, seen))}")
     if len(originals) > 1:
-        checks.append(f"{len(originals)} original (non-reopening) auctions")
+        checks.append(f"several-originals: {len(originals)} original (non-reopening) auctions")
     if orig is None:
-        checks.append("original auction not loaded: original issue terms from a reopening")
+        checks.append("original-not-loaded: original issue terms from a reopening")
 
     pub("cusip", ref.cusip, ref, "cusip")
     v["inst_type"], v["security_type"] = ref.inst_type, ref.security_type
@@ -319,7 +319,7 @@ def build_terms(auctions: list[Auction]) -> Terms:
             der("term", f"{parts[0][0]}-{parts[0][1]}", "a reopening's original term")
         else:
             v["term"] = None
-            checks.append("term unknown until the original auction is loaded")
+            checks.append("term-unknown: until the original auction is loaded")
         for name in ("announcement_date", "auction_date"):
             v[name] = None
         pub("issue_date", ref.original_issue_date, ref, "originalIssueDate")
@@ -336,7 +336,7 @@ def build_terms(auctions: list[Auction]) -> Terms:
         pub("dated_date", ref.dated_date, ref, "datedDate")
     pub("coupon_rate", ref.coupon_rate, ref, "interestRate")
     if sec in ("note", "bond", "tips") and ref.coupon_rate is None:
-        checks.append("no coupon rate")
+        checks.append("no-coupon: no coupon rate")
 
     # Coupons and accrual.
     der("day_count", DAY_COUNT[sec], {"bill": "bills: actual/360 discount", "frn": "FRNs accrue actual/360"}.get(
@@ -348,7 +348,7 @@ def build_terms(auctions: list[Auction]) -> Terms:
         pub("coupon_frequency", freq, ref, "interestPaymentFrequency")
     else:
         der("coupon_frequency", 4 if sec == "frn" else 2, "FRNs pay quarterly" if sec == "frn" else "semiannual")
-        checks.append(f"interestPaymentFrequency {ref.frequency!r} not read; assumed")
+        checks.append(f"frequency-assumed: interestPaymentFrequency {ref.frequency!r} not read")
     first = (orig or ref).first_coupon_date
     v["first_coupon_date"] = v["first_period_type"] = v["penultimate_coupon_date"] = None
     v["end_of_month"] = None
@@ -360,11 +360,11 @@ def build_terms(auctions: list[Auction]) -> Terms:
         f = v["coupon_frequency"]
         start = v.get("dated_date")
         if first is None or start is None:
-            checks.append("no first coupon or dated date: schedule not checked")
+            checks.append("schedule-unchecked: no first coupon or dated date")
         else:
             regular = regular_schedule(ref.maturity_date, f, start)
             if first not in regular:
-                checks.append(f"first coupon {first} isn't on the regular schedule back from maturity")
+                checks.append(f"first-coupon-off-schedule: {first} isn't on the regular schedule back from maturity")
             before_last = [d for d in regular if first <= d < ref.maturity_date]
             der("penultimate_coupon_date", before_last[-1] if before_last else None,
                 f"the regular coupon date {12 // f} months before maturity (end-of-month rule)")
@@ -374,7 +374,7 @@ def build_terms(auctions: list[Auction]) -> Terms:
             if src.first_period_type:
                 pub("first_period_type", src.first_period_type, src, "firstInterestPeriod")
                 if src.first_period_type != derived_type:
-                    checks.append(f"first period published {src.first_period_type}, schedule says {derived_type}")
+                    checks.append(f"first-period-mismatch: published {src.first_period_type}, schedule says {derived_type}")
             else:
                 der("first_period_type", derived_type, "the first coupon date against the regular schedule")
 
@@ -396,7 +396,7 @@ def build_terms(auctions: list[Auction]) -> Terms:
         pub("tips_base_cpi", ref.tips_base_cpi, ref, "refCpiOnDatedDate")
         pub("cpi_base_period", ref.cpi_base_period, ref, "cpiBaseReferencePeriod")
         if ref.tips_base_cpi is None:
-            checks.append("TIPS without a reference CPI on the dated date")
+            checks.append("tips-no-base-cpi: no reference CPI on the dated date")
     if sec == "frn":
         pub("frn_spread", (orig or ref).frn_spread, orig or ref, "spread")
         der("frn_index", FRN_INDEX, "FRNs are indexed to the 13-week bill auction's high rate")
@@ -437,3 +437,8 @@ def describe(t: dict) -> str:
     rate = f"{coupon_label(t['coupon_rate'])}% " if t.get("coupon_rate") is not None else ""
     term = f", {t['term']}" if t.get("term") else ""
     return f"US Treasury {rate}{kind} due {t['maturity_date'].isoformat()} (CUSIP {t['cusip']}{term})"
+
+
+def check_code(check: str) -> str:
+    """The stable code at the front of a check: "original-not-loaded: ..." -> "original-not-loaded"."""
+    return check.split(":", 1)[0]

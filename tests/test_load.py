@@ -69,7 +69,7 @@ def test_first_load(migrated_db, mkt):
         assert note["type"] == "ust_note" and note["tenor"] == "P7Y" and note["status"] == "active"
         assert Decimal(note["terms"]["coupon_rate"]) == Decimal("0.0375")
         assert note["terms"]["penultimate_coupon_date"] == "2032-08-31"
-        assert {i["scheme"] for i in note["identifiers"]} == {"CUSIP", "ISIN"}
+        assert {i["scheme"] for i in note["identifiers"]} == {"CUSIP", "ISIN", "OTR"}  # it is the 7-year on the run
         assert len(note["auctions"]) == 1 and Decimal(note["auctions"][0]["high_yield"]) == Decimal("0.0379")
         assert note["provenance"]["coupon_rate"].startswith("published: TD-SECURITIES 91282CQC8/")
         # Found by CUSIP too.
@@ -194,3 +194,23 @@ def test_a_failed_load_is_recorded(migrated_db, mkt):
         _run(mkt)
     with db.session() as s:
         assert s.scalars(select(LoadRun.outcome)).all() == ["error"]
+
+
+def test_on_the_run_aliases(migrated_db, mkt):
+    _run(mkt)
+    with db.session() as s:
+        current = {r["alias"]: r["short_name"] for r in securities.on_the_run(s, TODAY)}
+        # October's 10-year reopening keeps August's 10-year on the run; February's 7-year is the latest 7-year.
+        assert current["UST-10Y-OTR"] == "UST-4.625-2036-08-15"
+        assert current["UST-7Y-OTR"] == "UST-3.75-2033-02-28"
+        assert current["UST-30Y-TII-OTR"] == "UST-TII-2.375-2056-02-15"
+        assert current["UST-2Y-FRN-OTR"] == "UST-FRN-2028-01-31"
+        assert "UST-13W-OTR" in current and "UST-10Y-OTR-ISSUED" in current
+        assert securities.get(s, name="ust-10y-otr", as_of=TODAY)["short_name"] == "UST-4.625-2036-08-15"
+        # In March 2026 the 10-year on the run was February's.
+        assert securities.get(s, name="UST-10Y-OTR", as_of=date(2026, 3, 1))["short_name"] == "UST-4.125-2036-02-15"
+        assert securities.resolve(s, "OTR", ["UST-10Y-OTR"], as_of=date(2026, 3, 1))["matches"][0]["short_name"] \
+            == "UST-4.125-2036-02-15"
+    # A second load with nothing new leaves the aliases alone.
+    out = _run(mkt)
+    assert out["otr_added"] == 0 and out["otr_removed"] == 0

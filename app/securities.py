@@ -6,12 +6,20 @@ a removed name, identifier or note doesn't resolve.
 """
 
 import re
-from datetime import date
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.models import Auction, Identifier, Instrument, InstrumentName, InstrumentNote, SecurityTerms
+
+NEW_YORK = ZoneInfo("America/New_York")
+
+
+def today_ny() -> date:
+    """Today in New York, the Treasury market's day."""
+    return datetime.now(NEW_YORK).date()
 
 
 class UnknownInstrument(LookupError):
@@ -75,14 +83,19 @@ def _order(insts: list[Instrument]) -> list[Instrument]:
     return sorted(insts, key=lambda i: (i.type, i.curve or "", tenor_days(i.tenor), i.sec_id))
 
 
-def get(s: Session, sec_id: int | None = None, name: str = "") -> dict:
-    """One instrument by sec_id, or by short name or alias, with its identifiers and notes."""
+def get(s: Session, sec_id: int | None = None, name: str = "", as_of: date | None = None) -> dict:
+    """One instrument by sec_id, or by short name or alias, with its identifiers and notes.
+
+    An on-the-run name (UST-10Y-OTR) resolves to the security on the run on
+    `as_of` (default today).
+    """
     if sec_id:
         inst = s.get(Instrument, sec_id)
     else:
-        row = s.scalar(select(InstrumentName).where(
-            InstrumentName.name == name.strip().upper(), InstrumentName.removed_at.is_(None)))
-        inst = s.get(Instrument, row.sec_id) if row else None
+        key = name.strip().upper()
+        row = s.scalar(select(InstrumentName).where(InstrumentName.name == key, InstrumentName.removed_at.is_(None)))
+        target = row.sec_id if row else _on_the_run(s, key, as_of or today_ny())
+        inst = s.get(Instrument, target) if target else None
     if inst is None:
         raise UnknownInstrument(f"no instrument {sec_id or name!r}")
     out = _describe(s, [inst], full=True)[0]
@@ -97,6 +110,24 @@ def get(s: Session, sec_id: int | None = None, name: str = "") -> dict:
                                .order_by(Auction.issue_date, Auction.source_key))
         ]
     return out
+
+
+def _on_the_run(s: Session, name: str, on: date) -> int | None:
+    return s.scalar(select(Identifier.sec_id).where(
+        Identifier.scheme == "OTR", Identifier.value == name, Identifier.removed_at.is_(None),
+        or_(Identifier.valid_from.is_(None), Identifier.valid_from <= on),
+        or_(Identifier.valid_to.is_(None), Identifier.valid_to >= on)))
+
+
+def on_the_run(s: Session, on: date) -> list[dict]:
+    """Every on-the-run alias on a date, with its security's short name."""
+    rows = list(s.scalars(select(Identifier).where(
+        Identifier.scheme == "OTR", Identifier.removed_at.is_(None),
+        or_(Identifier.valid_from.is_(None), Identifier.valid_from <= on),
+        or_(Identifier.valid_to.is_(None), Identifier.valid_to >= on)).order_by(Identifier.value)))
+    names = _names(s, {r.sec_id for r in rows})
+    return [{"alias": r.value, "sec_id": r.sec_id, "short_name": names[r.sec_id]["short_name"],
+             "since": _iso(r.valid_from), "until": _iso(r.valid_to)} for r in rows]
 
 
 def _plain(row, skip=()) -> dict:

@@ -87,15 +87,23 @@ def instruments(type: str = "", curve: str = "", include_inactive: bool = False)
 
 
 @router.get("/instruments/{key}", dependencies=[Depends(require_read_token)])
-def instrument(key: str) -> dict:
-    """By sec_id (digits) or by short name or alias."""
+def instrument(key: str, as_of: date | None = None) -> dict:
+    """By sec_id (digits), short name or alias; an on-the-run name (UST-10Y-OTR) as of a date (default today)."""
     try:
         with db.session() as s:
             if key.isdigit():
                 return securities.get(s, sec_id=int(key))
-            return securities.get(s, name=key)
+            return securities.get(s, name=key, as_of=as_of)
     except securities.UnknownInstrument as e:
         raise HTTPException(404, str(e)) from None
+
+
+@router.get("/on-the-run", dependencies=[Depends(require_read_token)])
+def on_the_run(as_of: date | None = None) -> dict:
+    """Every on-the-run alias on a date (default today) and the security it names."""
+    on = as_of or securities.today_ny()
+    with db.session() as s:
+        return {"as_of": on.isoformat(), "on_the_run": securities.on_the_run(s, on)}
 
 
 @router.get("/resolve", dependencies=[Depends(require_read_token)])
