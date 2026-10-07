@@ -35,14 +35,16 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
-from app import otr, strips
+from app import otr, strips, tips
 from app import treasuries as tr
 from app.models import (
     Auction,
+    CpiMonth,
     Identifier,
     Instrument,
     InstrumentName,
     LoadRun,
+    ReferenceCpi,
     SecurityTerms,
     SourcePeriod,
     Strip,
@@ -459,6 +461,90 @@ def sync_strips(s: Session, today: date, now: datetime) -> dict:
     return out
 
 
+CPI_SOURCE, CPI_KEY = "BLS-CPI", "CUUR0000SA0"
+
+
+def load_cpi(s: Session, up: Upstream, now: datetime) -> dict:
+    """BLS's CPI-U from mkt-data (a period per year, by watermark) into cpi_month; the daily reference CPI is
+    rebuilt when any month changed. Commits."""
+    marks = dict(s.execute(select(SourcePeriod.period, SourcePeriod.capture_id)
+                           .where(SourcePeriod.source == CPI_SOURCE)).all())
+    changed = 0
+    for p in up.list_obs_periods(CPI_SOURCE):
+        if marks.get(p.period) == p.latest_capture_id:
+            continue
+        for o in up.get_obs_period(CPI_SOURCE, p.period):
+            if o.source_key != CPI_KEY or o.field != "index":
+                continue
+            month = date.fromisoformat(o.as_of).replace(day=1)
+            row = s.get(CpiMonth, month)
+            value = Decimal(o.value)
+            if row is None:
+                s.add(CpiMonth(month=month, value=value, observation_id=o.observation_id, capture_id=o.capture_id,
+                               loaded_at=now))
+                changed += 1
+            elif row.value != value:
+                row.value, row.loaded_at = value, now
+                changed += 1
+            if row is not None:
+                row.observation_id, row.capture_id = o.observation_id, o.capture_id
+        mark = s.get(SourcePeriod, (CPI_SOURCE, p.period))
+        if mark is None:
+            s.add(SourcePeriod(source=CPI_SOURCE, period=p.period, capture_id=p.latest_capture_id,
+                               records=p.records, loaded_at=now))
+        else:
+            mark.capture_id, mark.records, mark.loaded_at = p.latest_capture_id, p.records, now
+        s.flush()
+    out = {"cpi_months_changed": changed}
+    if changed or not s.scalar(select(func.count()).select_from(ReferenceCpi)):
+        out |= rebuild_reference_cpi(s)
+    s.commit()
+    return out
+
+
+def rebuild_reference_cpi(s: Session) -> dict:
+    months = tips.fill_months(dict(s.execute(select(CpiMonth.month, CpiMonth.value)).all()))
+    series = tips.ref_cpi_series(months)
+    s.execute(delete(ReferenceCpi))
+    s.add_all(ReferenceCpi(day=r.day, value=r.value, method=r.method) for r in series)
+    s.flush()
+    return {"reference_cpi_days": len(series), "cpi_fallback_months": sorted(
+        m.strftime("%Y-%m") for m, v in months.items() if v.method == "fallback"),
+        "reference_cpi_through": series[-1].day.isoformat() if series else None}
+
+
+def check_tips(s: Session) -> dict:
+    """Our reference CPI and index ratio against what TreasuryDirect published on every TIPS auction."""
+    ref = dict(s.execute(select(ReferenceCpi.day, ReferenceCpi.value)).all())
+    terms = {t.sec_id: t for t in s.scalars(select(SecurityTerms).where(
+        SecurityTerms.superseded_at.is_(None), SecurityTerms.security_type == "tips"))}
+    out = {"compared": 0, "matched": 0, "mismatched": 0, "not_computable": 0, "mismatches": []}
+    for a in s.scalars(select(Auction).where(Auction.removed_at.is_(None), Auction.security_type == "tips")
+                       .order_by(Auction.issue_date)):
+        t = terms.get(a.sec_id)
+        checks = []
+        if a.issue_date and a.ref_cpi_on_issue_date is not None:
+            checks.append(("ref CPI on issue date", ref.get(a.issue_date), a.ref_cpi_on_issue_date))
+            if t is not None and t.tips_base_cpi and a.issue_date in ref and a.index_ratio_on_issue_date is not None:
+                checks.append(("index ratio on issue date", tips.index_ratio(ref[a.issue_date], t.tips_base_cpi),
+                               a.index_ratio_on_issue_date))
+        if t is not None and t.dated_date and t.tips_base_cpi is not None:
+            checks.append(("ref CPI on dated date", ref.get(t.dated_date), t.tips_base_cpi))
+        for what, ours, theirs in checks:
+            if ours is None:
+                out["not_computable"] += 1
+                continue
+            out["compared"] += 1
+            if Decimal(ours) == Decimal(theirs):
+                out["matched"] += 1
+            else:
+                out["mismatched"] += 1
+                if len(out["mismatches"]) < 10:
+                    out["mismatches"].append({"auction": a.source_key, "what": what, "ours": format(Decimal(ours), "f"),
+                                              "treasurydirect": format(Decimal(theirs), "f")})
+    return out
+
+
 def _load(s: Session, up: Upstream, now: datetime, today: date, progress: dict) -> None:
     for source in SOURCES:
         marks = dict(s.execute(select(SourcePeriod.period, SourcePeriod.capture_id)
@@ -493,6 +579,8 @@ def _load(s: Session, up: Upstream, now: datetime, today: date, progress: dict) 
     progress |= sync_otr(s, today, now)
     progress |= sync_strips(s, today, now)
     s.commit()
+    progress |= load_cpi(s, up, now)
+    progress["tips_cpi"] = check_tips(s)
 
 
 def run(s: Session, up: Upstream, now: datetime | None = None, today: date | None = None) -> dict:

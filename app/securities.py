@@ -18,6 +18,7 @@ from app.models import (
     Instrument,
     InstrumentName,
     InstrumentNote,
+    ReferenceCpi,
     SecurityTerms,
     Strip,
     StrippedAmount,
@@ -118,6 +119,8 @@ def get(s: Session, sec_id: int | None = None, name: str = "", as_of: date | Non
             for a in s.scalars(select(Auction).where(Auction.sec_id == inst.sec_id, Auction.removed_at.is_(None))
                                .order_by(Auction.issue_date, Auction.source_key))
         ]
+        if terms.security_type == "tips" and terms.tips_base_cpi:
+            out["index_ratio"] = index_ratio(s, terms.tips_base_cpi, as_of or today_ny())
         out["stripped_amounts"] = [
             _plain(a, skip=("id", "fields", "period", "source_key", "record_id", "capture_id", "loaded_at",
                             "removed_at", "underlying_cusip"))
@@ -130,6 +133,22 @@ def get(s: Session, sec_id: int | None = None, name: str = "", as_of: date | Non
         out["strip"] = _plain(strip, skip=("sec_id", "provenance", "checks", "updated_at"))
         out["provenance"], out["checks"] = strip.provenance, strip.checks
     return out
+
+
+def reference_cpi(s: Session, on: date) -> dict | None:
+    row = s.get(ReferenceCpi, on)
+    return None if row is None else {"date": on.isoformat(), "ref_cpi": format(row.value, "f"), "method": row.method}
+
+
+def index_ratio(s: Session, base_cpi, on: date) -> dict | None:
+    """A TIPS's index ratio on a date: reference CPI over its base, both as Treasury rounds them."""
+    from app.tips import index_ratio as ratio
+
+    ref = reference_cpi(s, on)
+    if ref is None:
+        return None
+    return ref | {"base_cpi": format(base_cpi, "f"), "index_ratio": format(ratio(s.get(ReferenceCpi, on).value,
+                                                                                    base_cpi), "f")}
 
 
 def _on_the_run(s: Session, name: str, on: date) -> int | None:

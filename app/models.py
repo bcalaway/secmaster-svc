@@ -363,3 +363,25 @@ class FigiLookup(Base):
     ticker: Mapped[str | None] = mapped_column(String(60))
     detail: Mapped[dict | None] = mapped_column(JSON_DOC)
     looked_up_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class CpiMonth(Base):
+    """CPI-U (CUUR0000SA0, not seasonally adjusted) by month, from mkt-data's BLS-CPI observations."""
+
+    __tablename__ = "cpi_month"
+
+    month: Mapped[date] = mapped_column(Date, primary_key=True)  # first of the month
+    value: Mapped[Decimal] = mapped_column(Numeric)
+    observation_id: Mapped[int] = mapped_column(Integer)
+    capture_id: Mapped[int] = mapped_column(Integer)
+    loaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class ReferenceCpi(Base):
+    """Treasury's daily reference CPI for TIPS (app/tips.py), rebuilt whenever a CPI month changes."""
+
+    __tablename__ = "reference_cpi"
+
+    day: Mapped[date] = mapped_column(Date, primary_key=True)
+    value: Mapped[Decimal] = mapped_column(Numeric)
+    method: Mapped[str] = mapped_column(String(10))  # published | fallback
