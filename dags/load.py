@@ -40,10 +40,17 @@ TREASURY_SECURITIES = Asset("mkt_data_treasury_securities")
     tags=["secmaster-svc", "treasury", "securities"],
     doc_md=__doc__,
 )
+def report(result: dict) -> dict:
+    """One log line per notable check, so a long answer stays readable in the task log."""
+    for item in result.get("notable_checks", []):
+        print(f"check: {item.get('short_name')}: {'; '.join(item.get('checks', []))}")
+    return {k: v for k, v in result.items() if k != "notable_checks"}
+
+
 def load():
     @task
     def run() -> dict:
-        return call_app_job("secmaster-svc", "load", timeout=3600)
+        return report(call_app_job("secmaster-svc", "load", timeout=3600))
 
     run()
 
@@ -62,7 +69,7 @@ def load():
 def rebuild():
     @task
     def run() -> dict:
-        return call_app_job("secmaster-svc", "rebuild", timeout=3600)
+        return report(call_app_job("secmaster-svc", "rebuild", timeout=3600))
 
     run()
 
