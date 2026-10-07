@@ -4,6 +4,7 @@ from datetime import date
 from pathlib import Path
 
 import pytest
+from sqlalchemy import select
 
 from app import db, securities, seed
 
@@ -104,3 +105,19 @@ def test_one_security_in_full(migrated_db):
         assert got["provenance"]["coupon_rate"].startswith("published")
         with pytest.raises(securities.UnknownInstrument):
             securities.security(s, name="NOPE")
+
+
+def test_auction_results_overdue_in_the_metrics(migrated_db, monkeypatch):
+    from app import metrics
+    from app.models import Auction
+
+    _loaded()  # the Feb 2026 TreasuryDirect capture: every auction there has results
+    monkeypatch.setattr(securities, "today_ny", lambda: date(2026, 3, 2))
+    with db.session() as s:
+        assert "secmaster_svc_auction_results_overdue 0" in metrics.render(s)
+        a = s.scalars(select(Auction).where(Auction.auction_date == date(2026, 2, 26))).first()
+        a.total_accepted = None
+        s.commit()
+        text = metrics.render(s)
+    assert "secmaster_svc_auction_results_overdue 1" in text
+    assert f'cusip="{a.cusip}",auction_date="2026-02-26"' in text

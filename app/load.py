@@ -513,12 +513,32 @@ def rebuild_reference_cpi(s: Session) -> dict:
         "reference_cpi_through": series[-1].day.isoformat() if series else None}
 
 
+# TreasuryDirect figures our rule doesn't reproduce, and why, with the figure as published: a known exception
+# only while TreasuryDirect still prints that figure (a correction is checked again). Fiscal Data prints the
+# same figures (mkt-data's cross-check, 2026-10-07: every field of 11,139 auctions agrees), so they're Treasury's
+# own, not a TreasuryDirect glitch.
+KNOWN_TIPS_EXCEPTIONS: dict[tuple[str, str], tuple[str, str]] = {
+    ("9128275W8/2000-07-17", "ref CPI on issue date"): (
+        "171.25161", ("Treasury's figure interpolates March and April 2000 CPI-U (one month earlier than the rule); "
+                      "ours, April and May, is 171.40323")),
+    ("9128275W8/2000-07-17", "index ratio on issue date"): ("1.01787", "follows from the reference CPI above"),
+    ("912810FH6/2000-10-16", "ref CPI on issue date"): (
+        "172.64839", "no pair of 2000 CPI-U months gives Treasury's figure; ours, July and August 2000, is 172.80000"),
+    ("912810FH6/2000-10-16", "index ratio on issue date"): ("1.05022", "follows from the reference CPI above"),
+}
+
+
+def _known_exception(key: str, what: str, theirs) -> bool:
+    known = KNOWN_TIPS_EXCEPTIONS.get((key, what))
+    return known is not None and Decimal(theirs) == Decimal(known[0])
+
+
 def check_tips(s: Session) -> dict:
     """Our reference CPI and index ratio against what TreasuryDirect published on every TIPS auction."""
     ref = dict(s.execute(select(ReferenceCpi.day, ReferenceCpi.value)).all())
     terms = {t.sec_id: t for t in s.scalars(select(SecurityTerms).where(
         SecurityTerms.superseded_at.is_(None), SecurityTerms.security_type == "tips"))}
-    out = {"compared": 0, "matched": 0, "mismatched": 0, "not_computable": 0, "mismatches": []}
+    out = {"compared": 0, "matched": 0, "mismatched": 0, "known_exception": 0, "not_computable": 0, "mismatches": []}
     for a in s.scalars(select(Auction).where(Auction.removed_at.is_(None), Auction.security_type == "tips")
                        .order_by(Auction.issue_date)):
         t = terms.get(a.sec_id)
@@ -537,6 +557,8 @@ def check_tips(s: Session) -> dict:
             out["compared"] += 1
             if Decimal(ours) == Decimal(theirs):
                 out["matched"] += 1
+            elif _known_exception(a.source_key, what, theirs):
+                out["known_exception"] += 1
             else:
                 out["mismatched"] += 1
                 if len(out["mismatches"]) < 10:
