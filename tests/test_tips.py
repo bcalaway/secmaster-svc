@@ -23,6 +23,22 @@ def test_the_rule_on_treasurydirects_february_2026_tips():
     assert tips.ref_cpi(date(2026, 3, 1), months) is None  # needs January 2026
 
 
+def test_cpi_as_first_published_reproduces_treasurys_2016_figures():
+    # BLS's API today: April to August 2016. The first-published May to August replace them (FIRST_PUBLISHED).
+    api = {date(2016, 4, 1): Decimal("239.261"), date(2016, 5, 1): Decimal("240.229"), date(2016, 6, 1): Decimal("241.018"),
+           date(2016, 7, 1): Decimal("240.628"), date(2016, 8, 1): Decimal("240.849")}
+    months = tips.fill_months(api)
+    assert [months[m].method for m in sorted(months)] == ["published"] + ["first_published"] * 4
+    assert all(months[m].value == tips.FIRST_PUBLISHED[m][0] and api[m] == tips.FIRST_PUBLISHED[m][2]
+               for m in tips.FIRST_PUBLISHED)
+    # TreasuryDirect's figures, which the API's values missed (the 12 mismatches of 2026-10-08).
+    want = {date(2016, 7, 15): "239.70132", date(2016, 7, 29): "240.14165", date(2016, 8, 31): "241.01213",
+            date(2016, 9, 30): "240.66003", date(2016, 10, 31): "240.84635"}
+    for day, value in want.items():
+        r = tips.ref_cpi(day, months)
+        assert r.value == Decimal(value) and r.method == "published", day
+
+
 def test_fallback_for_a_month_never_published():
     published = {}
     m = date(2024, 9, 1)
@@ -68,6 +84,27 @@ def test_load_checks_tips_against_treasurydirect(migrated_db):
         again = load.run(s, mkt, NOW, TODAY)
     assert again["cpi_months_changed"] == 1 and again["tips_cpi"]["mismatched"] == 3
     assert again["tips_cpi"]["mismatches"][0]["treasurydirect"].startswith("324.05886")
+
+
+def test_reference_cpis_built_by_an_older_rule_are_rebuilt(migrated_db):
+    from sqlalchemy import select
+
+    from app.models import ReferenceCpi
+
+    mkt = FakeMktData()
+    mkt.put("2026-02", _records("td_securities_2026_02_capture1319.json"))
+    mkt.put_cpi("2025", [("2025-11", "324.122"), ("2025-12", "324.054")])
+    with db.session() as s:
+        load.run(s, mkt, NOW, TODAY)
+    with db.session() as s:  # as if built before a rule change (here: one day's value off)
+        s.scalars(select(ReferenceCpi).where(ReferenceCpi.day == date(2026, 2, 27))).one().value = Decimal(1)
+        s.commit()
+    with db.session() as s:
+        again = load.run(s, mkt, NOW, TODAY)
+    assert again["cpi_months_changed"] == 0 and again["reference_cpi_days"] == 28
+    assert again["tips_cpi"]["mismatched"] == 0
+    with db.session() as s:
+        assert not load._reference_cpi_stale(s)
 
 
 def test_a_long_gap_is_history_not_loaded_not_a_chain_of_fallbacks():
