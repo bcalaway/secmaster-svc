@@ -42,6 +42,8 @@ def report(result: dict) -> dict:
 
 def report_figi(result: dict) -> dict:
     """One log line per CUSIP OpenFIGI answered with an error."""
+    for c in result.get("invalid_cusips", []):
+        print(f"figi skipped: {c}: bad check digit (a typo in its source record), not sent to OpenFIGI")
     for e in result.get("errors", []):
         print(f"figi error: {e.get('cusip')}: {e.get('detail')}")
     return result

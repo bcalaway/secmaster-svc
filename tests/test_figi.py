@@ -143,3 +143,23 @@ def test_job_names_errors_and_retries_them_the_next_day(migrated_db):
         assert out["error"] == 1 and out["errors"] == [{"cusip": "912797TB3", "detail": bad}]
         assert figi_job.run(s, "k", NOW + timedelta(hours=1), mapper)["asked"] == 0
         assert figi_job.run(s, "k", NOW + timedelta(days=1), mapper)["asked"] == 1
+
+
+def test_job_skips_a_cusip_whose_check_digit_is_wrong(migrated_db):
+    mkt = FakeMktData()
+    mkt.put("2026-02", _records("td_securities_2026_02_capture1319.json"))
+    with db.session() as s:
+        load.run(s, mkt, NOW, TODAY)
+        sec_id = s.scalar(select(Identifier.sec_id).where(Identifier.scheme == "CUSIP"))
+        s.add(Identifier(sec_id=sec_id, scheme="CUSIP", value="912820BV9"))  # the hub's, 2026-10-08: should end in 8
+        s.commit()
+    asked = []
+
+    def mapper(cusips, key):
+        asked.extend(cusips)
+        return [figi.Answer(c, "not_found", detail=MISSING) for c in cusips]
+
+    with db.session() as s:
+        out = figi_job.run(s, "k", NOW, mapper)
+        assert out["invalid_cusips"] == ["912820BV9"] and "912820BV9" not in asked and out["error"] == 0
+        assert s.get(FigiLookup, "912820BV9") is None
