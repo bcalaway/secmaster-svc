@@ -5,6 +5,9 @@ style: "T 4 1/4 08/15/35"). A ticker two instruments share (principal STRIPS
 of a note and a bond due the same day can) is kept on the first and listed in
 the job's answer, not treated as an error. Each CUSIP OpenFIGI answered with an
 error is listed in the answer with OpenFIGI's own words, so the DAG's log names it.
+A CUSIP whose check digit is wrong (a typo in a source record: 912820BV9,
+2026-10-08) isn't sent: OpenFIGI refuses it ("Invalid idValue format"), so it's
+listed under invalid_cusips instead and never retried.
 """
 
 import json
@@ -14,6 +17,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app import figi, strips
+from app import treasuries as tr
 from app.load import TREASURY_TYPES
 from app.models import FigiLookup, Identifier, Instrument
 
@@ -42,12 +46,13 @@ def run(s: Session, api_key: str | None, now: datetime | None = None, mapper=Non
                             .where(Identifier.scheme == "CUSIP", Identifier.removed_at.is_(None),
                                    Instrument.type.in_(TYPES))).all())
     seen = {r.cusip: r for r in s.scalars(select(FigiLookup))}
-    todo = sorted(c for c in cusips if figi.due(seen[c].looked_up_at if c in seen else None,
+    invalid = sorted(c for c in cusips if not tr.cusip_ok(c))
+    todo = sorted(c for c in cusips if tr.cusip_ok(c) and figi.due(seen[c].looked_up_at if c in seen else None,
                                                 seen[c].outcome if c in seen else None, now))
     limit = MAX_WITH_KEY if api_key else figi.MAX_WITHOUT_KEY
     batch = todo[:limit]
     out = {"asked": len(batch), "left": len(todo) - len(batch), "with_key": bool(api_key),
-           "found": 0, "not_found": 0, "error": 0, "errors": [], "shared_tickers": []}
+           "found": 0, "not_found": 0, "error": 0, "errors": [], "shared_tickers": [], "invalid_cusips": invalid[:20]}
     answers = mapper(batch, api_key) if batch else []
     for a in answers:
         sec_id = cusips[a.cusip]

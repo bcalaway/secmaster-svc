@@ -431,6 +431,8 @@ def sync_strips(s: Session, today: date, now: datetime) -> dict:
         under_id = by_cusip.get(spec.underlying_cusip) if spec.underlying_cusip else None
         if spec.underlying_cusip and under_id is None:
             spec.checks = sorted(set(spec.checks + ["underlying-not-loaded: its security isn't in the security master"]))
+        if not tr.cusip_ok(cusip):
+            spec.checks = sorted(set(spec.checks + ["bad-check-digit: the CUSIP's ninth character isn't its check digit"]))
         values = {"cusip": cusip, "kind": spec.kind, "tips": spec.tips, "payment_date": spec.payment_date,
                   "underlying_cusip": spec.underlying_cusip, "underlying_sec_id": under_id,
                   "provenance": spec.provenance, "checks": spec.checks}
