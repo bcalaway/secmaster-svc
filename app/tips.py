@@ -16,6 +16,14 @@ Treasury's rule (31 CFR 356, Appendix B):
   need it have no reference CPI (and the TIPS check counts them as not
   computable) rather than a chain of fallbacks standing in for real CPIs.
 
+- The CPI is the one **first published** (the CFR: later revisions aren't
+  used). BLS's API serves today's values, and for a few months they differ
+  from what BLS first printed: FIRST_PUBLISHED holds those months as
+  first printed, with the BLS release each comes from, and they replace the
+  API's values. Found by the TIPS check (2026-10-08): every 2016 auction
+  whose reference CPI needs May to August 2016 differed from TreasuryDirect,
+  and the first-published figures reproduce Treasury's exactly.
+
 Rounding: TreasuryDirect publishes reference CPIs and index ratios to five
 decimals ("324.05886", "0.99991"), so both are rounded half-up to five; the
 load checks that against every TIPS auction TreasuryDirect has published.
@@ -30,6 +38,17 @@ FIVE = Decimal("0.00001")
 MAX_FALLBACK_MONTHS = 1
 
 
+# Months whose CPI-U as first published (what Treasury uses) differs from what BLS's API serves today:
+# month -> (as first published, where it was printed, what the API serves).
+FIRST_PUBLISHED: dict[date, tuple[Decimal, str, Decimal]] = {
+    date(2016, 5, 1): (Decimal("240.236"), "BLS CPI news release 2016-06-16 (USDL-16-1197), table 1",
+                       Decimal("240.229")),
+    date(2016, 6, 1): (Decimal("241.038"), "BLS CPI news release 2016-07-15, table 1", Decimal("241.018")),
+    date(2016, 7, 1): (Decimal("240.647"), "BLS CPI news release 2016-08-16, table 1", Decimal("240.628")),
+    date(2016, 8, 1): (Decimal("240.853"), "BLS CPI news release 2016-09-16, table 1", Decimal("240.849")),
+}
+
+
 def _month(d: date, delta: int = 0) -> date:
     k = d.year * 12 + d.month - 1 + delta
     return date(k // 12, k % 12 + 1, 1)
@@ -42,7 +61,7 @@ def round5(x: Decimal) -> Decimal:
 @dataclass(frozen=True)
 class MonthCpi:
     value: Decimal
-    method: str  # published | fallback
+    method: str  # published | first_published (FIRST_PUBLISHED replaced BLS's current value) | fallback
 
 
 def fill_months(published: dict[date, Decimal]) -> dict[date, MonthCpi]:
@@ -55,7 +74,9 @@ def fill_months(published: dict[date, Decimal]) -> dict[date, MonthCpi]:
     out: dict[date, MonthCpi] = {}
     m, last = min(published), max(published)
     while m <= last:
-        if m in published:
+        if m in published and m in FIRST_PUBLISHED:
+            out[m] = MonthCpi(FIRST_PUBLISHED[m][0], "first_published")
+        elif m in published:
             out[m] = MonthCpi(published[m], "published")
         elif _gap(published, m) > MAX_FALLBACK_MONTHS:
             pass  # not loaded: no CPI, so no reference CPI for the days that need it

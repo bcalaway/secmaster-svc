@@ -496,10 +496,18 @@ def load_cpi(s: Session, up: Upstream, now: datetime) -> dict:
             mark.capture_id, mark.records, mark.loaded_at = p.latest_capture_id, p.records, now
         s.flush()
     out = {"cpi_months_changed": changed}
-    if changed or not s.scalar(select(func.count()).select_from(ReferenceCpi)):
+    if changed or not s.scalar(select(func.count()).select_from(ReferenceCpi)) or _reference_cpi_stale(s):
         out |= rebuild_reference_cpi(s)
     s.commit()
     return out
+
+
+def _reference_cpi_stale(s: Session) -> bool:
+    """Whether the stored reference CPIs differ from what the rule gives now (the rule or its first-published
+    months changed since the last rebuild)."""
+    months = tips.fill_months(dict(s.execute(select(CpiMonth.month, CpiMonth.value)).all()))
+    stored = dict(s.execute(select(ReferenceCpi.day, ReferenceCpi.value)).all())
+    return {r.day: r.value for r in tips.ref_cpi_series(months)} != {d: Decimal(v) for d, v in stored.items()}
 
 
 def rebuild_reference_cpi(s: Session) -> dict:
@@ -510,7 +518,9 @@ def rebuild_reference_cpi(s: Session) -> dict:
     s.flush()
     return {"reference_cpi_days": len(series), "cpi_fallback_months": sorted(
         m.strftime("%Y-%m") for m, v in months.items() if v.method == "fallback"),
-        "reference_cpi_through": series[-1].day.isoformat() if series else None}
+        "reference_cpi_through": series[-1].day.isoformat() if series else None,
+        "cpi_first_published_months": sorted(m.strftime("%Y-%m") for m, v in months.items()
+                                             if v.method == "first_published")}
 
 
 # TreasuryDirect figures our rule doesn't reproduce, and why, with the figure as published: a known exception
