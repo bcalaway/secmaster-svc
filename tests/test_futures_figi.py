@@ -5,7 +5,7 @@ from datetime import UTC, date, datetime
 from sqlalchemy import func, select
 
 from app import db, futures_figi, securities
-from app.models import FuturesFigiLookup
+from app.models import FuturesFigiLookup, Identifier
 from tests.test_futures_load import NOW, TODAY
 from tests.test_futures_load import run as generate
 
@@ -23,9 +23,11 @@ def test_tickers():
     assert futures_figi.parse_ticker("SFRH7 Comdty") == ("SFR", "H", "7")
     assert futures_figi.parse_ticker("TYZ26") == ("TY", "Z", "26")
     assert futures_figi.parse_ticker("T 4 1/4 08/15/35") is None
-    assert futures_figi.jobs("TY", "ZNZ6", DEC26) == [
-        {"idType": "TICKER", "idValue": "TYZ6", "securityType2": "Future"},
+    assert futures_figi.jobs("TY", "ZNZ6", DEC26, "treasury") == [
+        {"idType": "TICKER", "idValue": "TYZ6", "marketSecDes": "Comdty", "securityType2": "Future"},
+        {"idType": "TICKER", "idValue": "TYZ26", "marketSecDes": "Comdty", "securityType2": "Future"},
         {"idType": "ID_EXCH_SYMBOL", "idValue": "ZNZ6", "securityType2": "Future"}]
+    assert futures_figi.jobs("BP", "6BV6", date(2026, 10, 1), "fx")[0]["marketSecDes"] == "Curncy"
 
 
 def test_judge():
@@ -41,30 +43,37 @@ def test_judge():
     assert j("TY", DEC26, {"data": [row("TYH7")]}, MISSING).outcome == "not_found"
     assert j("TY", DEC26, {"error": "Invalid idValue format"}, MISSING).outcome == "error"
     assert j("TY", DEC26, MISSING, MISSING).outcome == "not_found"
+    # Outside the product's sector a ticker is another product: BPV6 Comdty is No. 2 soybeans.
+    soy = {"data": [row("BPV6", name="NO.2 SOYBEAN      Oct26")]}
+    assert j("BP", date(2026, 10, 1), soy, MISSING, "Curncy").outcome == "not_found"
+    assert j("BP", date(2026, 10, 1), [MISSING, {"data": [row("BPV6", "Curncy")]}], MISSING, "Curncy").via == "ticker"
+    # A two-digit year counts as the contract's.
+    assert j("SFR", date(2031, 12, 1), [MISSING, {"data": [row("SFRZ31")]}], MISSING, "Comdty").ticker == "SFRZ31 Comdty"
 
 
 class FakeFigi:
-    """Knows every contract by ticker and by CME code, except as told."""
+    """Knows every contract by ticker (in the sector asked) and by CME code, except as told."""
 
-    def __init__(self, roots=None, unknown=(), down=False):
+    def __init__(self, roots=None, unknown=(), figi_prefix="BBG"):
         self.roots = roots or {}  # our root -> Bloomberg's, for CME-code answers
         self.unknown = set(unknown)  # our roots OpenFIGI doesn't know at all
+        self.prefix = figi_prefix
         self.calls: list[list[dict]] = []
 
     def __call__(self, jobs, api_key):
         self.calls.append(jobs)
         out = []
-        for i in range(0, len(jobs), 2):
-            ours = jobs[i]["idValue"]
+        for i in range(0, len(jobs), 3):
+            one = jobs[i]
+            ours, sector = one["idValue"], one["marketSecDes"]
             root, rest = ours[:-2], ours[-2:]
-            figi = f"BBG{abs(hash(ours)) % 10**9:09d}"
+            figi = f"{self.prefix}{abs(hash(ours)) % 10**9:09d}"
             if root in self.unknown:
-                out += [MISSING, MISSING]
+                out += [MISSING, MISSING, MISSING]
             elif root in self.roots:
-                out += [MISSING, {"data": [row(self.roots[root] + rest, figi=figi)]}]
+                out += [MISSING, MISSING, {"data": [row(self.roots[root] + rest, figi=figi)]}]
             else:
-                sector = "Curncy" if jobs[i + 1]["idValue"].startswith("6") else "Comdty"
-                out += [{"data": [row(ours, sector, figi)]}, {"data": [row(ours, sector, figi)]}]
+                out += [{"data": [row(ours, sector, figi)]}, MISSING, {"data": [row(ours, sector, figi)]}]
         return out
 
 
@@ -77,11 +86,13 @@ def test_run_stores_figis_and_tickers(migrated_db):
     generate()
     fake = FakeFigi(roots={"SER": "SER1"}, unknown={"NV"})
     out = ask(fake)
-    assert out["asked"] == 372 and len(fake.calls[0]) == 744
+    assert out["asked"] == 372 and len(fake.calls[0]) == 3 * 372
     assert out["products"]["TY"]["confirmed"] == 3 and out["products"]["TY"]["via"] == {"both": 3}
     assert out["products"]["SER"]["mismatch"] == 25 and out["products"]["SER"]["bloomberg_roots"] == ["SER1"]
     assert out["products"]["NV"]["not_found"] == 6
-    assert "TY" in out["roots_confirmed"] and "SER" not in out["roots_confirmed"]
+    assert "TY" in out["roots_found"] and "SER" not in out["roots_found"]
+    assert out["products"]["TY"]["example"]["exch_code"] == "CBT"
+    assert out["products"]["NV"]["first_not_found"]["said"][0] == "NVZ6: No identifier found."
     with db.session() as s:
         got = securities.get(s, name="TYZ26")
         ids = {i["scheme"]: i for i in got["identifiers"]}
@@ -189,3 +200,23 @@ def test_dag_report(capsys):
                 "error": 0}}})
     assert "products" not in left
     assert "SER: 0 of 25 confirmed {}, 25 mismatch, 0 not found, 0 error; Bloomberg's root: SO" in capsys.readouterr().out
+
+
+def test_a_newer_check_asks_again_and_retires_what_it_got_wrong(migrated_db):
+    """The first run (CHECK 1) took commodity futures for three FX products; the next retires them."""
+    generate()
+    ask(FakeFigi(figi_prefix="BAD"))
+    with db.session() as s:
+        for r in s.scalars(select(FuturesFigiLookup)):
+            r.detail = {**(r.detail or {}), "check": 1}
+        s.commit()
+    out = ask(FakeFigi(unknown={"NV"}))
+    assert out["asked"] == 372 and out["retired_count"] == 372 and len(out["retired"]) == 20  # listed to 20
+    with db.session() as s:
+        got = {i["scheme"]: i["value"] for i in securities.get(s, name="TYZ26")["identifiers"]}
+        assert got["FIGI"].startswith("BBG") and got["TICKER"] == "TYZ6 Comdty"
+        nv = {i["scheme"] for i in securities.get(s, name="NVZ26")["identifiers"]}
+        assert "FIGI" not in nv and "TICKER" not in nv
+        bad = s.scalar(select(func.count()).select_from(Identifier).where(
+            Identifier.value.like("BAD%"), Identifier.removed_at.is_(None)))
+        assert bad == 0

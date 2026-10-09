@@ -40,10 +40,18 @@ def report_figi(result: dict) -> dict:
             line += f"; Bloomberg's root: {', '.join(p['bloomberg_roots'])}"
         if p.get("example"):
             ex = p["example"]
-            line += f"; e.g. {ex.get('contract')} = {ex.get('ticker')} ({ex.get('name')}, {ex.get('figi')})"
+            line += (f"; e.g. {ex.get('contract')} = {ex.get('ticker')} ({ex.get('name')}, {ex.get('exch_code')}, "
+                     f"{ex.get('figi')})")
+        if p.get("exchange_said"):
+            line += f"; by CME's code OpenFIGI said {p['exchange_said']}"
+        if p.get("first_not_found"):
+            m = p["first_not_found"]
+            line += f"; first not found {m.get('contract')}: {'; '.join(m.get('said', []))}"
         print(line)
     for e in result.get("errors", []):
         print(f"futures figi error: {e.get('contract')}: {e.get('by_ticker')} / {e.get('by_exchange')}")
+    for r in result.get("retired", []):
+        print(f"futures figi retired: {r.get('contract')}: {r.get('ticker')} ({r.get('figi')}), now {r.get('now')}")
     for c in result.get("conflicts", []):
         print(f"futures figi conflict: {c.get('contract')}: ticker {c.get('ticker')} is another instrument's")
     return {k: v for k, v in result.items() if k != "products"}
