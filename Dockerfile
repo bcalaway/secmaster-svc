@@ -34,6 +34,10 @@ FROM dev AS test
 RUN pytest
 
 FROM base AS final
+# Two malloc arenas, not one per thread: gRPC calls run in worker threads, and glibc's default (8 per core)
+# leaves each thread's freed memory in its own arena, so the process grew after every large read and kept it
+# (OOM-killed at the 256 MB limit twice on 2026-10-09).
+ENV MALLOC_ARENA_MAX=2
 # 8000: HTTP, routed by Traefik. 9090: gRPC, internal to home-platform only.
 EXPOSE 8000 9090
 # Applies migrations (when a database is configured), then runs uvicorn.
