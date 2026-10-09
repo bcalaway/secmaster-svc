@@ -1,11 +1,13 @@
-"""secmaster-svc: generate futures products and contracts (mkt-data's docs/phase-4.md, step 2a).
+"""secmaster-svc: generate futures products and contracts, then their FIGIs (mkt-data's docs/phase-4.md, steps 2a, 2b).
 
 `secmaster_svc__futures` runs daily just after midnight New York, when a contract's status (listed,
 delivery, expired) and the generics (`TY1`, `TY2`) move to the new day, and can be triggered by hand
 after a change to seeds/futures.toml or to a calendar. The work runs in the secmaster-svc container
 (POST /jobs/futures): it reads the seed, fetches every calendar the rules count in from calendar-svc
-and brings products, contracts, CME codes and generics in line. This DAG only calls it (ADR-0031 in
-nyc_pa_aws_gitops). Idempotent; a failed run retries, and Grafana's "Airflow task failed" alert fires
+and brings products, contracts, CME codes and generics in line. Then the container asks OpenFIGI
+about listed contracts not yet confirmed (POST /jobs/futures-figi, step 2b): FIGIs, Bloomberg's
+live tickers and whether each product's root is Bloomberg's. This DAG only calls the two jobs
+(ADR-0031 in nyc_pa_aws_gitops). Idempotent; a failed run retries, and Grafana's "Airflow task failed" alert fires
 if retries run out.
 """
 
@@ -29,6 +31,24 @@ def report(result: dict) -> dict:
     return {k: v for k, v in result.items() if k != "products"}
 
 
+def report_figi(result: dict) -> dict:
+    """One log line per product (how OpenFIGI's answers confirm its root), then errors and conflicts."""
+    for root, p in sorted((result.get("products") or {}).items()):
+        line = (f"futures figi: {root}: {p.get('confirmed')} of {p.get('listed')} confirmed {p.get('via')}, "
+                f"{p.get('mismatch')} mismatch, {p.get('not_found')} not found, {p.get('error')} error")
+        if p.get("bloomberg_roots"):
+            line += f"; Bloomberg's root: {', '.join(p['bloomberg_roots'])}"
+        if p.get("example"):
+            ex = p["example"]
+            line += f"; e.g. {ex.get('contract')} = {ex.get('ticker')} ({ex.get('name')}, {ex.get('figi')})"
+        print(line)
+    for e in result.get("errors", []):
+        print(f"futures figi error: {e.get('contract')}: {e.get('by_ticker')} / {e.get('by_exchange')}")
+    for c in result.get("conflicts", []):
+        print(f"futures figi conflict: {c.get('contract')}: ticker {c.get('ticker')} is another instrument's")
+    return {k: v for k, v in result.items() if k != "products"}
+
+
 @dag(
     dag_id="secmaster_svc__futures",
     schedule=CronTriggerTimetable("12 0 * * *", timezone="America/New_York"),
@@ -45,7 +65,12 @@ def futures():
     def generate() -> dict:
         return report(call_app_job("secmaster-svc", "futures", timeout=900))
 
-    generate()
+    @task(retries=2, retry_delay=timedelta(minutes=15))
+    def map_figis() -> dict:
+        """Listed contracts to OpenFIGI (FIGI, Bloomberg ticker, root check); a failure here never holds up generation."""
+        return report_figi(call_app_job("secmaster-svc", "futures-figi", timeout=900))
+
+    generate() >> map_figis()
 
 
 futures()

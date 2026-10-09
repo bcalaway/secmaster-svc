@@ -472,3 +472,27 @@ class FuturesRun(Base):
     outcome: Mapped[str] = mapped_column(String(8))
     seed_sha256: Mapped[str] = mapped_column(String(64))
     detail: Mapped[str] = mapped_column(Text)  # JSON summary, or the error
+
+
+class FuturesFigiLookup(Base):
+    """What OpenFIGI said about a listed futures contract (app/futures_figi.py, mkt-data's docs/phase-4.md step 2b).
+
+    One row per contract, replaced by each lookup. `root` is the Bloomberg root it was asked under, so a
+    root change asks again. `outcome` is confirmed (OpenFIGI knows our ticker, or maps CME's code to it),
+    mismatch (CME's code maps to another root: `bloomberg_root`), not_found or error; `via` says which
+    question confirmed it (ticker, exchange or both). `detail` keeps both of OpenFIGI's answers as returned.
+    """
+
+    __tablename__ = "futures_figi_lookup"
+
+    sec_id: Mapped[int] = mapped_column(ForeignKey("instrument.sec_id"), primary_key=True)
+    product_sec_id: Mapped[int] = mapped_column(ForeignKey("instrument.sec_id"))
+    root: Mapped[str] = mapped_column(String(8))
+    outcome: Mapped[str] = mapped_column(String(10))  # confirmed | mismatch | not_found | error
+    via: Mapped[str | None] = mapped_column(String(10))  # ticker | exchange | both
+    figi: Mapped[str | None] = mapped_column(String(12))
+    composite_figi: Mapped[str | None] = mapped_column(String(12))
+    ticker: Mapped[str | None] = mapped_column(String(60))  # TYZ6 Comdty
+    bloomberg_root: Mapped[str | None] = mapped_column(String(8))
+    detail: Mapped[dict | None] = mapped_column(JSON_DOC)
+    looked_up_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

@@ -108,6 +108,19 @@ def run_figi() -> dict:
         raise HTTPException(502, str(e)) from None
 
 
+@router.post("/futures-figi", dependencies=[Depends(require_token)])
+def run_futures_figi() -> dict:
+    """Ask OpenFIGI about listed futures contracts: FIGI, Bloomberg ticker, and whether each root is Bloomberg's.
+    502 if OpenFIGI can't be reached."""
+    from app import figi, futures_figi
+
+    try:
+        with db.session() as s:
+            return futures_figi.run(s, settings.openfigi_api_key)
+    except figi.FigiError as e:
+        raise HTTPException(502, str(e)) from None
+
+
 @router.get("/instruments", dependencies=[Depends(require_read_token)])
 def instruments(type: str = "", curve: str = "", include_inactive: bool = False) -> dict:
     with db.session() as s:
