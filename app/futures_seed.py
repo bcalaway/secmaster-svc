@@ -27,6 +27,7 @@ REQUIRED_RULES = {
     "treasury_cash": {"last_trade_date"},
     "stir": {"last_trade_date"},
     "fx": {"last_trade_date", "settlement_date"},
+    "fx_cash": {"last_trade_date"},
 }
 
 

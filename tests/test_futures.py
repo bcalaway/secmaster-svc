@@ -245,3 +245,44 @@ def test_every_kind_fits_its_column():
 
     assert max(len(k) for k in f.KINDS) <= FuturesProduct.__table__.c.kind.type.length
     assert max(len(s) for s in ("listed", "delivery", "expired", "withdrawn")) <= FuturesContract.__table__.c.status.type.length
+
+
+def _local(closed=()) -> f.Calendars:
+    c = cals()
+    for n in ("HK", "KR", "BR"):
+        c.closed[n], c.years[n] = frozenset(closed), (1990, 2100)
+    return c
+
+
+@pytest.mark.parametrize("rule, month, want", [
+    ("prev_last_bd@BR", date(2026, 11, 1), date(2026, 10, 30)),  # the last business day of October
+    ("third_mon_prev_good@KR", date(2026, 12, 1), date(2026, 12, 21)),  # December 1 is a Tuesday: not the 14th
+    ("third_mon_prev_good@KR", date(2026, 6, 1), date(2026, 6, 15)),
+    ("day_next_good:15@GB", date(2026, 11, 1), date(2026, 11, 16)),  # the 15th is a Sunday
+    ("second_fri_before_third_wed", date(2026, 12, 1), date(2026, 12, 4)),  # 3rd Wednesday December 16
+    ("third_wed_minus:2@HK", date(2026, 12, 1), date(2026, 12, 14)),
+])
+def test_emerging_market_rules(rule, month, want):
+    c = _local()
+    c.closed["GB"], c.years["GB"] = frozenset(), (1990, 2100)
+    assert f._apply_rule(rule, month, c, ("CME-FX", "FED"), None) == want
+
+
+def test_a_rule_counts_in_the_calendars_it_names():
+    # A Hong Kong holiday on Monday December 14 moves the CNH's last trading day to Friday the 11th; a US one
+    # doesn't, since the rule counts Hong Kong business days only.
+    hk = _local({date(2026, 12, 14)})
+    assert f._apply_rule("third_wed_minus:2@HK", date(2026, 12, 1), hk, ("CME-FX", "FED"), None) == date(2026, 12, 11)
+    assert f._describe("third_wed_minus:2@HK", ("CME-FX", "FED")) == "third_wed_minus:2 (HK business days)"
+
+
+def test_rule_calendars_are_the_products_calendars(seed):
+    p = product(seed, "PE")
+    q = f.Product(**{**p.__dict__, "rules": {**p.rules, "last_trade_date": "third_wed_minus:2@HK+CN"}})
+    assert q.calendars[-2:] == ("HK", "CN")
+
+
+@pytest.mark.parametrize("rule", ["day_next_good:31", "third_wed_minus:2@"])
+def test_bad_emerging_market_rules(rule):
+    with pytest.raises(f.RuleError):
+        f.check_rule("last_trade_date", rule)

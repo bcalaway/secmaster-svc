@@ -18,6 +18,14 @@ recorded with the date says exactly how it was derived:
 - `third_wed_next_good`: the 3rd Wednesday, or the next day that is a business
   day in every settlement calendar (FX delivery).
 - `ltd_plus:N`: N business days after the last trading day.
+- `prev_last_bd`: the last business day of the month before the contract
+  month (the Brazilian real's and Chilean peso's last trading day).
+- `third_mon_prev_good`: the contract month's 3rd Monday, or the business day
+  before if it isn't one (the Korean won's).
+- `day_next_good:N`: the Nth of the contract month, or the next business day
+  if it isn't one (the ruble's 15th).
+- `second_fri_before_third_wed`: the second Friday before the 3rd Wednesday,
+  or the business day before if it isn't one (the zloty/euro cross).
 - `ref_end_minus:N`: N business days before the reference period's end
   (CME's Three-Month SOFR: the business day before the 3rd Wednesday of the
   month its reference quarter ends in).
@@ -30,7 +38,10 @@ recorded with the date says exactly how it was derived:
 A rule counts business days in the product's trade calendars (or settlement
 calendars, for delivery and final settlement): a day is a business day when
 it's a weekday and none of those calendars is closed. Early closes are
-business days.
+business days. A rule can name its own calendars after `@`
+(`third_wed_minus:2@HK`: the second Hong Kong business day before the 3rd
+Wednesday), for the emerging-market contracts whose dates CME counts in the
+local market's business days; several are joined with `+`.
 
 **Listing.** Which contracts CME lists on a day follows the product's cycle,
 as CME's spec page states it (`quarterly`: that many consecutive March-cycle
@@ -58,8 +69,11 @@ MONTH_CODES = "FGHJKMNQUVXZ"
 QUARTERLY = frozenset({3, 6, 9, 12})
 # treasury_cash: a Treasury future settled in cash at its last trade (the micro Ultras, the yield futures; step 2c),
 # so no intention, notice or delivery days, and its generics roll after its last trading day.
-KINDS = frozenset({"treasury", "treasury_cash", "stir", "fx"})
-TYPES = {"treasury": "fut_treasury", "treasury_cash": "fut_treasury", "stir": "fut_stir", "fx": "fut_fx"}
+# fx_cash: an FX future settled in cash against a fixing (most emerging-market contracts; step 2d), so no
+# delivery date is required.
+KINDS = frozenset({"treasury", "treasury_cash", "stir", "fx", "fx_cash"})
+TYPES = {"treasury": "fut_treasury", "treasury_cash": "fut_treasury", "stir": "fut_stir", "fx": "fut_fx",
+         "fx_cash": "fut_fx"}
 
 # Date fields a contract can carry, in display order.
 DATE_FIELDS = (
@@ -111,7 +125,8 @@ class Product:
 
     @property
     def calendars(self) -> tuple[str, ...]:
-        return tuple(dict.fromkeys(self.trade_calendars + self.settle_calendars))
+        named = tuple(c for name in self.rules.values() for c in rule_calendars(name))
+        return tuple(dict.fromkeys(self.trade_calendars + self.settle_calendars + named))
 
 
 @dataclass
@@ -240,7 +255,14 @@ def _on_or_before(cals: Calendars, names, day: date) -> date:
     return day
 
 
+def rule_calendars(name: str) -> tuple[str, ...]:
+    """The calendars a rule names after `@`, if any."""
+    _, _, cals = str(name).partition("@")
+    return tuple(c for c in cals.split("+") if c)
+
+
 def _rule(name: str) -> tuple[str, int]:
+    name = name.partition("@")[0]
     base, _, arg = name.partition(":")
     if arg and not arg.isdigit():
         raise RuleError(f"rule {name!r}: the argument must be a whole number")
@@ -248,8 +270,10 @@ def _rule(name: str) -> tuple[str, int]:
 
 
 BASES = {"last_bd", "first_bd", "last_bd_minus", "first_bd_minus", "last_bd_plus", "third_wed_minus",
-         "monday_before_third_wed", "third_wed_next_good", "ltd_plus", "ref_end_minus"}
-NEEDS_ARG = {"last_bd_minus", "first_bd_minus", "last_bd_plus", "third_wed_minus", "ltd_plus", "ref_end_minus"}
+         "monday_before_third_wed", "third_wed_next_good", "ltd_plus", "ref_end_minus", "prev_last_bd",
+         "third_mon_prev_good", "day_next_good", "second_fri_before_third_wed"}
+NEEDS_ARG = {"last_bd_minus", "first_bd_minus", "last_bd_plus", "third_wed_minus", "ltd_plus", "ref_end_minus",
+             "day_next_good"}
 REFERENCES = {"month", "imm_quarter"}
 
 
@@ -265,11 +289,16 @@ def check_rule(field_: str, name: str) -> None:
         raise RuleError(f"{field_}: rule {name!r} " + ("needs" if base in NEEDS_ARG else "takes no") + " argument")
     if base == "ltd_plus" and field_ == "last_trade_date":
         raise RuleError("last_trade_date can't count from itself")
+    if base == "day_next_good" and arg > 28:
+        raise RuleError(f"{field_}: rule {name!r}: the day must be 1-28")
+    if "@" in str(name) and not rule_calendars(name):
+        raise RuleError(f"{field_}: rule {name!r} names no calendar after '@'")
 
 
 def _apply_rule(name: str, month: date, cals: Calendars, names, ltd: date | None,
                 ref_end: date | None = None) -> date:
     base, n = _rule(name)
+    names = rule_calendars(name) or names
     if base == "ref_end_minus":
         if ref_end is None:
             raise RuleError(f"rule {name!r} needs a reference period")
@@ -292,11 +321,20 @@ def _apply_rule(name: str, month: date, cals: Calendars, names, ltd: date | None
         return _on_or_after(cals, names, third_wednesday(month))
     if base == "ltd_plus":
         return _step(cals, names, ltd, n)
+    if base == "prev_last_bd":
+        return _on_or_before(cals, names, month - timedelta(days=1))
+    if base == "third_mon_prev_good":
+        first_monday = month + timedelta(days=(0 - month.weekday()) % 7)
+        return _on_or_before(cals, names, first_monday + timedelta(days=14))
+    if base == "day_next_good":
+        return _on_or_after(cals, names, month.replace(day=n))
+    if base == "second_fri_before_third_wed":
+        return _on_or_before(cals, names, third_wednesday(month) - timedelta(days=12))
     raise RuleError(f"unknown rule {name!r}")
 
 
 def _describe(name: str, names) -> str:
-    return f"{name} ({' + '.join(names)} business days)"
+    return f"{name.partition('@')[0]} ({' + '.join(rule_calendars(name) or names)} business days)"
 
 
 def dates_for(c: Contract, cals: Calendars) -> Dated:
