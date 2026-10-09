@@ -74,3 +74,8 @@ def test_job(monkeypatch):
     client = TestClient(app)
     out = client.post("/jobs/futures-roots", json={"only": ["RP", "RY"]}, headers={"Authorization": "Bearer t"})
     assert out.status_code == 200 and set(out.json()["candidates"]) == {"RP", "RY"}
+
+
+def test_a_two_digit_year_from_the_last_century():
+    assert futures_roots._month("EURO/GBP FUTURE   Dec99") == (1999, 12)
+    assert futures_roots._month("EURGBP Crncy Fut  Mar27") == (2027, 3)
