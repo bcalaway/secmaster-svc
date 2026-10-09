@@ -407,7 +407,7 @@ cme_code = "SGD"
 name = "SGD/USD Futures"
 kind = "fx"
 exch_code = "CME"
-queries = ["SGD/USD Futures", "SGD CURRENCY", "SINGAPORE $", "SGD/USD Fut"]
+queries = ["SINGAPORE DOLLAR FUT", "SGD/USD FUTURE", "SING DOLLAR", "SGD USD"]
 
 [[candidates]]
 cme_code = "THAI"
