@@ -209,6 +209,11 @@ def test_dag_report(capsys):
                 "error": 0}}})
     assert "products" not in left
     assert "SER: 0 of 25 confirmed {}, 25 mismatch, 0 not found, 0 error; Bloomberg's root: SO" in capsys.readouterr().out
+    mod.report({"products": {"TY": {"contracts": 150, "listed": 3, "front": "TYZ26", "baskets": {"2026-12": 9}}},
+                "deliverables_added": 27})
+    out = capsys.readouterr().out
+    assert "TY: 150 contracts, 3 listed, front TYZ26; deliverable: 2026-12 9" in out
+    assert "deliverables added 27, changed 0, removed 0" in out
 
 
 def test_a_newer_check_asks_again_and_retires_what_it_got_wrong(migrated_db):

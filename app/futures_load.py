@@ -306,8 +306,10 @@ def _securities(s: Session) -> list[baskets.Security]:
 
 
 def _baskets(s: Session, ps: futures_seed.ProductSeed, product_sec_id: int, securities: list[baskets.Security],
-             now: datetime, out: dict) -> None:
+             now: datetime, out: dict) -> dict[str, int]:
+    """Bring each listed or delivering contract's basket in line; returns each contract's basket size."""
     rule = ps.basket
+    sizes: dict[str, int] = {}
     contracts = s.scalars(select(FuturesContract).where(
         FuturesContract.product_sec_id == product_sec_id, FuturesContract.superseded_at.is_(None),
         FuturesContract.status.in_(("listed", "delivery"))))
@@ -315,6 +317,7 @@ def _baskets(s: Session, ps: futures_seed.ProductSeed, product_sec_id: int, secu
         if c.contract_month < baskets.SIX_PERCENT_FROM or c.last_delivery_date is None:
             continue
         want = {d.sec_id: d for d in baskets.basket(rule, securities, c.contract_month, c.last_delivery_date)}
+        sizes[f"{c.contract_month:%Y-%m}"] = len(want)
         have = {r.security_sec_id: r for r in s.scalars(select(FuturesDeliverable).where(
             FuturesDeliverable.contract_sec_id == c.sec_id, FuturesDeliverable.superseded_at.is_(None)))}
         for sec_id, r in have.items():
@@ -337,6 +340,7 @@ def _baskets(s: Session, ps: futures_seed.ProductSeed, product_sec_id: int, secu
                                      conversion_factor=d.conversion_factor, remaining_months=d.remaining_months,
                                      valid_from=d.valid_from, rule=rule.text, recorded_at=now))
     s.flush()
+    return dict(sorted(sizes.items()))
 
 
 def _apply(s: Session, seed: futures_seed.FuturesSeed, cals: futures.Calendars, today: date, now: datetime) -> dict:
@@ -351,11 +355,12 @@ def _apply(s: Session, seed: futures_seed.FuturesSeed, cals: futures.Calendars, 
         sec_id = _product(s, ps, seed.sha256, names, now, out)
         gen = futures.generate(ps.product, cals, today, HORIZON_YEARS)
         _contracts(s, ps, sec_id, gen, names, now, out, today)
-        if ps.basket:
-            _baskets(s, ps, sec_id, securities, now, out)
+        sizes = _baskets(s, ps, sec_id, securities, now, out) if ps.basket else None
         listed = [d for d in gen.contracts if d.listed_today]
         products[ps.product.root] = {"contracts": len(gen.contracts), "listed": len(listed),
                                      "front": listed[0].contract.short_name if listed else None}
+        if sizes is not None:
+            products[ps.product.root]["baskets"] = sizes
     out["names_changed"] = names.changed
     out["changed"] = any(v for k, v in out.items() if k != "contracts_not_generated")
     out["products"] = products
