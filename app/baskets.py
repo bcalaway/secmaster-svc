@@ -7,7 +7,8 @@ functions: no I/O. app/futures_load.py stores the result as futures_deliverable 
 **Eligibility** (each product's `basket` in seeds/futures.toml, from its CBOT chapter): a
 fixed-principal note or bond with a fixed semi-annual coupon (no bills, TIPS, FRNs or STRIPS), within
 the product's remaining-term window measured from the first day of the contract month (to the first
-call date for a callable bond), and for the notes within its original-term limit. A security joins a
+call date for a callable bond; for the 2-, 3- and 5-year notes, rounded down to whole months first, as
+their chapters say), and within its original-term limit. A security joins a
 contract's basket from its issue date, so one auctioned after the contract was listed is in it from
 then (`valid_from`); one issued after the last delivery day isn't in it. CME may exclude a new issue
 by notice: not modelled.
@@ -50,6 +51,7 @@ class BasketRule:
     remaining_max: int | None = None
     max_inclusive: bool = True  # "<= 2 years" (True) or "< 8 years" (False)
     original_max: int | None = None  # inclusive; None: no limit
+    original_max_from: date | None = None  # the original-term limit only for securities issued from this date
     rounding: str = "quarter"  # the conversion factor's remaining term: month or quarter
     to_first_call: bool = False  # a callable bond's term runs to its first call
 
@@ -60,6 +62,8 @@ class BasketRule:
             return f"{y}y{mm}m" if mm else f"{y}y"
         hi = f" and {'<=' if self.max_inclusive else '<'} {ym(self.remaining_max)}" if self.remaining_max else ""
         orig = f"; original term <= {ym(self.original_max)}" if self.original_max else ""
+        if self.original_max and self.original_max_from:
+            orig += f" if issued from {self.original_max_from}"
         return f"remaining >= {ym(self.remaining_min)}{hi}{orig}; factor rounded to {self.rounding}s"
 
 
@@ -88,7 +92,7 @@ class Deliverable:
 
 def parse_rule(raw: dict, where: str) -> BasketRule:
     allowed = {"remaining_min_months", "remaining_max_months", "max_inclusive", "original_max_months",
-               "rounding", "to_first_call", "source"}
+               "rounding", "to_first_call", "source", "original_max_from"}
     if not isinstance(raw, dict) or set(raw) - allowed or "remaining_min_months" not in raw:
         raise BasketError(f"{where}: basket needs remaining_min_months, and only {sorted(allowed)}")
     ints = {k: raw.get(k) for k in ("remaining_min_months", "remaining_max_months", "original_max_months")}
@@ -100,9 +104,12 @@ def parse_rule(raw: dict, where: str) -> BasketRule:
     rounding = raw.get("rounding", "quarter")
     if rounding not in ROUNDING:
         raise BasketError(f"{where}: rounding must be one of {ROUNDING}")
+    since = raw.get("original_max_from")
+    if since is not None and (not isinstance(since, date) or ints["original_max_months"] is None):
+        raise BasketError(f"{where}: original_max_from must be a date, with original_max_months")
     return BasketRule(remaining_min=ints["remaining_min_months"], remaining_max=ints["remaining_max_months"],
                       max_inclusive=bool(raw.get("max_inclusive", True)), original_max=ints["original_max_months"],
-                      rounding=rounding, to_first_call=bool(raw.get("to_first_call", False)))
+                      original_max_from=since, rounding=rounding, to_first_call=bool(raw.get("to_first_call", False)))
 
 
 def add_months(d: date, n: int) -> date:
@@ -142,13 +149,21 @@ def eligible(rule: BasketRule, sec: Security, contract_month: date, last_deliver
     if sec.issue_date is None or sec.issue_date > last_delivery:
         return None
     end = sec.call_date if (rule.to_first_call and sec.call_date) else sec.maturity_date
-    if end < add_months(contract_month, rule.remaining_min):
-        return None
-    if rule.remaining_max is not None:
-        top = add_months(contract_month, rule.remaining_max)
-        if end > top or (end == top and not rule.max_inclusive):
+    if rule.rounding == "month":
+        # The 2-, 3- and 5-year chapters: the remaining term "rounded down to the nearest one-month increment".
+        m = whole_months(contract_month, end)
+        if m < rule.remaining_min or (rule.remaining_max is not None and (
+                m > rule.remaining_max or (m == rule.remaining_max and not rule.max_inclusive))):
             return None
-    if rule.original_max is not None and sec.maturity_date > add_months(sec.issue_date, rule.original_max):
+    else:
+        if end < add_months(contract_month, rule.remaining_min):
+            return None
+        if rule.remaining_max is not None:
+            top = add_months(contract_month, rule.remaining_max)
+            if end > top or (end == top and not rule.max_inclusive):
+                return None
+    if (rule.original_max is not None and sec.maturity_date > add_months(sec.issue_date, rule.original_max)
+            and (rule.original_max_from is None or sec.issue_date >= rule.original_max_from)):
         return None
     return _rounded(whole_months(contract_month, end), rule)
 

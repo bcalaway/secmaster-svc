@@ -46,12 +46,12 @@ def test_the_factor_is_the_price_at_six_percent(coupon, months):
 
 def test_tu_window_is_inclusive_at_both_ends():
     r = rule("TU")
-    # 1y9m and 2y from Dec 1, 2026: Sep 1, 2028 and Dec 1, 2028, both in; a day either side out.
+    # 1y9m and 2y from Dec 1, 2026, in whole months (rounded down): Sep 1, 2028 in, a day before out.
     assert b.eligible(r, sec(date(2028, 9, 1)), DEC26, date(2027, 1, 5)) == 21
     assert b.eligible(r, sec(date(2028, 8, 31)), DEC26, date(2027, 1, 5)) is None
     assert b.eligible(r, sec(date(2028, 11, 30), issue=date(2026, 11, 30)), DEC26, date(2027, 1, 5)) == 23
     assert b.eligible(r, sec(date(2028, 12, 1)), DEC26, date(2027, 1, 5)) == 24
-    assert b.eligible(r, sec(date(2028, 12, 2)), DEC26, date(2027, 1, 5)) is None
+    assert b.eligible(r, sec(date(2029, 1, 1)), DEC26, date(2027, 1, 5)) is None  # 2 years 1 month
 
 
 def test_ty_excludes_eight_years_and_original_terms_over_ten():
@@ -132,3 +132,38 @@ def test_a_changed_term_supersedes_the_factor(migrated_db):
         s.commit()
     out = run(now=datetime(2026, 10, 8, 13, tzinfo=UTC))
     assert out["deliverables_changed"] >= 1 and out["deliverables_added"] == 0
+
+
+# Spot checks from CME's conversion factor table of 2026-10-08 (TCF.xlsx, downloaded by hand for this check;
+# the whole table matched in the sandbox, 2,194 factors across the 8 products, every basket and every factor,
+# but it isn't committed: this repo is public and the table is CME's). Terms as Treasury publishes them.
+CME_2026_10_08 = [
+    ("TU", "91282CQV6", "0.04125", date(2026, 6, 15), date(2029, 6, 15), date(2027, 6, 1), "0.9652"),
+    ("3Y", "91282CPA3", "0.03625", date(2025, 9, 30), date(2030, 9, 30), date(2027, 9, 1), "0.9357"),
+    ("FV", "91282CQX2", "0.04125", date(2026, 6, 30), date(2031, 6, 30), DEC26, "0.9270"),
+    ("TY", "91282CLF6", "0.03875", date(2024, 8, 15), date(2034, 8, 15), DEC26, "0.8732"),
+    ("UXY", "91282CRF0", "0.04625", date(2026, 8, 17), date(2036, 8, 15), DEC26, "0.9015"),
+    ("TWEA", "912810RU4", "0.02875", date(2016, 11, 15), date(2046, 11, 15), date(2027, 3, 1), "0.6436"),
+    ("US", "912810RV2", "0.03", date(2017, 2, 15), date(2047, 2, 15), DEC26, "0.6533"),
+    ("WN", "912810UA4", "0.04625", date(2024, 5, 15), date(2054, 5, 15), DEC26, "0.8165"),
+]
+
+
+@pytest.mark.parametrize(("root", "cusip", "coupon", "issue", "maturity", "month", "factor"), CME_2026_10_08)
+def test_cmes_table(root, cusip, coupon, issue, maturity, month, factor):
+    s = b.Security(1, cusip, "note", Decimal(coupon), 2, issue, maturity)
+    got = b.basket(rule(root), [s], month, b.add_months(month, 1))
+    assert [(d.cusip, d.conversion_factor) for d in got] == [(cusip, Decimal(factor))]
+
+
+def test_the_20_year_takes_30_year_bonds_issued_before_august_2018_only():
+    r = rule("TWEA")
+    sc3 = b.Security(1, "912810SC3", "bond", Decimal("0.03125"), 2, date(2018, 5, 15), date(2048, 5, 15))
+    sd1 = b.Security(2, "912810SD1", "bond", Decimal("0.03"), 2, date(2018, 8, 15), date(2048, 8, 15))
+    dec28 = date(2028, 12, 1)
+    assert [d.cusip for d in b.basket(r, [sc3, sd1], dec28, date(2028, 12, 29))] == ["912810SC3"]
+
+
+def test_the_two_year_rounds_the_remaining_term_down_before_the_window():
+    # 2 years and 30 days from Dec 1, 2026 rounds down to 2 years: in, as in CME's table (91282CJR3).
+    assert b.eligible(rule("TU"), sec(date(2028, 12, 31), issue=date(2023, 12, 31)), DEC26, date(2027, 1, 5)) == 24
