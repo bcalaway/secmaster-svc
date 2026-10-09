@@ -1839,8 +1839,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "RP"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EURO/GBP FUTURE\" futures on CME (RPZ99 Curncy, Dec 1999; no current contract in the search); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EURO/GBP FUTURE\" futures on CME (RPZ99 Curncy, Dec 1999; no current contract in the search); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 12 listed contracts found by ticker, all one future, \"EURO/GBP FUTURE\" (RPV6 Curncy, CME)"
 cme_code = "RP"
 clearing_code = "RP"
 name = "Euro/British Pound Futures"
@@ -1878,8 +1878,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "RY"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EURO/JPY FUTURE\" futures on CME (RYZ99 Curncy, Dec 1999; no current contract in the search); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EURO/JPY FUTURE\" futures on CME (RYZ99 Curncy, Dec 1999; no current contract in the search); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"EURO/JPY FUTURE\" (RYZ6 Curncy, CME)"
 cme_code = "RY"
 clearing_code = "RY"
 name = "Euro/Japanese Yen Futures"
@@ -1917,8 +1917,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "RF"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EURO/CHF FUTURE\" futures on CME (RFZ99 Curncy, Dec 1999; no current contract in the search); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EURO/CHF FUTURE\" futures on CME (RFZ99 Curncy, Dec 1999; no current contract in the search); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"EURO/CHF FUTURE\" (RFZ6 Curncy, CME)"
 cme_code = "RF"
 clearing_code = "RF"
 name = "Euro/Swiss Franc Futures"
