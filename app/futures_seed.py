@@ -13,6 +13,7 @@ from datetime import date
 from itertools import pairwise
 from pathlib import Path
 
+from app.baskets import BasketError, BasketRule, parse_rule
 from app.futures import KINDS, RULE_FIELDS, Listing, Product, RuleError, check_rule
 
 PATH = Path(__file__).resolve().parent.parent / "seeds" / "futures.toml"
@@ -55,6 +56,8 @@ class ProductSeed:
     rule_sources: dict
     specs: tuple[Spec, ...]
     listing_source: str = "spec page, Listed contracts"
+    basket: BasketRule | None = None  # Treasury futures: the deliverable grade (step 3)
+    basket_source: str = ""
 
     @property
     def info(self) -> dict:
@@ -68,6 +71,7 @@ class ProductSeed:
             "rules": dict(p.rules), "rule_sources": dict(self.rule_sources), "generics": p.generics,
             "history_from": p.history_from.isoformat() if p.history_from else None,
             "history_source": self.history_source,
+            "basket": ({"rule": self.basket.text, "source": self.basket_source} if self.basket else None),
         }
 
 
@@ -188,12 +192,24 @@ def parse(body: bytes) -> FuturesSeed:
             raise FuturesSeedError(f"{where}: more generics than listed months")
         if not product.monthly and generics > product.listing.quarterly:
             raise FuturesSeedError(f"{where}: more generics than listed quarterly contracts")
+        basket, basket_source = None, ""
+        if "basket" in item:
+            if kind != "treasury":
+                raise FuturesSeedError(f"{where}: only a deliverable Treasury future has a basket")
+            try:
+                basket = parse_rule(item["basket"], where)
+            except BasketError as e:
+                raise FuturesSeedError(str(e)) from None
+            basket_source = _text(item["basket"], "source", f"{where} basket")
+        elif kind == "treasury":
+            raise FuturesSeedError(f"{where}: a deliverable Treasury future needs a basket")
         products.append(ProductSeed(
             product=product, name=_text(item, "name", where), clearing_code=_text(item, "clearing_code", where),
             currency=_text(item, "currency", where), root_confirmed=bool(item.get("root_confirmed", False)),
             root_source=_text(item, "root_source", where), history_source=_text(item, "history_source", where),
             rule_sources={k: str(v) for k, v in sources.items()}, specs=_specs(item.get("specs"), where),
-            listing_source=str(item.get("listing_source") or "spec page, Listed contracts")))
+            listing_source=str(item.get("listing_source") or "spec page, Listed contracts"),
+            basket=basket, basket_source=basket_source))
     if not products:
         raise FuturesSeedError("futures seed: no products")
     return FuturesSeed(hashlib.sha256(body).hexdigest(), read_on, tuple(products))

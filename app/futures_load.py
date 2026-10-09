@@ -13,6 +13,10 @@ generates each product's contracts (app/futures.py) and brings the security mast
   isn't known) to its last trading day. Their dates are futures_contract rows, superseded when a
   date or rule changes. A first trading day, once derived, is kept after the contract expires.
 - **Generics** (`TY1`, `TY2`) are identifiers (scheme `GENERIC`) with validity, like on-the-run.
+- **Baskets** (step 3): each Treasury contract listed or in delivery gets its deliverable securities and
+  conversion factors (app/baskets.py) from phase 3's terms, as futures_deliverable rows, superseded when
+  a factor or the rule changes and closed when a security leaves the basket. Expired contracts keep
+  their last basket.
 
 Idempotent: a second run on the same day changes nothing. A stored contract the rules stop generating
 is counted and gets a status of its own: `expired` once its dates have passed (a serial month, or a
@@ -27,15 +31,17 @@ from datetime import UTC, date, datetime, timedelta
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
-from app import calendars, futures, futures_seed
+from app import baskets, calendars, futures, futures_seed
 from app.models import (
     FuturesContract,
+    FuturesDeliverable,
     FuturesProduct,
     FuturesRun,
     FuturesSpec,
     Identifier,
     Instrument,
     InstrumentName,
+    SecurityTerms,
 )
 
 CME = "CME"
@@ -292,17 +298,61 @@ def _contracts(s: Session, ps: futures_seed.ProductSeed, product_sec_id: int, ge
     out["generics_removed"] += r
 
 
+def _securities(s: Session) -> list[baskets.Security]:
+    rows = s.scalars(select(SecurityTerms).where(SecurityTerms.superseded_at.is_(None),
+                                                 SecurityTerms.security_type.in_(("note", "bond"))))
+    return [baskets.Security(r.sec_id, r.cusip, r.security_type, r.coupon_rate, r.coupon_frequency,
+                             r.issue_date, r.maturity_date, r.call_date if r.callable else None) for r in rows]
+
+
+def _baskets(s: Session, ps: futures_seed.ProductSeed, product_sec_id: int, securities: list[baskets.Security],
+             now: datetime, out: dict) -> None:
+    rule = ps.basket
+    contracts = s.scalars(select(FuturesContract).where(
+        FuturesContract.product_sec_id == product_sec_id, FuturesContract.superseded_at.is_(None),
+        FuturesContract.status.in_(("listed", "delivery"))))
+    for c in contracts:
+        if c.contract_month < baskets.SIX_PERCENT_FROM or c.last_delivery_date is None:
+            continue
+        want = {d.sec_id: d for d in baskets.basket(rule, securities, c.contract_month, c.last_delivery_date)}
+        have = {r.security_sec_id: r for r in s.scalars(select(FuturesDeliverable).where(
+            FuturesDeliverable.contract_sec_id == c.sec_id, FuturesDeliverable.superseded_at.is_(None)))}
+        for sec_id, r in have.items():
+            d = want.get(sec_id)
+            if d is None:
+                r.superseded_at = now
+                out["deliverables_removed"] += 1
+            elif (r.conversion_factor, r.remaining_months, r.valid_from, r.rule) != (
+                    d.conversion_factor, d.remaining_months, d.valid_from, rule.text):
+                r.superseded_at = now
+                out["deliverables_changed"] += 1
+        s.flush()
+        for sec_id, d in want.items():
+            r = have.get(sec_id)
+            if r is not None and r.superseded_at is None:
+                continue
+            if r is None:
+                out["deliverables_added"] += 1
+            s.add(FuturesDeliverable(contract_sec_id=c.sec_id, security_sec_id=sec_id,
+                                     conversion_factor=d.conversion_factor, remaining_months=d.remaining_months,
+                                     valid_from=d.valid_from, rule=rule.text, recorded_at=now))
+    s.flush()
+
+
 def _apply(s: Session, seed: futures_seed.FuturesSeed, cals: futures.Calendars, today: date, now: datetime) -> dict:
     out = dict.fromkeys(("products_created", "products_updated", "specs_changed", "contracts_created",
                          "contracts_changed", "contracts_not_generated", "cme_codes_added", "cme_codes_removed",
                          "generics_added", "generics_removed", "contracts_expired", "contracts_withdrawn",
-                         "tickers_removed"), 0)
+                         "tickers_removed", "deliverables_added", "deliverables_changed", "deliverables_removed"), 0)
     names = _Names(s, now)
     products = {}
+    securities = _securities(s) if any(ps.basket for ps in seed.products) else []
     for ps in seed.products:
         sec_id = _product(s, ps, seed.sha256, names, now, out)
         gen = futures.generate(ps.product, cals, today, HORIZON_YEARS)
         _contracts(s, ps, sec_id, gen, names, now, out, today)
+        if ps.basket:
+            _baskets(s, ps, sec_id, securities, now, out)
         listed = [d for d in gen.contracts if d.listed_today]
         products[ps.product.root] = {"contracts": len(gen.contracts), "listed": len(listed),
                                      "front": listed[0].contract.short_name if listed else None}

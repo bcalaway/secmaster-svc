@@ -24,6 +24,8 @@
 #   after them ("13 consecutive months and 8 quarterly contracts", step 2d).
 # - `history_from`: contracts expiring on or after it are generated (1990 or launch, Bill 2026-10-08);
 #   absent: only what's listed today, until the launch date is found. `history_source` says which.
+# - `basket` (Treasury futures, step 3): the deliverable grade from the product's CBOT chapter, in months
+#   from the first day of the contract month (app/baskets.py); its `source` quotes the chapter.
 # - `specs` are effective-dated, verbatim from CME's spec pages as read on 2026-10-08 into mkt-data's
 #   docs/cme-contract-specs-2026-10.md. Earlier specs aren't recorded yet, so each starts on the date read.
 # - Bloomberg roots come from the phase plan or CME's overview pages; `root_confirmed = true` once
@@ -55,6 +57,12 @@ first_intention_date = "CBOT Treasury delivery practice: position (intention) da
 first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
 first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
 last_delivery_date = "spec page, Last delivery date: third business day following the last trading day"
+[products.basket]
+source = "CBOT 21 (read 2026-10-09): an original term to maturity of not more than 5 years 3 months, a remaining term of not more than 2 years and not less than 1 year 9 months, calculated from the first day of the contract's named month and rounded down to the nearest one-month increment"
+remaining_min_months = 21
+remaining_max_months = 24
+original_max_months = 63
+rounding = "month"
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/2-year-us-treasury-note.contractSpecs.html"
@@ -101,6 +109,12 @@ first_intention_date = "CBOT Treasury delivery practice: position (intention) da
 first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
 first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
 last_delivery_date = "spec page, Last delivery date: third business day following the last trading day"
+[products.basket]
+source = "CBOT 39: original term not more than 7 years; remaining term not less than 2 years 9 months and not more than 3 years; factor term rounded down to whole months"
+remaining_min_months = 33
+remaining_max_months = 36
+original_max_months = 84
+rounding = "month"
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/3-year-us-treasury-note.contractSpecs.html"
@@ -139,6 +153,11 @@ first_intention_date = "CBOT Treasury delivery practice: position (intention) da
 first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
 first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
 last_delivery_date = "spec page, Last delivery date: third business day following the last trading day"
+[products.basket]
+source = "CBOT 20: original term not more than 5 years 3 months; remaining term not less than 4 years 2 months; factor term rounded down to whole months"
+remaining_min_months = 50
+original_max_months = 63
+rounding = "month"
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/5-year-us-treasury-note.contractSpecs.html"
@@ -186,6 +205,13 @@ first_intention_date = "CBOT Treasury delivery practice: position (intention) da
 first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
 first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
 last_delivery_date = "spec page, Last delivery date: last business day of the delivery month"
+[products.basket]
+source = "CBOT 19 (current text): original term not more than 10 years; remaining term at least 6 years 6 months and less than 8 years; factor term rounded down to quarters"
+remaining_min_months = 78
+remaining_max_months = 96
+max_inclusive = false
+original_max_months = 120
+rounding = "quarter"
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/10-year-us-treasury-note.contractSpecs.html"
@@ -235,6 +261,11 @@ first_intention_date = "CBOT Treasury delivery practice: position (intention) da
 first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
 first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
 last_delivery_date = "spec page, Last delivery date: last business day of the delivery month"
+[products.basket]
+source = "CBOT 26: original term not more than 10 years; remaining term not less than 9 years 5 months; factor term rounded down to quarters"
+remaining_min_months = 113
+original_max_months = 120
+rounding = "quarter"
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/ultra-10-year-us-treasury-note.contractSpecs.html"
@@ -284,6 +315,14 @@ first_intention_date = "CBOT Treasury delivery practice: position (intention) da
 first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
 first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
 last_delivery_date = "spec page, Last delivery date: last business day of the delivery month"
+[products.basket]
+source = "CBOT 25 (read 2026-10-09): remaining term greater than or equal to 19 years 2 months but less than 19 years 11 months, from the first day of the contract month; the Exchange may exclude any new issue. CME's conversion factor table of 2026-10-08 lists the 30-year bonds issued through 2018-05 (912810RQ3 to 912810SC3) but none issued from 2018-08 (912810SD1 on), which reach the window from the 2028-12 contract: so 30-year bonds issued from 2018-08-01 are excluded here, inferred from the table; the notice behind it is still to find"
+remaining_min_months = 230
+remaining_max_months = 239
+max_inclusive = false
+original_max_months = 240
+original_max_from = 2018-08-01
+rounding = "quarter"
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/20-year-us-treasury-bond.contractSpecs.html"
@@ -326,6 +365,13 @@ first_intention_date = "CBOT Treasury delivery practice: position (intention) da
 first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
 first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
 last_delivery_date = "spec page, Last delivery date: last business day of the delivery month"
+[products.basket]
+source = "CBOT 18: remaining term (to first call if callable) at least 15 years and less than 25 years; factor term rounded down to quarters, to first call if callable"
+remaining_min_months = 180
+remaining_max_months = 300
+max_inclusive = false
+rounding = "quarter"
+to_first_call = true
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/30-year-us-treasury-bond.contractSpecs.html"
@@ -375,6 +421,10 @@ first_intention_date = "CBOT Treasury delivery practice: position (intention) da
 first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
 first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
 last_delivery_date = "spec page, Last delivery date: last business day of the delivery month"
+[products.basket]
+source = "CBOT 40: remaining term not less than 25 years; factor term rounded down to quarters"
+remaining_min_months = 300
+rounding = "quarter"
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/ultra-t-bond.contractSpecs.html"

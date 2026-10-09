@@ -461,6 +461,32 @@ class FuturesContract(Base):
     superseded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
+class FuturesDeliverable(Base):
+    """A security in a Treasury futures contract's deliverable basket, with its conversion factor (step 3).
+
+    One current row per contract and security (superseded_at null); a security joins the basket from its
+    issue date (`valid_from`), and a row is superseded (never edited) when its factor or the rule changes,
+    or closed with no successor when the security stops being deliverable (app/baskets.py).
+    """
+
+    __tablename__ = "futures_deliverable"
+    __table_args__ = (
+        Index("uq_futures_deliverable_current", "contract_sec_id", "security_sec_id", unique=True,
+              postgresql_where=text("superseded_at IS NULL"), sqlite_where=text("superseded_at IS NULL")),
+        Index("ix_futures_deliverable_security", "security_sec_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    contract_sec_id: Mapped[int] = mapped_column(ForeignKey("instrument.sec_id"))
+    security_sec_id: Mapped[int] = mapped_column(ForeignKey("instrument.sec_id"))
+    conversion_factor: Mapped[Decimal] = mapped_column(Numeric)
+    remaining_months: Mapped[int] = mapped_column(SmallInteger)  # rounded, as the factor uses it
+    valid_from: Mapped[date] = mapped_column(Date)
+    rule: Mapped[str] = mapped_column(String(200))
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    superseded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
 class FuturesRun(Base):
     """Each futures generation run (app/futures_load.py): how it went and what it did."""
 
