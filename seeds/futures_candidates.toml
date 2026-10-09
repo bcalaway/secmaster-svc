@@ -10,7 +10,9 @@
 # - `exch_code`: Bloomberg's exchange code for the matches to keep: CME or CBT, as for the main 20 (step 2b).
 # - `queries`: OpenFIGI search text, tried in order; guesses at Bloomberg's naming, which the log shows. The
 #   first run (2026-10-09) found crosses named "NZD/JPY Future" and "NZD/CAD Cross Fut", and nothing for
-#   the Treasury micros or yields under the queries tried then.
+#   the Treasury micros or yields under the queries tried then. The second run found 30 of the 36; the six
+#   left (RP, RY, RF, ACD, ANE, MWN) get the naming Bloomberg was seen to use for other crosses ("EUR/NOR
+#   KRONE", "EUR/SWED KRNA", "GBP AUD Crs R Fut") and for the micro Ultra 10-year ("Micro Ult 10yr Fut").
 
 [[candidates]]
 cme_code = "SEK"
@@ -38,7 +40,7 @@ cme_code = "MWN"
 name = "Micro Ultra U.S. Treasury Bond Futures"
 kind = "treasury"
 exch_code = "CBT"
-queries = ["MICRO", "ULTRA BOND", "ULTRA T-BOND"]
+queries = ["Micro Ult Bond", "Micro Ult T-Bond", "Micro Ultra Bnd", "Micro Ult"]
 
 [[candidates]]
 cme_code = "2YY"
@@ -115,21 +117,21 @@ cme_code = "RP"
 name = "Euro/British Pound Futures"
 kind = "fx"
 exch_code = "CME"
-queries = ["EURGBP", "EUR/GBP", "EUR/GBP Future", "EUR/GBP Cross"]
+queries = ["EURO/BP", "EUR/BP", "EURO/GBP", "EURO/BRIT"]
 
 [[candidates]]
 cme_code = "RY"
 name = "Euro/Japanese Yen Futures"
 kind = "fx"
 exch_code = "CME"
-queries = ["EURJPY", "EUR/JPY", "EUR/JPY Future", "EUR/JPY Cross"]
+queries = ["EURO/JPY", "EURO/YEN", "EUR/YEN", "EURO/JAP"]
 
 [[candidates]]
 cme_code = "RF"
 name = "Euro/Swiss Franc Futures"
 kind = "fx"
 exch_code = "CME"
-queries = ["EURCHF", "EUR/CHF", "EUR/CHF Future", "EUR/CHF Cross"]
+queries = ["EURO/CHF", "EURO/SWISS", "EUR/SWISS", "EURO/SFR"]
 
 [[candidates]]
 cme_code = "EAD"
@@ -213,7 +215,7 @@ cme_code = "ACD"
 name = "Australian Dollar/Canadian Dollar Futures"
 kind = "fx"
 exch_code = "CME"
-queries = ["AUDCAD", "AUD/CAD", "AUD/CAD Future", "AUD/CAD Cross"]
+queries = ["AUD/CAN", "AUSTR/CAN", "AUD CAD", "AUD/C$"]
 
 [[candidates]]
 cme_code = "AJY"
@@ -227,7 +229,7 @@ cme_code = "ANE"
 name = "Australian Dollar/New Zealand Dollar Futures"
 kind = "fx"
 exch_code = "CME"
-queries = ["AUDNZD", "AUD/NZD", "AUD/NZD Future", "AUD/NZD Cross"]
+queries = ["AUD/NZ", "AUD NZD", "AUSTR/NZ", "AUD/NZ$"]
 
 [[candidates]]
 cme_code = "NZC"
