@@ -3,13 +3,15 @@
 The products in seeds/futures_candidates.toml have no Bloomberg code on their CME pages, and OpenFIGI's
 mapping can't look a contract up by CME's code (step 2b: "No identifier found" for every one). So each
 candidate is searched by its queries, filtered to futures in its market sector (Curncy for FX, Comdty
-for rates) on its Bloomberg exchange (CME or CBT), and the futures found are grouped by root (the ticker
-without its month and year) and name (without its month). The job's answer lists the groups per
-candidate, most contracts first, for a person to read: a root goes into seeds/futures.toml, in a
-reviewed PR, only once its name is plainly that product. Nothing is stored. Run by hand (the DAG
+for rates) on its Bloomberg exchange (CME or CBT, sent as OpenFIGI's exchCode filter), and the futures
+found are grouped by root (the ticker without its month and year) and name (without its month). The
+job's answer lists the groups per candidate, latest contract month first (a product CME still lists
+before one it retired), with that latest contract as the example, for a person to read: a root goes
+into seeds/futures.toml, in a reviewed PR, only once its name is plainly that product. Nothing is stored. Run by hand (the DAG
 secmaster_svc__futures_roots, POST /jobs/futures-roots); `only` limits it to some CME codes.
 """
 
+import re
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
@@ -19,6 +21,15 @@ from app.futures_figi import SECTOR, parse_ticker, product_name
 
 PATH = Path(__file__).resolve().parent.parent / "seeds" / "futures_candidates.toml"
 GROUPS = 6  # groups listed per candidate
+PAGES = 3  # pages of 100 per query
+MONTHS = {m: i for i, m in enumerate(("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"), 1)}
+NAME_MONTH = re.compile(r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)(\d{2})\s*$")
+
+
+def _month(name: str | None) -> tuple[int, int] | None:
+    """(year, month) from the end of a future's name ("... Dec26"), or None."""
+    m = NAME_MONTH.search((name or "").strip())
+    return (2000 + int(m[2]), MONTHS[m[1]]) if m else None
 
 
 class CandidateError(ValueError):
@@ -60,10 +71,16 @@ def group(rows: list[dict], exch_code: str) -> list[dict]:
         if p is None:
             continue
         key = (p[0], product_name(r.get("name")))
-        g = groups.setdefault(key, {"root": key[0], "name": key[1], "contracts": 0,
-                                    "example": f"{r.get('ticker')} {r.get('marketSector')} ({r.get('name')})"})
+        g = groups.setdefault(key, {"root": key[0], "name": key[1], "contracts": 0, "latest": None,
+                                    "example": None})
         g["contracts"] += 1
-    return sorted(groups.values(), key=lambda g: (-g["contracts"], g["root"]))
+        month = _month(r.get("name"))
+        if g["example"] is None or (month and (g["latest"] is None or month > tuple(g["latest"]))):
+            g["latest"] = list(month) if month else g["latest"]
+            g["example"] = f"{r.get('ticker')} {r.get('marketSector')} ({r.get('name')})"
+    # Latest contract month first: today's product, not one CME stopped listing years ago.
+    return sorted(groups.values(), key=lambda g: (-(g["latest"] or [0, 0])[0], -(g["latest"] or [0, 0])[1],
+                                                  -g["contracts"], g["root"]))
 
 
 def run(api_key: str | None, only: list[str] | None = None, searcher=None, candidates=None) -> dict:
@@ -76,7 +93,8 @@ def run(api_key: str | None, only: list[str] | None = None, searcher=None, candi
         rows: list[dict] = []
         said = []
         for q in c.queries:
-            got = searcher({"query": q, "securityType2": "Future", "marketSecDes": SECTOR[c.kind]}, api_key, pages=1)
+            got = searcher({"query": q, "securityType2": "Future", "marketSecDes": SECTOR[c.kind],
+                            "exchCode": c.exch_code}, api_key, pages=PAGES)
             out["searched"] += 1
             said.append(f"{q}: {len(got)}")
             rows += got

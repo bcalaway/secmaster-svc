@@ -29,8 +29,9 @@ def report(result: dict) -> dict:
         if not groups:
             print(f"roots: {code}:   nothing on {c.get('exch_code')}")
         for g in groups:
+            latest = "-".join(str(x) for x in g.get("latest") or []) or "?"
             print(f"roots: {code}:   {g.get('root')} = {g.get('name')}, {g.get('contracts')} contracts, "
-                  f"e.g. {g.get('example')}")
+                  f"latest {latest}: {g.get('example')}")
         if c.get("more_groups"):
             print(f"roots: {code}:   and {c['more_groups']} more groups")
     return {k: v for k, v in result.items() if k != "candidates"}
