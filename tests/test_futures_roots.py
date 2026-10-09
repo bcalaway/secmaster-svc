@@ -18,10 +18,14 @@ def test_candidates_load():
 
 def test_group_by_root_and_name():
     rows = [fut("RPZ6", "EURGBP Crncy Fut  Dec26", figi_="A"), fut("RPH7", "EURGBP Crncy Fut  Mar27", figi_="B"),
-            fut("XYZ6", "EUR/GBP ICE       Dec26", exch="ICE", figi_="C"), fut("T 4 01/01/30", "not a future")]
+            fut("XYZ6", "EUR/GBP ICE       Dec26", exch="ICE", figi_="C"), fut("T 4 01/01/30", "not a future"),
+            fut("AEZ10", "EUR/GBP AON       Dec10", figi_="D"), fut("AEH11", "EUR/GBP AON       Mar11", figi_="E"),
+            fut("AEM11", "EUR/GBP AON       Jun11", figi_="F")]
     got = futures_roots.group(rows, "CME")
-    assert got == [{"root": "RP", "name": "EURGBP Crncy Fut", "contracts": 2,
-                    "example": "RPZ6 Curncy (EURGBP Crncy Fut  Dec26)"}]
+    # The product still listed comes first, though the retired one has more contracts in the answer.
+    assert got[0] == {"root": "RP", "name": "EURGBP Crncy Fut", "contracts": 2, "latest": [2027, 3],
+                      "example": "RPH7 Curncy (EURGBP Crncy Fut  Mar27)"}
+    assert got[1]["root"] == "AE" and got[1]["contracts"] == 3 and got[1]["latest"] == [2011, 6]
 
 
 def test_run_searches_each_query_and_counts_a_future_once():
@@ -33,9 +37,9 @@ def test_run_searches_each_query_and_counts_a_future_once():
 
     out = futures_roots.run("k", only=["RP"], searcher=searcher)
     rp = out["candidates"]["RP"]
-    assert out["searched"] == len(calls) == 2 and calls[0]["marketSecDes"] == "Curncy"
-    assert calls[0]["securityType2"] == "Future" and rp["groups"][0]["contracts"] == 2
-    assert rp["queries"] == ["EURGBP: 2", "EUR/GBP: 2"]
+    assert out["searched"] == len(calls) == 4 and calls[0]["marketSecDes"] == "Curncy"
+    assert calls[0]["securityType2"] == "Future" and calls[0]["exchCode"] == "CME"
+    assert rp["groups"][0]["contracts"] == 2 and rp["queries"][:2] == ["EURGBP: 2", "EUR/GBP: 2"]
 
 
 def test_search_pages_and_spacing():
@@ -66,6 +70,7 @@ def test_job(monkeypatch):
 
     monkeypatch.setattr(jobs, "settings", Settings(airflow_token="t", openfigi_api_key="k"))
     monkeypatch.setattr(figi, "search", lambda body, key, pages: [fut("RPZ6", "EURGBP Crncy Fut  Dec26")])
+    monkeypatch.setattr(futures_roots, "PAGES", 1)
     client = TestClient(app)
     out = client.post("/jobs/futures-roots", json={"only": ["RP", "RY"]}, headers={"Authorization": "Bearer t"})
     assert out.status_code == 200 and set(out.json()["candidates"]) == {"RP", "RY"}
