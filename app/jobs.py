@@ -121,6 +121,21 @@ def run_futures_figi() -> dict:
         raise HTTPException(502, str(e)) from None
 
 
+@router.post("/futures-roots", dependencies=[Depends(require_token)])
+def run_futures_roots(body: dict | None = None) -> dict:
+    """Search OpenFIGI for the futures candidates' Bloomberg roots (seeds/futures_candidates.toml); stores nothing.
+    Body: {"only": ["RP", ...]} to search some. 502 if OpenFIGI can't be reached."""
+    from app import figi, futures_roots
+
+    only = (body or {}).get("only") or None
+    try:
+        return futures_roots.run(settings.openfigi_api_key, only=only)
+    except figi.FigiError as e:
+        raise HTTPException(502, str(e)) from None
+    except futures_roots.CandidateError as e:
+        raise HTTPException(500, str(e)) from None
+
+
 @router.get("/instruments", dependencies=[Depends(require_read_token)])
 def instruments(type: str = "", curve: str = "", include_inactive: bool = False) -> dict:
     with db.session() as s:
