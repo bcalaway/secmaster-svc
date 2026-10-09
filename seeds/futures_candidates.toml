@@ -1,0 +1,263 @@
+# Futures products for step 2c (mkt-data's docs/phase-4.md) whose Bloomberg root isn't known yet: none of
+# their CME pages shows a vendor code (docs/cme-contract-specs-2026-10.md), and OpenFIGI can't map CME's
+# code. The root-search job (app/futures_roots.py, DAG secmaster_svc__futures_roots) searches OpenFIGI for
+# each by these queries and logs the futures it finds, grouped by root and name, for a person to read.
+# Nothing here is stored: a root goes into seeds/futures.toml, in a reviewed PR, once its name checks out.
+# Not an instrument seed (app/seed.py skips it).
+#
+# - `cme_code`, `name`: as on CME's spec page.
+# - `sector`: Bloomberg's market sector, from `kind` (Curncy for FX, Comdty for rates).
+# - `exch_code`: Bloomberg's exchange code for the matches to keep: CME or CBT, as for the main 20 (step 2b).
+# - `queries`: OpenFIGI search text, tried in order; guesses at Bloomberg's naming, which the log shows.
+
+[[candidates]]
+cme_code = "SEK"
+name = "Swedish Krona Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["SEK CURRENCY", "SWEDISH KRONA", "SEKUSD"]
+
+[[candidates]]
+cme_code = "NOK"
+name = "Norwegian Krone Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["NOK CURRENCY", "NORWEGIAN KRONE", "NOKUSD"]
+
+[[candidates]]
+cme_code = "MTN"
+name = "Micro Ultra 10-Year U.S. Treasury Note Futures"
+kind = "treasury"
+exch_code = "CBT"
+queries = ["MICRO ULTRA 10", "MICRO 10YR ULTRA"]
+
+[[candidates]]
+cme_code = "MWN"
+name = "Micro Ultra U.S. Treasury Bond Futures"
+kind = "treasury"
+exch_code = "CBT"
+queries = ["MICRO ULTRA BOND", "MICRO ULTRA T-BOND"]
+
+[[candidates]]
+cme_code = "2YY"
+name = "2-Year Yield Futures"
+kind = "treasury"
+exch_code = "CBT"
+queries = ["2YR YIELD", "2-YEAR YIELD"]
+
+[[candidates]]
+cme_code = "5YY"
+name = "5-Year Yield Futures"
+kind = "treasury"
+exch_code = "CBT"
+queries = ["5YR YIELD", "5-YEAR YIELD"]
+
+[[candidates]]
+cme_code = "10Y"
+name = "10-Year Yield Futures"
+kind = "treasury"
+exch_code = "CBT"
+queries = ["10YR YIELD", "10-YEAR YIELD"]
+
+[[candidates]]
+cme_code = "30Y"
+name = "30-Year Yield Futures"
+kind = "treasury"
+exch_code = "CBT"
+queries = ["30YR YIELD", "30-YEAR YIELD"]
+
+[[candidates]]
+cme_code = "M6E"
+name = "Micro EUR/USD Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["MICRO EUR", "E-MICRO EUR"]
+
+[[candidates]]
+cme_code = "M6B"
+name = "Micro GBP/USD Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["MICRO GBP", "E-MICRO GBP"]
+
+[[candidates]]
+cme_code = "M6A"
+name = "Micro AUD/USD Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["MICRO AUD", "E-MICRO AUD"]
+
+[[candidates]]
+cme_code = "MJY"
+name = "Micro JPY/USD Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["MICRO JPY", "MICRO YEN"]
+
+[[candidates]]
+cme_code = "MCD"
+name = "Micro CAD/USD Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["MICRO CAD", "E-MICRO CAD"]
+
+[[candidates]]
+cme_code = "MSF"
+name = "Micro CHF/USD Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["MICRO CHF", "E-MICRO CHF"]
+
+[[candidates]]
+cme_code = "RP"
+name = "Euro/British Pound Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["EURGBP", "EUR/GBP"]
+
+[[candidates]]
+cme_code = "RY"
+name = "Euro/Japanese Yen Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["EURJPY", "EUR/JPY"]
+
+[[candidates]]
+cme_code = "RF"
+name = "Euro/Swiss Franc Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["EURCHF", "EUR/CHF"]
+
+[[candidates]]
+cme_code = "EAD"
+name = "Euro/Australian Dollar Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["EURAUD", "EUR/AUD"]
+
+[[candidates]]
+cme_code = "ECD"
+name = "Euro/Canadian Dollar Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["EURCAD", "EUR/CAD"]
+
+[[candidates]]
+cme_code = "ENK"
+name = "Euro/Norwegian Krone Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["EURNOK", "EUR/NOK"]
+
+[[candidates]]
+cme_code = "ESK"
+name = "Euro/Swedish Krona Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["EURSEK", "EUR/SEK"]
+
+[[candidates]]
+cme_code = "ENZ"
+name = "EUR/NZD Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["EURNZD", "EUR/NZD"]
+
+[[candidates]]
+cme_code = "PSF"
+name = "British Pound/Swiss Franc Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["GBPCHF", "GBP/CHF"]
+
+[[candidates]]
+cme_code = "PJY"
+name = "British Pound/Japanese Yen Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["GBPJPY", "GBP/JPY"]
+
+[[candidates]]
+cme_code = "PAD"
+name = "GBP/AUD Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["GBPAUD", "GBP/AUD"]
+
+[[candidates]]
+cme_code = "PCD"
+name = "GBP/CAD Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["GBPCAD", "GBP/CAD"]
+
+[[candidates]]
+cme_code = "PNK"
+name = "GBP/NOK Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["GBPNOK", "GBP/NOK"]
+
+[[candidates]]
+cme_code = "PSK"
+name = "GBP/SEK Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["GBPSEK", "GBP/SEK"]
+
+[[candidates]]
+cme_code = "ACD"
+name = "Australian Dollar/Canadian Dollar Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["AUDCAD", "AUD/CAD"]
+
+[[candidates]]
+cme_code = "AJY"
+name = "Australian Dollar/Japanese Yen Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["AUDJPY", "AUD/JPY"]
+
+[[candidates]]
+cme_code = "ANE"
+name = "Australian Dollar/New Zealand Dollar Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["AUDNZD", "AUD/NZD"]
+
+[[candidates]]
+cme_code = "NZC"
+name = "NZD/CAD Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["NZDCAD", "NZD/CAD"]
+
+[[candidates]]
+cme_code = "NJY"
+name = "NZD/JPY Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["NZDJPY", "NZD/JPY"]
+
+[[candidates]]
+cme_code = "CJY"
+name = "Canadian Dollar/Japanese Yen Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["CADJPY", "CAD/JPY"]
+
+[[candidates]]
+cme_code = "SJY"
+name = "Swiss Franc/Japanese Yen Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["CHFJPY", "CHF/JPY"]
+
+[[candidates]]
+cme_code = "NSK"
+name = "NOK/SEK Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["NOKSEK", "NOK/SEK"]

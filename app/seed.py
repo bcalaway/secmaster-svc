@@ -31,8 +31,9 @@ from sqlalchemy.orm import Session
 from app.models import Identifier, Instrument, InstrumentName, InstrumentNote, SeedRun
 
 SEEDS = Path(__file__).resolve().parent.parent / "seeds"
-# Seed files that aren't instrument seeds: the futures product seed (app/futures_seed.py).
-NOT_INSTRUMENT_SEEDS = frozenset({"futures.toml"})
+# Seed files that aren't instrument seeds: the futures product seed (app/futures_seed.py) and the
+# futures root candidates (app/futures_roots.py).
+NOT_INSTRUMENT_SEEDS = frozenset({"futures.toml", "futures_candidates.toml"})
 
 NAME = re.compile(r"^[A-Z0-9][A-Z0-9.\-]{1,39}$")
 TENOR = re.compile(r"^P(\d+(\.\d+)?[DWMY])+$")

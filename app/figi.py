@@ -110,6 +110,42 @@ def map_jobs(jobs: list[dict], api_key: str | None, post=None, sleep=time.sleep,
     return out
 
 
+SEARCH_URL = "https://api.openfigi.com/v3/search"
+# /v3/search: with a key 20 requests a minute, without 5 (OpenFIGI's documentation, read 2026-10-08).
+SEARCH_GAP = {True: 3.1, False: 12.1}  # seconds between requests
+
+
+def search(body: dict, api_key: str | None, pages: int = 2, post=None, sleep=time.sleep) -> list[dict]:
+    """OpenFIGI's search (`{"query": ..., filters}`): the rows of up to `pages` pages of 100, spaced to stay
+    within the rate limit. Raises FigiError if it can't be reached or answers badly."""
+    post = post or httpx2.post
+    headers = {"Content-Type": "application/json", "User-Agent": USER_AGENT}
+    if api_key:
+        headers["X-OPENFIGI-APIKEY"] = api_key
+    rows: list[dict] = []
+    start = None
+    for _ in range(pages):
+        sleep(SEARCH_GAP[bool(api_key)])
+        req = dict(body) | ({"start": start} if start else {})
+        try:
+            r = post(SEARCH_URL, json=req, headers=headers, timeout=TIMEOUT_SECONDS)
+        except httpx2.HTTPError as e:
+            raise FigiError(f"OpenFIGI unreachable: {e}") from None
+        if r.status_code == 429:
+            sleep(float(r.headers.get("ratelimit-reset", 60)) + 1)
+            continue
+        if r.status_code != 200:
+            raise FigiError(f"OpenFIGI answered HTTP {r.status_code}: {r.text[:200]}")
+        got = r.json()
+        if not isinstance(got, dict):
+            raise FigiError(f"unexpected search answer: {str(got)[:200]}")
+        rows += [x for x in got.get("data") or [] if isinstance(x, dict)]
+        start = got.get("next")
+        if not start:
+            break
+    return rows
+
+
 def map_cusips(cusips: list[str], api_key: str | None, post=None, sleep=time.sleep, clock=time.monotonic) -> list[Answer]:
     """Ask OpenFIGI about each CUSIP, in batches, within the rate limit. Raises FigiError if it can't be reached."""
     body = map_jobs([{"idType": "ID_CUSIP", "idValue": c} for c in cusips], api_key, post, sleep, clock)
