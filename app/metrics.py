@@ -21,6 +21,7 @@ from app.models import (
     Auction,
     FigiLookup,
     FuturesContract,
+    FuturesFigiLookup,
     FuturesProduct,
     FuturesRun,
     Identifier,
@@ -172,6 +173,17 @@ def render(s) -> str:
                [({}, _epoch(fok.finished_at))] if fok else [])
     out.metric("secmaster_svc_futures_ok", "gauge", "1 if the latest futures generation run succeeded, 0 if it failed.",
                [({}, int(fruns[0].outcome == "ok"))] if fruns else [])
+    # Step 2b: what OpenFIGI said about each listed contract, by product and outcome.
+    lookups = s.execute(
+        select(FuturesProduct.root, FuturesFigiLookup.outcome, func.count())
+        .join(FuturesProduct, FuturesProduct.sec_id == FuturesFigiLookup.product_sec_id)
+        .join(FuturesContract, FuturesContract.sec_id == FuturesFigiLookup.sec_id)
+        .where(FuturesContract.superseded_at.is_(None), FuturesContract.status.in_(("listed", "delivery")),
+               FuturesFigiLookup.root == FuturesProduct.root)
+        .group_by(FuturesProduct.root, FuturesFigiLookup.outcome)).all()
+    out.metric("secmaster_svc_futures_figi_lookups", "gauge",
+               "Listed futures contracts by what OpenFIGI said (confirmed, mismatch, not_found, error), by product.",
+               [({"product": r, "outcome": o}, n) for r, o, n in sorted(lookups)])
     return out.text()
 
 

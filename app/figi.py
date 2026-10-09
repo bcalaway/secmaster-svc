@@ -1,4 +1,5 @@
-"""FIGIs for Treasury securities and STRIPS from OpenFIGI (mkt-data's docs/phase-3.md, step 3d).
+"""FIGIs for Treasury securities and STRIPS from OpenFIGI (mkt-data's docs/phase-3.md, step 3d), and the
+mapping client the futures lookups share (app/futures_figi.py, docs/phase-4.md step 2b).
 
 OpenFIGI's mapping API (https://api.openfigi.com/v3/mapping) turns a CUSIP
 into its FIGI, composite FIGI and Bloomberg-style ticker ("T 4 1/4 08/15/35").
@@ -74,17 +75,18 @@ def parse(cusips: list[str], body: list) -> list[Answer]:
     return out
 
 
-def map_cusips(cusips: list[str], api_key: str | None, post=None, sleep=time.sleep, clock=time.monotonic) -> list[Answer]:
-    """Ask OpenFIGI about each CUSIP, in batches, within the rate limit. Raises FigiError if it can't be reached."""
+def map_jobs(jobs: list[dict], api_key: str | None, post=None, sleep=time.sleep, clock=time.monotonic) -> list:
+    """Send OpenFIGI mapping jobs (`{"idType": ..., "idValue": ..., filters}`), in batches, within the rate
+    limit; OpenFIGI's answer to each, in order. Raises FigiError if it can't be reached or answers badly."""
     post = post or httpx2.post
     limits = WITH_KEY if api_key else WITHOUT_KEY
     headers = {"Content-Type": "application/json", "User-Agent": USER_AGENT}
     if api_key:
         headers["X-OPENFIGI-APIKEY"] = api_key
     sent: list[float] = []
-    out: list[Answer] = []
-    for i in range(0, len(cusips), limits.batch):
-        batch = cusips[i:i + limits.batch]
+    out: list = []
+    for i in range(0, len(jobs), limits.batch):
+        batch = jobs[i:i + limits.batch]
         for attempt in range(3):
             now = clock()
             sent = [t for t in sent if now - t < limits.window]
@@ -92,8 +94,7 @@ def map_cusips(cusips: list[str], api_key: str | None, post=None, sleep=time.sle
                 sleep(limits.window - (now - sent[0]) + 0.1)
             sent.append(clock())
             try:
-                r = post(URL, json=[{"idType": "ID_CUSIP", "idValue": c} for c in batch], headers=headers,
-                         timeout=TIMEOUT_SECONDS)
+                r = post(URL, json=batch, headers=headers, timeout=TIMEOUT_SECONDS)
             except httpx2.HTTPError as e:
                 raise FigiError(f"OpenFIGI unreachable: {e}") from None
             if r.status_code == 429 and attempt < 2:
@@ -101,9 +102,18 @@ def map_cusips(cusips: list[str], api_key: str | None, post=None, sleep=time.sle
                 continue
             if r.status_code != 200:
                 raise FigiError(f"OpenFIGI answered HTTP {r.status_code}: {r.text[:200]}")
-            out.extend(parse(batch, r.json()))
+            body = r.json()
+            if not isinstance(body, list) or len(body) != len(batch):
+                raise FigiError(f"expected {len(batch)} answers, got {str(body)[:200]}")
+            out.extend(body)
             break
     return out
+
+
+def map_cusips(cusips: list[str], api_key: str | None, post=None, sleep=time.sleep, clock=time.monotonic) -> list[Answer]:
+    """Ask OpenFIGI about each CUSIP, in batches, within the rate limit. Raises FigiError if it can't be reached."""
+    body = map_jobs([{"idType": "ID_CUSIP", "idValue": c} for c in cusips], api_key, post, sleep, clock)
+    return parse(cusips, body)
 
 
 def due(last: datetime | None, outcome: str | None, now: datetime) -> bool:
