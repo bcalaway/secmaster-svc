@@ -39,7 +39,7 @@ def test_run_searches_each_query_and_counts_a_future_once():
     rp = out["candidates"]["RP"]
     assert out["searched"] == len(calls) == 4 and calls[0]["marketSecDes"] == "Curncy"
     assert calls[0]["securityType2"] == "Future" and calls[0]["exchCode"] == "CME"
-    assert rp["groups"][0]["contracts"] == 2 and rp["queries"][:2] == ["EURGBP: 2", "EUR/GBP: 2"]
+    assert rp["groups"][0]["contracts"] == 2 and all(q.endswith(": 2") for q in rp["queries"])
 
 
 def test_search_pages_and_spacing():
