@@ -1,4 +1,4 @@
-# CME rates and FX futures: the security master's product seed (mkt-data's docs/phase-4.md, steps 2a and 2c).
+# CME rates and FX futures: the security master's product seed (mkt-data's docs/phase-4.md, steps 2a, 2c and 2d).
 #
 # One entry per product. Like seeds/cmt.toml it's the source of truth, changed only in a reviewed PR, but
 # it isn't an instrument seed: app/futures_load.py reads it (POST /jobs/futures, the daily DAG
@@ -12,11 +12,16 @@
 #   A cross (step 2c, from the products at the end) delivers where both its currencies and New York are
 #   open: both countries' calendars and the Fed's, assumed from the majors until its chapter is read.
 # - `kind`: treasury (deliverable: intention, notice and delivery days), treasury_cash (the micro Ultras and
-#   the yield futures, settled in cash at the last trade), stir or fx.
+#   the yield futures, settled in cash at the last trade), stir, fx (deliverable) or fx_cash (financially
+#   settled against a fixing: most of step 2d's emerging-market contracts, so no delivery date).
+# - A rule can name its own calendars after `@` (`third_wed_minus:2@HK`), where CME's spec page counts in
+#   the local market's business days (step 2d).
 # - `listing` is the cycle on CME's spec page: `quarterly` consecutive March-cycle contracts, `monthly`
 #   consecutive months, `serial_nearest` non-quarterly months, or `serial_months`, the non-quarterly
 #   months within that many months (an interpretation of "serial contracts listed for 16 months", to
 #   confirm).
+#   `monthly` with `quarterly_after`: that many consecutive months, then that many March-cycle months
+#   after them ("13 consecutive months and 8 quarterly contracts", step 2d).
 # - `history_from`: contracts expiring on or after it are generated (1990 or launch, Bill 2026-10-08);
 #   absent: only what's listed today, until the launch date is found. `history_source` says which.
 # - `specs` are effective-dated, verbatim from CME's spec pages as read on 2026-10-08 into mkt-data's
@@ -2161,3 +2166,783 @@ Sunday 5:00 p.m. - Friday - 4:00 p.m. CT with a 60-minute break each day beginni
 CME ClearPort:
 Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
 vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "BR"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"BRAZIL REAL FUT\" futures on CME (BRV1 Curncy, Oct 2031); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "6L"
+clearing_code = "BR"
+name = "Brazilian Real Futures"
+kind = "fx_cash"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["BR", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { monthly = 60 }
+rules = { last_trade_date = "prev_last_bd@BR" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:15 a.m. CT on the last business day of the month prior to the contract month, on which the Central Bank of Brazil is scheduled to publish its final end-of-month (EOM), \"Commercial exchange rate for Brazilian reais per U.S. dollar for cash delivery\" (PTAX rate).\""
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/brazilian-real/specs"
+contract_unit = "100,000 Brazilian reais"
+minimum_price_fluctuation = """
+CME Globex:
+0.00005 per Brazilian real increment = $5.00
+Final Settlement: 0.00001
+CME ClearPort:
+0.000005 per Brazilian real increment = $0.50"""
+listed_contracts = "Monthly contracts listed for 60 consecutive months"
+termination_of_trading = "Trading terminates at 9:15 a.m. CT on the last business day of the month prior to the contract month, on which the Central Bank of Brazil is scheduled to publish its final end-of-month (EOM), \"Commercial exchange rate for Brazilian reais per U.S. dollar for cash delivery\" (PTAX rate)."
+settlement_method = "Financially Settled"
+settlement_procedures = "BRL/USD Futures Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NV}"
+
+[[products]]
+root = "PLC"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Chilean Peso/USD\" futures on CME (PLCU8 Curncy, Sep 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "CHP"
+clearing_code = "CHP"
+name = "Chilean Peso/US Dollar (CLP/USD) Futures"
+kind = "fx_cash"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["CL", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { monthly = 12, quarterly_after = 4 }
+rules = { last_trade_date = "prev_last_bd@CL" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 09:15 Chicago time on the last Santiago, Chile business day of the month prior to the contract month.\""
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/chilean-peso-us-dollar/specs"
+contract_unit = "50,000,000 Chilean Pesos"
+minimum_price_fluctuation = "$0.0000001 per Chilean Peso increments ($5.00/contract) also for CLP/USD futures intra-currency spreads executed electronically."
+listed_contracts = "Monthly contracts listed for 12 consecutive months and the next 4 March quarterly cycle months."
+termination_of_trading = "Trading terminates at 09:15 Chicago time on the last Santiago, Chile business day of the month prior to the contract month."
+settlement_method = "Financially Settled"
+settlement_procedures = "The reciprocal of the spot exchange rate of Chilean peso per U.S. dollar, ”CLP DÓLAR OBS (CLP10),” as reported for that day by Banco Central de Chile for the formal exchange market which is available at approximately 10:30 AM Santiago time and rounded to SEVEN decimal places."
+trading_hours = """
+CME Globex:
+Sunday - Friday; 5:00 p.m. - 4:00 p.m/ CT with a 60-minute break each day beginning at 4:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "CDY"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"CNH/USD Futures\" futures on CME (CDYZ7 Curncy, Dec 2027); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "6H"
+clearing_code = "6H"
+name = "CNH/USD Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["HK", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { quarterly = 5 }
+rules = { last_trade_date = "third_wed_minus:2@HK", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 2:00 p.m. Hong Kong local time on the second Hong Kong business day prior to the third Wednesday of the contract month.\""
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/cnh-usd/specs"
+contract_unit = "500,000 CNH"
+minimum_price_fluctuation = """
+CME Globex:
+0.00001 per CNH increment = 5 USD
+Spreads: 0.000005 per CNH increment = 2.50 USD
+Final Settlement: 0.00001
+CME ClearPort:
+0.000001 per CNH increment = 0.5 USD"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 5 consecutive quarters"
+termination_of_trading = "Trading terminates at 2:00 p.m. Hong Kong local time on the second Hong Kong business day prior to the third Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday 5:00 p.m. - Friday - 4:00 p.m. CT with a daily maintenance period from 4:00 p.m. - 5:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "CHY"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"USD/CNH PH FUT\" futures on CME (CHYU8 Curncy, Sep 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "CNH"
+clearing_code = "CNH"
+name = "Offshore Chinese Renminbi (CNH) Futures"
+kind = "fx_cash"
+currency = "CNH"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["HK", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { monthly = 13, quarterly_after = 8 }
+rules = { last_trade_date = "third_wed_minus:2@HK" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 2:00 p.m. Hong Kong local time on the second Hong Kong business day prior to the third Wednesday of the contract month.\""
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/cross-rates/usd-cnh/specs"
+contract_unit = "100,000 USD"
+minimum_price_fluctuation = """
+CME Globex:
+Outright:0.0005 per USD increment = 50 CNH                Spreads:0.00025 per USD increment = 25 CNH
+CME ClearPort:
+0.0001 per USD increment = 10 CNH"""
+listed_contracts = "Monthly contracts listed for 13 consecutive months and quarterly contracts (Mar, Jun, Sep, Dec) listed for the next 8  quarters."
+termination_of_trading = "Trading terminates at 2:00 p.m. Hong Kong local time on the second Hong Kong business day prior to the third Wednesday of the contract month."
+settlement_method = "Financially Settled"
+settlement_procedures = "USD/CNH Futures Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday 5:00 p.m. - Friday - 4:00 p.m. CT with a daily maintenance period from 4:00 p.m. - 5:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "RMB"
+root_confirmed = false
+root_source = "Not found by the root search of 2026-10-09 (queries: CHINESE RENMINBI, RMB/USD, CNY CURRENCY); the matches were USD/CNY futures last listed in 2019, so the CME code stands in; to confirm by the futures FIGI job or a second search"
+cme_code = "RMB"
+clearing_code = "RMB"
+name = "Onshore Chinese Renminbi (CNY) Futures"
+kind = "fx_cash"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["CN", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { monthly = 13, quarterly_after = 8 }
+rules = { last_trade_date = "third_wed_minus:2@CN" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:00 a.m. Beijing time on the second Beijing business day prior to the third Wednesday of the contract month (7:00 p.m. CT on Sunday during the winter and 8:00 p.m. CT on Sunday during the summer).\""
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/chinese-renminbi/specs"
+contract_unit = "1,000,000 Chinese renminbi"
+minimum_price_fluctuation = """
+Outrights: 0.00001 per Chinese renminbi = $10.00.
+Intra-currency spreads: 0.000005 per Chinese renminbi = $5.00"""
+listed_contracts = "Monthly contracts listed for 13 consecutive months and quarterly contracts (Mar, Jun, Sep & Dec) listed for 8 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:00 a.m. Beijing time on the second Beijing business day prior to the third Wednesday of the contract month (7:00 p.m. CT on Sunday during the winter and 8:00 p.m. CT on Sunday during the summer)."
+settlement_method = "Financially Settled"
+settlement_procedures = "RMB/USD Futures Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m/ CT with a 60-minute break each day beginning at 4:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "RME"
+root_confirmed = false
+root_source = "Not found by the root search of 2026-10-09 (queries: RMB/EUR, RMB EUR, CNY/EUR); nothing on CME, so the CME code stands in; to confirm by the futures FIGI job or a second search"
+cme_code = "RME"
+clearing_code = "RME"
+name = "Chinese Renminbi/Euro Futures"
+kind = "fx_cash"
+currency = "EUR"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["CN", "TARGET"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { monthly = 13, quarterly_after = 2 }
+rules = { last_trade_date = "third_wed_minus:2@CN" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading ceases at 9:00 a.m. Beijing time* on the second Beijing business day immediately preceding the third Wednesday of the contract month (i.e., In Chicago, 7:00 p.m. CT on Sunday night during the winter and 8:00 p.m. CT on Sunday night during the summer).\""
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/chinese-renminbi-euro/specs"
+contract_unit = "1,000,000 Chinese renminbi"
+minimum_price_fluctuation = ".00001 euro per Chinese renminbi increments (10 euro). .000005 euro per Chinese renminbi increments (5 euro) for RMB/EUR futures intra-currency spreads executed electronically."
+listed_contracts = "Thirteen consecutive calendar months plus 2 deferred March quarterly cycle contract months"
+termination_of_trading = "Trading ceases at 9:00 a.m. Beijing time* on the second Beijing business day immediately preceding the third Wednesday of the contract month (i.e., In Chicago, 7:00 p.m. CT on Sunday night during the winter and 8:00 p.m. CT on Sunday night during the summer)."
+settlement_method = "Financially Settled"
+settlement_procedures = "RMB/EUR Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sundays: 5:00 p.m. - 4:00 p.m. Central Time (CT) next day. Monday - Friday: 5:00 p.m. - 4:00 p.m. CT the next day, except on Friday - closes at 4:00 p.m. and reopens Sunday at 5:00 p.m. CT.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "CC"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"CZECH KORUNA FUTR\" futures on CME (CCH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "CZK"
+clearing_code = "CZ"
+name = "Czech Koruna Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["CZ", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday).\""
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/czech-koruna/specs"
+contract_unit = "4,000,000 Czech korunas"
+minimum_price_fluctuation = """
+CME Globex:
+0.000002 per Czech koruna increments = $8.00
+Spreads: 0.000001 per Czech koruna increments = $4.00
+CME ClearPort:
+0.0000001 per Czech koruna increments = $0.40"""
+listed_contracts = "Six months in the March quarterly cycle (Mar, Jun, Sep, Dec)"
+termination_of_trading = "9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday)."
+settlement_method = "Deliverable"
+settlement_procedures = "CZK/USD Futures Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sundays: 5:00 p.m. - 4:00 p.m. Central Time (CT) next day. Monday - Friday: 5:00 p.m. - 4:00 p.m. CT the next day, except on Friday - closes at 4:00 p.m. and reopens Sunday at 5:00 p.m. CT.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "EX"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09, under the CZK queries): Bloomberg's \"EURO/CZK X-RATE\" futures on CME (EXH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "ECK"
+clearing_code = "K"
+name = "Czech Koruna/Euro (CZK/EUR) Cross Rate Futures"
+kind = "fx"
+currency = "EUR"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["CZ", "TARGET", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday).\""
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/euro-fx-czech-koruna/specs"
+contract_unit = "4,000,000 Czech koruna"
+minimum_price_fluctuation = """
+CME Globex:
+0.000002 per Czech koruna increment = 8€
+Spreads: 0.000001 per Czech koruna increment = 4€
+CME ClearPort:
+0.0000001 per Czech koruna increment = 0.40€"""
+listed_contracts = "Six months in the March quarterly cycle (Mar, Jun, Sep, Dec)"
+termination_of_trading = "9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday)."
+settlement_method = "Deliverable"
+settlement_procedures = "CZK/EUR Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sundays: 5:00 p.m. - 4:00 p.m. Central Time (CT) next day. Monday - Friday: 5:00 p.m. - 4:00 p.m. CT the next day, except on Friday - closes at 4:00 p.m. and reopens Sunday at 5:00 p.m. CT.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "HE"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"HUNGARIAN FORINT\" futures on CME (HEH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "HUF"
+clearing_code = "FR"
+name = "Hungarian Forint Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["HU", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday).\""
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/hungarian-forint/specs"
+contract_unit = "30,000,000 Hungarian forint"
+minimum_price_fluctuation = """
+CME ClearPort:
+$.0000001 per Hungarian forint increments ($3.00/contract).
+$.0000002 per Hungarian forint increments ($6.00/contract). $.0000001 per Hungarian forint increments ($3.00/contract) for HUF/USD futures intra-currency spreads executed electronically.
+(All lines appear under the single \"CME ClearPort:\" heading on the page.)"""
+listed_contracts = "Six months in the March quarterly cycle (Mar, Jun, Sep, Dec)"
+termination_of_trading = "9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday)."
+settlement_method = "Deliverable"
+settlement_procedures = "HUF/USD Futures Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sundays: 5:00 p.m. - 4:00 p.m. Central Time (CT) next day. Monday - Friday: 5:00 p.m. - 4:00 p.m. CT the next day, except on Friday - closes at 4:00 p.m. and reopens Sunday at 5:00 p.m. CT.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "EL"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09, under the HUF queries): Bloomberg's \"EURO/HUF X-RATE\" futures on CME (ELH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "EHF"
+clearing_code = "R"
+name = "Hungarian Forint/Euro (HUF/EUR) Cross Rate Futures"
+kind = "fx"
+currency = "EUR"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["HU", "TARGET", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday).\""
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/euro-fx-hungarian-forint/specs"
+contract_unit = "30,000,000 Hungarian forint"
+minimum_price_fluctuation = """
+CME ClearPort:
+0.0000001 euro per Hungarian forint increments (3 euro/contract).
+$.0000002 euro per Hungarian forint increments (6 euro/contract). $.0000001 euro per Hungarian forint increments (3 euro/contract) for HUF/EUR futures intra-currency spreads executed electronically.
+(All lines appear under the single \"CME ClearPort:\" heading on the page.)"""
+listed_contracts = "Six months in the March quarterly cycle (Mar, Jun, Sep, Dec)"
+termination_of_trading = "9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday)."
+settlement_method = "Deliverable"
+settlement_procedures = "HUF/EUR Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sundays: 5:00 p.m. - 4:00 p.m. Central Time (CT) next day. Monday - Friday: 5:00 p.m. - 4:00 p.m. CT the next day, except on Friday - closes at 4:00 p.m. and reopens Sunday at 5:00 p.m. CT.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "PP"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"POLISH ZLOTY FUTR\" futures on CME (PPH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "PLN"
+clearing_code = "PZ"
+name = "Polish Zloty Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["PL", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates on 2nd business day before the 3rd wednesday of the contract month.\""
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/polish-zloty/specs"
+contract_unit = "500,000 Polish zloty"
+minimum_price_fluctuation = """
+CME Globex:
+0.00002 per Polish zloty increment = $10.00
+CME ClearPort:
+0.000001 per Polish zloty increment = $0.50"""
+listed_contracts = "Six months in the March quarterly cycle (Mar, Jun, Sep, Dec)"
+termination_of_trading = "Trading terminates on 2nd business day before the 3rd wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "PLN/USD Futures Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sundays: 5:00 p.m. - 4:00 p.m. Central Time (CT) next day. Monday - Friday: 5:00 p.m. - 4:00 p.m. CT the next day, except on Friday - closes at 4:00 p.m. and reopens Sunday at 5:00 p.m. CT.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "EPZ"
+root_confirmed = false
+root_source = "Not found by the root search of 2026-10-09 (queries: EUR/PLN, PLN/EUR, EUR/POLISH ZLOTY); only an EURO/PLN X-RATE contract last listed in 2012 (EI), so the CME code stands in; to confirm by the futures FIGI job or a second search"
+cme_code = "EPZ"
+clearing_code = "Z"
+name = "Polish Zloty/Euro (PLN/EUR) Cross Rate Futures"
+kind = "fx"
+currency = "EUR"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["PL", "TARGET", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "second_fri_before_third_wed", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates on 2nd friday before the 3rd wednesday of the contract month. if that is not a business day then it is the business day before that in \"ctm\" (sic)\" The spec page's own wording (\"2nd friday before the 3rd wednesday ... the business day before that\"), unlike the other crosses' 2 business days before."
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/euro-fx-polish-zloty/specs"
+contract_unit = "500,000 Polish zloty"
+minimum_price_fluctuation = """
+CME Globex:
+0.00002 per Polish zloty increment = €10.00
+CME ClearPort:
+0.000001 per Polish zloty increment = €0.50"""
+listed_contracts = "Six months in the March quarterly cycle (Mar, Jun, Sep, Dec)"
+termination_of_trading = "Trading terminates on 2nd friday before the 3rd wednesday of the contract month. if that is not a business day then it is the business day before that in \"ctm\" (sic)"
+settlement_method = "Deliverable"
+settlement_procedures = "PLN/EUR Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sundays: 5:00 p.m. - 4:00 p.m. Central Time (CT) next day. Monday - Friday: 5:00 p.m. - 4:00 p.m. CT the next day, except on Friday - closes at 4:00 p.m. and reopens Sunday at 5:00 p.m. CT.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "IS"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"ISRAELI SHEKEL\" futures on CME (ISH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "ILS"
+clearing_code = "IS"
+name = "Israeli Shekel Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["IL", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates on the second business day prior to the third Wednesday of the contract month.\""
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/israeli-shekel/specs"
+contract_unit = "1,000,000 Israeli sheqalim"
+minimum_price_fluctuation = """
+CME Globex:
+0.00001 per Israeli shekel increment = $10.00 Spreads: 0.000005 per Israeli shekel increment = $5.00
+CME ClearPort:
+0.000001 per Israeli shekel increment = $1.00"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters"
+termination_of_trading = "Trading terminates on the second business day prior to the third Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "ILS/USD Futures Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. (6:00 p.m. - 5:00 p.m. ET) with a 60-minute break each day beginning at 4:00 p.m. (5:00 p.m. ET)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "SIR"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"INR/USD Standard\" futures on CME (SIRU8 Curncy, Sep 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "SIR"
+clearing_code = "SIR"
+name = "Indian Rupee/USD Futures"
+kind = "fx_cash"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["IN", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { monthly = 12, quarterly_after = 4 }
+rules = { last_trade_date = "last_bd_minus:2@IN" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 1:00 p.m. Mumbai time 2 Indian business days prior to the last Indian business day of the contract month.\""
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/indian-rupee/specs"
+contract_unit = "5,000,000 Indian rupees"
+minimum_price_fluctuation = """
+CME Globex:
+0.01 per 100 Indian rupee increments = $5.00 Spreads: 0.005 per 100 Indian rupee increments = $2.50
+CME ClearPort:
+0.001 per 100 Indian rupee increments = $0.50"""
+listed_contracts = "Monthly contracts listed for 12 consecutive months and 4 quarterly contracts (Mar, Jun, Sep, Dec)"
+termination_of_trading = "Trading terminates at 1:00 p.m. Mumbai time 2 Indian business days prior to the last Indian business day of the contract month."
+settlement_method = "Financially Settled"
+settlement_procedures = "INR/USD Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "KO"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"KOREAN WON FUT\" futures on CME (KOH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "KRW"
+clearing_code = "KRW"
+name = "Korean Won Futures"
+kind = "fx_cash"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["KR", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { monthly = 13, quarterly_after = 2 }
+rules = { last_trade_date = "third_mon_prev_good@KR" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates on the 3rd Monday of the contract month. If this is not a Seoul business day, trading terminates on the previous Seoul business day.\""
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/korean-won/specs"
+contract_unit = "125,000,000 Korean won"
+minimum_price_fluctuation = "0.0000001 per KRW increment = $12.50"
+listed_contracts = "Monthly contracts listed for 13 consecutive months and 2 additional quarterly contracts (Mar, Jun, Sep, Dec)"
+termination_of_trading = "Trading terminates on the 3rd Monday of the contract month. If this is not a Seoul business day, trading terminates on the previous Seoul business day."
+settlement_method = "Financially Settled"
+settlement_procedures = "KRW/USD Futures Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday 5:00 p.m. - Friday - 4:00 p.m. CT with a daily maintenance period from 4:00 p.m. - 5:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "RU"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"RUSSIAN RUBLE FUT\" futures on CME (RUH7 Curncy, Mar 2027); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "6R"
+clearing_code = "RU"
+name = "Russian Ruble Futures"
+kind = "fx_cash"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["GB", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { quarterly = 4 }
+rules = { last_trade_date = "day_next_good:15@GB" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates on the 15th day of the contract month. If this is not a London business day, trading terminates on the next London business day.\" CME's spec page says \"Monthly contacts listed for 4 consecutive quarterly contracts\" (sic): read as 4 quarterly contracts."
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/russian-ruble/specs"
+contract_unit = "2,500,000 Russian rubles"
+minimum_price_fluctuation = "0.000005 per RUB increment = $12.50"
+listed_contracts = "Monthly contacts listed for 4 consecutive quarterly contracts (Mar, Jun, Sep, Dec) (sic)"
+termination_of_trading = "Trading terminates on the 15th day of the contract month. If this is not a London business day, trading terminates on the next London business day."
+settlement_method = "Financially Settled"
+settlement_procedures = "RUB/USD Futures Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT (with a 60-minute break each day beginning at 4:00 p.m.CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "TLC"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"TRY/USD Futures\" futures on CME (TLCH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "TRL"
+clearing_code = "TRL"
+name = "Turkish Lira/US Dollar (TRY/USD) Future"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["TR", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminate at 4:00 p.m. London time on the 2nd Business Day immediately preceding the third Wednesday of the contract month.\" \"Business Day\" read as CME's FX business day (Chicago and New York), as for the majors."
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/turkish-lira-us-dollar-try-usd/specs"
+contract_unit = "1,000,000 TRY"
+minimum_price_fluctuation = """
+CME Globex:
+0.000005 per Turkish lira increment = $5.00
+Spreads: 0.000001 per Turkish lira increment = $1.00
+CME ClearPort:
+0.0000005 per Turkish lira increment = $0.50"""
+listed_contracts = "Six months in March quarterly cycle (Mar, Jun, Sep, Dec)"
+termination_of_trading = "Trading terminate at 4:00 p.m. London time on the 2nd Business Day immediately preceding the third Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "not shown"
+trading_hours = """
+CME Globex:
+Sunday - Friday 17:00 hours - 16:00 hours Chicago time. Friday close at 16:00 CT and reopens at 17:00 CT on Sunday.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "RA"
+root_confirmed = false
+root_source = "Not found by the root search of 2026-10-09 (queries: SOUTH AFRICAN RAND, S AFRICAN RAND, ZAR CURRENCY); the only match was a USD/ZAR future last listed Jun 2026 (ZRA); RA, CME's clearing code, stands in; to confirm by the futures FIGI job or a second search"
+cme_code = "6Z"
+clearing_code = "RA"
+name = "South African Rand Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["ZA", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { monthly = 13, quarterly_after = 4 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT, 2 business day prior to the third Wednesday of the contract month.\""
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/south-african-rand/specs"
+contract_unit = "500,000 South African rand"
+minimum_price_fluctuation = """
+CME Globex:
+0.000025 per South African rand increment = $12.50
+Final Settlement: 0.000001
+CME ClearPort:
+0.000001 per South African rand increment = $0.50"""
+listed_contracts = "Monthly contracts listed for 13 consecutive months and quarterly contracts (Mar, Jun, Sep, Dec) listed for 4 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business day prior to the third Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "ZAR/USD Futures Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT (with a 60-minute break each day beginning at 4:00 p.m.CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "IDP"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"In US Do IDR/USD F\" futures on CME (IDPU7 Curncy, Sep 2027); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "IDR"
+clearing_code = "IDR"
+name = "IDR/USD Futures"
+kind = "fx_cash"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["ID", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { monthly = 4, quarterly_after = 4 }
+rules = { last_trade_date = "third_wed_minus:2@ID" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 3:45pm Jakarta time, 2 Jakarta business days prior to the third Wednesday of the contract month.\" CME's 2026-09-15 notice amends this contract's termination and cash settlement; the rule is the spec page's as read 2026-10-08, to recheck."
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/idr-usd/specs"
+contract_unit = "1,000,000,000 Indonesian rupiah"
+minimum_price_fluctuation = """
+CME Globex:
+0.01 per 1,000,000 Indonesian rupiah increments = $10.00
+Spreads: 0.005 per 1,000,000 Indonesian rupiah increments = $5.00
+CME ClearPort:
+0.001 per 1,000,000 Indonesian rupiah increments = $1.00"""
+listed_contracts = "Monthly contracts listed for 4 consecutive months and 4 quarterly contracts (Mar, Jun, Sep, Dec)"
+termination_of_trading = "Trading terminates at 3:45pm Jakarta time, 2 Jakarta business days prior to the third Wednesday of the contract month."
+settlement_method = "Financially Settled"
+settlement_procedures = "Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "SGD"
+root_confirmed = false
+root_source = "Not found by the root search of 2026-10-09 (queries: SGD/USD, SINGAPORE DOLLAR, SGDUSD); nothing on CME, so the CME code stands in; to confirm by the futures FIGI job or a second search"
+cme_code = "SGD"
+clearing_code = "SGD"
+name = "SGD/USD Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["SG", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { monthly = 4, quarterly_after = 4 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT, 2 business days prior to the third Wednesday of the contract month.\""
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/sgd-usd/specs"
+contract_unit = "100,000 Singapore dollar"
+minimum_price_fluctuation = """
+CME Globex:
+0.0001 per 100000 Singapore dollar = $10.00
+Spreads: 0.00005 per per 100000 Singapore dollar = $5.00 (sic)
+CME ClearPort:
+0.00001 per 100000 Singapore dollar = $1.00"""
+listed_contracts = "Monthly contracts listed for 4 consecutive months and 4 quarterly contracts (Mar, Jun, Sep, Dec)"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business days prior to the third Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+
+[[products]]
+root = "THD"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"THB/USD Futures\" futures on CME (THDU7 Curncy, Sep 2027); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "THAI"
+clearing_code = "THAI"
+name = "THB/USD Futures"
+kind = "fx_cash"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["TH", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+listing = { monthly = 4, quarterly_after = 4 }
+rules = { last_trade_date = "last_bd_minus:1@TH" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 11:00 a.m. Bangkok time on the first Bangkok Business Day prior to the last business day of the contract month.\""
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/thb-usd/specs"
+contract_unit = "2,000,000 Thai baht"
+minimum_price_fluctuation = """
+CME Globex:
+0.000005 per 2000000 Thai baht = $10.00
+Spreads:0.0000025 per 2000000 Thai baht = $5.00
+CME ClearPort:
+0.000001 per 2000000 Thai baht = $2.00"""
+listed_contracts = "Monthly contracts listed for 4 consecutive months and 4 quarterly contracts (Mar, Jun, Sep, Dec)"
+termination_of_trading = "Trading terminates at 11:00 a.m. Bangkok time on the first Bangkok Business Day prior to the last business day of the contract month."
+settlement_method = "Financially Settled"
+settlement_procedures = "Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"

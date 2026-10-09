@@ -116,11 +116,13 @@ def _specs(raw: list, where: str) -> tuple[Spec, ...]:
 
 
 def _listing(raw: dict, where: str) -> Listing:
-    allowed = {"quarterly", "monthly", "serial_nearest", "serial_months"}
+    allowed = {"quarterly", "monthly", "serial_nearest", "serial_months", "quarterly_after"}
     if not raw or set(raw) - allowed or any(not isinstance(v, int) or v < 1 for v in raw.values()):
         raise FuturesSeedError(f"{where}: listing needs positive whole numbers of {sorted(allowed)}")
-    if "monthly" in raw and len(raw) > 1:
+    if "monthly" in raw and set(raw) - {"monthly", "quarterly_after"}:
         raise FuturesSeedError(f"{where}: a monthly listing can't also have quarterly or serial months")
+    if "quarterly_after" in raw and "monthly" not in raw:
+        raise FuturesSeedError(f"{where}: quarterly_after needs monthly")
     if "monthly" not in raw and "quarterly" not in raw:
         raise FuturesSeedError(f"{where}: listing needs quarterly or monthly")
     if "serial_nearest" in raw and "serial_months" in raw:
