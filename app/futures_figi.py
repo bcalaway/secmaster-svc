@@ -31,7 +31,8 @@ the CME code's each run. When a contract asked again isn't confirmed, or is conf
 future, the FIGI, composite FIGI and ticker this job gave it are retired.
 
 The job's answer lists, per product, how many of its listed contracts each outcome covers and the
-roots Bloomberg used, an example future by name, and what OpenFIGI said to the CME-code question. Runs after the futures
+roots Bloomberg used, an example future, every matched future's name (without its month) with its
+sector and exchange and how many contracts it covers, and what OpenFIGI said to the CME-code question. Runs after the futures
 job (dags/futures.py, POST /jobs/futures-figi) with the phase 3 key and client (app/figi.py).
 """
 
@@ -184,6 +185,14 @@ def _cme_validity(s: Session, sec_ids: list[int]) -> dict[int, tuple[date | None
     return out
 
 
+MONTH_YEAR = re.compile(r"\s*(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\d{2}$")
+
+
+def product_name(name: str | None) -> str:
+    """A future's name without its contract month: "US 10YR NOTE (CBT)Dec26" -> "US 10YR NOTE (CBT)"."""
+    return MONTH_YEAR.sub("", (name or "").strip()).strip() or "?"
+
+
 def _cme_symbol(c) -> str:
     return f"{c.cme_code}{MONTH_CODES[c.contract_month.month - 1]}{c.contract_month.year % 10}"
 
@@ -282,7 +291,8 @@ def run(s: Session, api_key: str | None, now: datetime | None = None, mapper=Non
     products: dict[str, dict] = {}
     for c in live:
         p = products.setdefault(c.root, {"listed": 0, "confirmed": 0, "via": {}, "mismatch": 0,
-                                         "bloomberg_roots": [], "not_found": 0, "error": 0, "unasked": 0})
+                                         "bloomberg_roots": [], "not_found": 0, "error": 0, "unasked": 0,
+                                         "names": {}})
         p["listed"] += 1
         row = seen.get(c.sec_id)
         if row is None or row.root != c.root:
@@ -294,6 +304,11 @@ def run(s: Session, api_key: str | None, now: datetime | None = None, mapper=Non
             p.setdefault("example", {"contract": names.get(c.sec_id), "ticker": row.ticker,
                                      "name": (row.detail or {}).get("name"), "figi": row.figi,
                                      "exch_code": _exch_code(row)})
+            # Every matched future's name without its month, and its sector and exchange: one entry per
+            # product when every contract is the same future, more when some matched another.
+            key = f"{product_name((row.detail or {}).get('name'))} | {(row.ticker or '').split(' ')[-1]} | " \
+                  f"{_exch_code(row)}"
+            p["names"][key] = p["names"].get(key, 0) + 1
         if row.outcome == "mismatch" and row.bloomberg_root and row.bloomberg_root not in p["bloomberg_roots"]:
             p["bloomberg_roots"].append(row.bloomberg_root)
     for root, counts in exchange_said.items():

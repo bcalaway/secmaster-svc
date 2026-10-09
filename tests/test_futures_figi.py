@@ -30,6 +30,12 @@ def test_tickers():
     assert futures_figi.jobs("BP", "6BV6", date(2026, 10, 1), "fx")[0]["marketSecDes"] == "Curncy"
 
 
+def test_product_name():
+    assert futures_figi.product_name("US 10YR NOTE (CBT)Dec26") == "US 10YR NOTE (CBT)"
+    assert futures_figi.product_name("BP CURRENCY FUT   Oct26") == "BP CURRENCY FUT"
+    assert futures_figi.product_name(None) == "?"
+
+
 def test_judge():
     j = futures_figi.judge
     both = j("TY", DEC26, {"data": [row("TYZ6")]}, {"data": [row("TYZ6")]})
@@ -92,6 +98,7 @@ def test_run_stores_figis_and_tickers(migrated_db):
     assert out["products"]["NV"]["not_found"] == 6
     assert "TY" in out["roots_found"] and "SER" not in out["roots_found"]
     assert out["products"]["TY"]["example"]["exch_code"] == "CBT"
+    assert out["products"]["TY"]["names"] == {"US 10YR NOTE (CBT) | Comdty | CBT": 3}
     assert out["products"]["NV"]["first_not_found"]["said"][0] == "NVZ6: No identifier found."
     with db.session() as s:
         got = securities.get(s, name="TYZ26")
