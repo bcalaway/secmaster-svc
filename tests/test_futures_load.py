@@ -147,7 +147,7 @@ def test_instrument_seed_skips_the_futures_seed(migrated_db):
 
     with db.session() as s:
         names = [r["seed"] for r in seed.apply_all(s)]
-    assert names == ["cmt"]
+    assert names == ["cmt", "fixings"]
 
 
 class _FakeGrpc(FakeCalendars):
