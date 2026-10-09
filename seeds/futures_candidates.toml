@@ -266,7 +266,8 @@ kind = "fx"
 exch_code = "CME"
 queries = ["NOKSEK", "NOK/SEK", "NOK/SEK Future", "NOK/SEK Cross"]
 
-# Step 2d: the emerging-market FX futures (2026-10-09). `fx_cash`: financially settled.
+# Step 2d: the emerging-market FX futures (2026-10-09). `fx_cash`: financially settled. The first search found
+# 17 of 21; RMB, RME, EPZ and SGD get Bloomberg's naming as seen for the rest ("CNH/USD Futures", "EURO/CZK X-RATE").
 
 [[candidates]]
 cme_code = "6L"
@@ -301,14 +302,14 @@ cme_code = "RMB"
 name = "Onshore Chinese Renminbi (CNY) Futures"
 kind = "fx_cash"
 exch_code = "CME"
-queries = ["CHINESE RENMINBI", "RMB/USD", "CNY CURRENCY"]
+queries = ["RMB/USD Futures", "CNY/USD", "RENMINBI", "Chinese Renminbi"]
 
 [[candidates]]
 cme_code = "RME"
 name = "Chinese Renminbi/Euro Futures"
 kind = "fx_cash"
 exch_code = "CME"
-queries = ["RMB/EUR", "RMB EUR", "CNY/EUR"]
+queries = ["RMB/EUR Futures", "EUR/CNY", "CNY/EUR Future", "RENMINBI EURO"]
 
 [[candidates]]
 cme_code = "CZK"
@@ -350,7 +351,7 @@ cme_code = "EPZ"
 name = "Polish Zloty/Euro (PLN/EUR) Cross Rate Futures"
 kind = "fx"
 exch_code = "CME"
-queries = ["EUR/PLN", "PLN/EUR", "EUR/POLISH ZLOTY"]
+queries = ["EURO/PLN X-RATE", "EUR/PLN Future", "EURO/PLZ X-RATE", "EUR/PLN X-RT"]
 
 [[candidates]]
 cme_code = "ILS"
@@ -406,7 +407,7 @@ cme_code = "SGD"
 name = "SGD/USD Futures"
 kind = "fx"
 exch_code = "CME"
-queries = ["SGD/USD", "SINGAPORE DOLLAR", "SGDUSD"]
+queries = ["SGD/USD Futures", "SGD CURRENCY", "SINGAPORE $", "SGD/USD Fut"]
 
 [[candidates]]
 cme_code = "THAI"

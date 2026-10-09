@@ -2169,8 +2169,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "BR"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"BRAZIL REAL FUT\" futures on CME (BRV1 Curncy, Oct 2031); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"BRAZIL REAL FUT\" futures on CME (BRV1 Curncy, Oct 2031); to confirm by ticker on every listed contract (the futures FIGI job); confirmed 2026-10-09 through OpenFIGI (secmaster-svc's futures FIGI job): 60 of 60 listed contracts found by ticker, all one future, \"BRAZIL REAL FUT\" (BRX6 Curncy, CME)"
 cme_code = "6L"
 clearing_code = "BR"
 name = "Brazilian Real Futures"
@@ -2207,8 +2207,8 @@ vendor_codes = "{NV}"
 
 [[products]]
 root = "PLC"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Chilean Peso/USD\" futures on CME (PLCU8 Curncy, Sep 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Chilean Peso/USD\" futures on CME (PLCU8 Curncy, Sep 2028); to confirm by ticker on every listed contract (the futures FIGI job); confirmed 2026-10-09 through OpenFIGI (secmaster-svc's futures FIGI job): 16 of 16 listed contracts found by ticker, all one future, \"Chilean Peso/USD\" (PLCX6 Curncy, CME)"
 cme_code = "CHP"
 clearing_code = "CHP"
 name = "Chilean Peso/US Dollar (CLP/USD) Futures"
@@ -2240,8 +2240,8 @@ vendor_codes = "{NVX}"
 
 [[products]]
 root = "CDY"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"CNH/USD Futures\" futures on CME (CDYZ7 Curncy, Dec 2027); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"CNH/USD Futures\" futures on CME (CDYZ7 Curncy, Dec 2027); to confirm by ticker on every listed contract (the futures FIGI job); confirmed 2026-10-09 through OpenFIGI (secmaster-svc's futures FIGI job): 5 of 5 listed contracts found by ticker, all one future, \"CNH/USD Futures\" (CDYZ6 Curncy, CME)"
 cme_code = "6H"
 clearing_code = "6H"
 name = "CNH/USD Futures"
@@ -2280,8 +2280,8 @@ vendor_codes = "{NVX}"
 
 [[products]]
 root = "CHY"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"USD/CNH PH FUT\" futures on CME (CHYU8 Curncy, Sep 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"USD/CNH PH FUT\" futures on CME (CHYU8 Curncy, Sep 2028); to confirm by ticker on every listed contract (the futures FIGI job); confirmed 2026-10-09 through OpenFIGI (secmaster-svc's futures FIGI job): 9 of 21 (the 12 furthest not in OpenFIGI yet) listed contracts found by ticker, all one future, \"USD/CNH PH FUT\" (CHYV6 Curncy, CME)"
 cme_code = "CNH"
 clearing_code = "CNH"
 name = "Offshore Chinese Renminbi (CNH) Futures"
@@ -2385,8 +2385,8 @@ vendor_codes = "{NVX}"
 
 [[products]]
 root = "CC"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"CZECH KORUNA FUTR\" futures on CME (CCH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"CZECH KORUNA FUTR\" futures on CME (CCH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job); confirmed 2026-10-09 through OpenFIGI (secmaster-svc's futures FIGI job): 6 of 6 listed contracts found by ticker, all one future, \"CZECH KORUNA FUTR\" (CCZ6 Curncy, CME)"
 cme_code = "CZK"
 clearing_code = "CZ"
 name = "Czech Koruna Futures"
@@ -2424,8 +2424,8 @@ vendor_codes = "{NVX}"
 
 [[products]]
 root = "EX"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09, under the CZK queries): Bloomberg's \"EURO/CZK X-RATE\" futures on CME (EXH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09, under the CZK queries): Bloomberg's \"EURO/CZK X-RATE\" futures on CME (EXH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job); confirmed 2026-10-09 through OpenFIGI (secmaster-svc's futures FIGI job): 6 of 6 listed contracts found by ticker, all one future, \"EURO/CZK X-RATE\" (EXZ6 Curncy, CME)"
 cme_code = "ECK"
 clearing_code = "K"
 name = "Czech Koruna/Euro (CZK/EUR) Cross Rate Futures"
@@ -2463,8 +2463,8 @@ vendor_codes = "{NVX}"
 
 [[products]]
 root = "HE"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"HUNGARIAN FORINT\" futures on CME (HEH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"HUNGARIAN FORINT\" futures on CME (HEH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job); confirmed 2026-10-09 through OpenFIGI (secmaster-svc's futures FIGI job): 6 of 6 listed contracts found by ticker, all one future, \"HUNGARIAN FORINT\" (HEZ6 Curncy, CME)"
 cme_code = "HUF"
 clearing_code = "FR"
 name = "Hungarian Forint Futures"
@@ -2501,8 +2501,8 @@ vendor_codes = "{NVX}"
 
 [[products]]
 root = "EL"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09, under the HUF queries): Bloomberg's \"EURO/HUF X-RATE\" futures on CME (ELH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09, under the HUF queries): Bloomberg's \"EURO/HUF X-RATE\" futures on CME (ELH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job); confirmed 2026-10-09 through OpenFIGI (secmaster-svc's futures FIGI job): 6 of 6 listed contracts found by ticker, all one future, \"EURO/HUF X-RATE\" (ELZ6 Curncy, CME)"
 cme_code = "EHF"
 clearing_code = "R"
 name = "Hungarian Forint/Euro (HUF/EUR) Cross Rate Futures"
@@ -2539,8 +2539,8 @@ vendor_codes = "{NVX}"
 
 [[products]]
 root = "PP"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"POLISH ZLOTY FUTR\" futures on CME (PPH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"POLISH ZLOTY FUTR\" futures on CME (PPH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job); confirmed 2026-10-09 through OpenFIGI (secmaster-svc's futures FIGI job): 6 of 6 listed contracts found by ticker, all one future, \"POLISH ZLOTY FUTR\" (PPZ6 Curncy, CME)"
 cme_code = "PLN"
 clearing_code = "PZ"
 name = "Polish Zloty Futures"
@@ -2615,8 +2615,8 @@ vendor_codes = "{NVX}"
 
 [[products]]
 root = "IS"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"ISRAELI SHEKEL\" futures on CME (ISH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"ISRAELI SHEKEL\" futures on CME (ISH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job); confirmed 2026-10-09 through OpenFIGI (secmaster-svc's futures FIGI job): 6 of 6 listed contracts found by ticker, all one future, \"ISRAELI SHEKEL\" (ISZ6 Curncy, CME)"
 cme_code = "ILS"
 clearing_code = "IS"
 name = "Israeli Shekel Futures"
@@ -2653,8 +2653,8 @@ vendor_codes = "{NVX}"
 
 [[products]]
 root = "SIR"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"INR/USD Standard\" futures on CME (SIRU8 Curncy, Sep 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"INR/USD Standard\" futures on CME (SIRU8 Curncy, Sep 2028); to confirm by ticker on every listed contract (the futures FIGI job); confirmed 2026-10-09 through OpenFIGI (secmaster-svc's futures FIGI job): 16 of 16 listed contracts found by ticker, all one future, \"INR/USD Standard\" (SIRV6 Curncy, CME)"
 cme_code = "SIR"
 clearing_code = "SIR"
 name = "Indian Rupee/USD Futures"
@@ -2690,8 +2690,8 @@ vendor_codes = "{NVX}"
 
 [[products]]
 root = "KO"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"KOREAN WON FUT\" futures on CME (KOH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"KOREAN WON FUT\" futures on CME (KOH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job); confirmed 2026-10-09 through OpenFIGI (secmaster-svc's futures FIGI job): 15 of 15 listed contracts found by ticker, all one future, \"KOREAN WON FUT\" (KOV6 Curncy, CME)"
 cme_code = "KRW"
 clearing_code = "KRW"
 name = "Korean Won Futures"
@@ -2723,8 +2723,8 @@ vendor_codes = "{NVX}"
 
 [[products]]
 root = "RU"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"RUSSIAN RUBLE FUT\" futures on CME (RUH7 Curncy, Mar 2027); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"RUSSIAN RUBLE FUT\" futures on CME (RUH7 Curncy, Mar 2027); to confirm by ticker on every listed contract (the futures FIGI job); confirmed 2026-10-09 through OpenFIGI (secmaster-svc's futures FIGI job): 2 of 4 (the 2 furthest not in OpenFIGI yet) listed contracts found by ticker, all one future, \"RUSSIAN RUBLE FUT\" (RUZ6 Curncy, CME)"
 cme_code = "6R"
 clearing_code = "RU"
 name = "Russian Ruble Futures"
@@ -2756,8 +2756,8 @@ vendor_codes = "{NVX}"
 
 [[products]]
 root = "TLC"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"TRY/USD Futures\" futures on CME (TLCH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"TRY/USD Futures\" futures on CME (TLCH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job); confirmed 2026-10-09 through OpenFIGI (secmaster-svc's futures FIGI job): 6 of 6 listed contracts found by ticker, all one future, \"TRY/USD Futures\" (TLCZ6 Curncy, CME)"
 cme_code = "TRL"
 clearing_code = "TRL"
 name = "Turkish Lira/US Dollar (TRY/USD) Future"
@@ -2795,8 +2795,8 @@ vendor_codes = "{NVX}"
 
 [[products]]
 root = "RA"
-root_confirmed = false
-root_source = "Not found by the root search of 2026-10-09 (queries: SOUTH AFRICAN RAND, S AFRICAN RAND, ZAR CURRENCY); the only match was a USD/ZAR future last listed Jun 2026 (ZRA); RA, CME's clearing code, stands in; to confirm by the futures FIGI job or a second search"
+root_confirmed = true
+root_source = "Not found by the root search of 2026-10-09; RA, CME's clearing code, stood in; confirmed 2026-10-09 through OpenFIGI (secmaster-svc's futures FIGI job): 17 of 17 listed contracts found by ticker, all one future, \"SA RAND CURR(CME)\" (RAV6 Curncy, CME)"
 cme_code = "6Z"
 clearing_code = "RA"
 name = "South African Rand Futures"
@@ -2834,8 +2834,8 @@ vendor_codes = "{NVX}"
 
 [[products]]
 root = "IDP"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"In US Do IDR/USD F\" futures on CME (IDPU7 Curncy, Sep 2027); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"In US Do IDR/USD F\" futures on CME (IDPU7 Curncy, Sep 2027); to confirm by ticker on every listed contract (the futures FIGI job); confirmed 2026-10-09 through OpenFIGI (secmaster-svc's futures FIGI job): 7 of 8 (the furthest not in OpenFIGI yet) listed contracts found by ticker, all one future, \"In US Do IDR/USD F\" (IDPV6 Curncy, CME)"
 cme_code = "IDR"
 clearing_code = "IDR"
 name = "IDR/USD Futures"
@@ -2911,8 +2911,8 @@ vendor_codes = "{NVX}"
 
 [[products]]
 root = "THD"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"THB/USD Futures\" futures on CME (THDU7 Curncy, Sep 2027); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"THB/USD Futures\" futures on CME (THDU7 Curncy, Sep 2027); to confirm by ticker on every listed contract (the futures FIGI job); confirmed 2026-10-09 through OpenFIGI (secmaster-svc's futures FIGI job): 7 of 8 (the furthest not in OpenFIGI yet) listed contracts found by ticker, all one future, \"THB/USD Futures\" (THDV6 Curncy, CME)"
 cme_code = "THAI"
 clearing_code = "THAI"
 name = "THB/USD Futures"
