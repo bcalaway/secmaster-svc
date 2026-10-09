@@ -400,7 +400,7 @@ class FuturesProduct(Base):
     sec_id: Mapped[int] = mapped_column(ForeignKey("instrument.sec_id"), primary_key=True)
     root: Mapped[str] = mapped_column(String(8))  # TY
     cme_code: Mapped[str] = mapped_column(String(8))  # ZN, the product's identity
-    kind: Mapped[str] = mapped_column(String(20))  # treasury | treasury_cash | stir | fx
+    kind: Mapped[str] = mapped_column(String(20))  # treasury | treasury_cash | stir | fx | fx_cash
     info: Mapped[dict] = mapped_column(JSON_DOC)
     seed_sha256: Mapped[str] = mapped_column(String(64))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

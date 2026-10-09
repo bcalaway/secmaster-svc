@@ -1,4 +1,4 @@
-# Futures products for step 2c (mkt-data's docs/phase-4.md) whose Bloomberg root isn't known yet: none of
+# Futures products for steps 2c and 2d (mkt-data's docs/phase-4.md) whose Bloomberg root isn't known yet: none of
 # their CME pages shows a vendor code (docs/cme-contract-specs-2026-10.md), and OpenFIGI can't map CME's
 # code. The root-search job (app/futures_roots.py, DAG secmaster_svc__futures_roots) searches OpenFIGI for
 # each by these queries and logs the futures it finds, grouped by root and name, for a person to read.
@@ -265,3 +265,152 @@ name = "NOK/SEK Futures"
 kind = "fx"
 exch_code = "CME"
 queries = ["NOKSEK", "NOK/SEK", "NOK/SEK Future", "NOK/SEK Cross"]
+
+# Step 2d: the emerging-market FX futures (2026-10-09). `fx_cash`: financially settled.
+
+[[candidates]]
+cme_code = "6L"
+name = "Brazilian Real Futures"
+kind = "fx_cash"
+exch_code = "CME"
+queries = ["BRAZIL REAL", "BRAZILIAN REAL", "BRL CURRENCY", "BRLUSD"]
+
+[[candidates]]
+cme_code = "CHP"
+name = "Chilean Peso/US Dollar (CLP/USD) Futures"
+kind = "fx_cash"
+exch_code = "CME"
+queries = ["CHILEAN PESO", "CLP/USD", "CLPUSD"]
+
+[[candidates]]
+cme_code = "6H"
+name = "CNH/USD Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["CNH/USD", "CNHUSD", "OFFSHORE RENMINBI"]
+
+[[candidates]]
+cme_code = "CNH"
+name = "Offshore Chinese Renminbi (CNH) Futures"
+kind = "fx_cash"
+exch_code = "CME"
+queries = ["USD/CNH", "USDCNH", "USD/CNH Future"]
+
+[[candidates]]
+cme_code = "RMB"
+name = "Onshore Chinese Renminbi (CNY) Futures"
+kind = "fx_cash"
+exch_code = "CME"
+queries = ["CHINESE RENMINBI", "RMB/USD", "CNY CURRENCY"]
+
+[[candidates]]
+cme_code = "RME"
+name = "Chinese Renminbi/Euro Futures"
+kind = "fx_cash"
+exch_code = "CME"
+queries = ["RMB/EUR", "RMB EUR", "CNY/EUR"]
+
+[[candidates]]
+cme_code = "CZK"
+name = "Czech Koruna Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["CZECH KORUNA", "CZK CURRENCY", "CZKUSD"]
+
+[[candidates]]
+cme_code = "ECK"
+name = "Czech Koruna/Euro (CZK/EUR) Cross Rate Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["EUR/CZK", "CZK/EUR", "EUR/CZECH KORUNA"]
+
+[[candidates]]
+cme_code = "HUF"
+name = "Hungarian Forint Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["HUNGARIAN FORINT", "HUF CURRENCY", "HUFUSD"]
+
+[[candidates]]
+cme_code = "EHF"
+name = "Hungarian Forint/Euro (HUF/EUR) Cross Rate Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["EUR/HUF", "HUF/EUR", "EUR/HUNGARIAN FORINT"]
+
+[[candidates]]
+cme_code = "PLN"
+name = "Polish Zloty Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["POLISH ZLOTY", "PLN CURRENCY", "PLNUSD"]
+
+[[candidates]]
+cme_code = "EPZ"
+name = "Polish Zloty/Euro (PLN/EUR) Cross Rate Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["EUR/PLN", "PLN/EUR", "EUR/POLISH ZLOTY"]
+
+[[candidates]]
+cme_code = "ILS"
+name = "Israeli Shekel Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["ISRAELI SHEKEL", "ILS CURRENCY", "ILSUSD"]
+
+[[candidates]]
+cme_code = "SIR"
+name = "Indian Rupee/USD Futures"
+kind = "fx_cash"
+exch_code = "CME"
+queries = ["INDIAN RUPEE", "INR/USD", "INRUSD"]
+
+[[candidates]]
+cme_code = "KRW"
+name = "Korean Won Futures"
+kind = "fx_cash"
+exch_code = "CME"
+queries = ["KOREAN WON", "KRW CURRENCY", "KRWUSD"]
+
+[[candidates]]
+cme_code = "6R"
+name = "Russian Ruble Futures"
+kind = "fx_cash"
+exch_code = "CME"
+queries = ["RUSSIAN RUBLE", "RUB CURRENCY", "RUBUSD"]
+
+[[candidates]]
+cme_code = "TRL"
+name = "Turkish Lira/US Dollar (TRY/USD) Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["TURKISH LIRA", "TRY/USD", "TRYUSD"]
+
+[[candidates]]
+cme_code = "6Z"
+name = "South African Rand Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["SOUTH AFRICAN RAND", "S AFRICAN RAND", "ZAR CURRENCY"]
+
+[[candidates]]
+cme_code = "IDR"
+name = "IDR/USD Futures"
+kind = "fx_cash"
+exch_code = "CME"
+queries = ["IDR/USD", "INDONESIAN RUPIAH", "IDRUSD"]
+
+[[candidates]]
+cme_code = "SGD"
+name = "SGD/USD Futures"
+kind = "fx"
+exch_code = "CME"
+queries = ["SGD/USD", "SINGAPORE DOLLAR", "SGDUSD"]
+
+[[candidates]]
+cme_code = "THAI"
+name = "THB/USD Futures"
+kind = "fx_cash"
+exch_code = "CME"
+queries = ["THB/USD", "THAI BAHT", "THBUSD"]

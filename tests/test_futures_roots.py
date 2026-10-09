@@ -11,7 +11,8 @@ def fut(ticker, name, exch="CME", sector="Curncy", figi_="BBG000000001"):
 def test_candidates_load():
     got = futures_roots.load()
     codes = [c.cme_code for c in got]
-    assert len(codes) == len(set(codes)) == 36 and "RP" in codes and "MTN" in codes
+    assert len(codes) == len(set(codes)) == 57 and "RP" in codes and "MTN" in codes and "KRW" in codes
+    assert next(c for c in got if c.cme_code == "KRW").kind == "fx_cash"
     rp = next(c for c in got if c.cme_code == "RP")
     assert rp.name == "Euro/British Pound Futures" and rp.exch_code == "CME" and rp.queries
 

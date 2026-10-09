@@ -53,7 +53,7 @@ LIVE = ("listed", "delivery")
 # The version of the questions and checks below: a lookup made under an older one is asked again.
 # 1: no market sector (2026-10-08, matched three FX products to commodity futures); 2: sector by kind.
 CHECK = 2
-SECTOR = {"fx": "Curncy", "treasury": "Comdty", "treasury_cash": "Comdty", "stir": "Comdty"}
+SECTOR = {"fx": "Curncy", "fx_cash": "Curncy", "treasury": "Comdty", "treasury_cash": "Comdty", "stir": "Comdty"}
 # Without a key OpenFIGI takes 25 requests a minute of 10 jobs; three jobs a contract.
 MAX_WITHOUT_KEY = 100
 TICKER = re.compile(r"^(?P<root>[A-Z0-9]+?)(?P<code>[FGHJKMNQUVXZ])(?P<year>\d{1,2})$")
