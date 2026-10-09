@@ -40,7 +40,7 @@ class Instrument(Base):
     __tablename__ = "instrument"
 
     sec_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    type: Mapped[str] = mapped_column(String(20))  # cmt_yield; ust_bill, ust_note, ust_bond, ust_tips, ust_frn
+    type: Mapped[str] = mapped_column(String(20))  # cmt_yield; ust_*; fut_product, fut_treasury, fut_stir, fut_fx
     currency: Mapped[str] = mapped_column(String(3))
     country: Mapped[str] = mapped_column(String(2))
     curve: Mapped[str | None] = mapped_column(String(20))  # UST
@@ -385,3 +385,90 @@ class ReferenceCpi(Base):
     day: Mapped[date] = mapped_column(Date, primary_key=True)
     value: Mapped[Decimal] = mapped_column(Numeric)
     method: Mapped[str] = mapped_column(String(10))  # published | fallback
+
+
+class FuturesProduct(Base):
+    """A futures product (mkt-data's docs/phase-4.md, step 2a): its instrument, named by its Bloomberg root.
+
+    `info` is the product's entry in seeds/futures.toml (codes, calendars, listing cycle, date rules and
+    where each comes from); its specs as CME states them are futures_spec rows.
+    """
+
+    __tablename__ = "futures_product"
+    __table_args__ = (Index("uq_futures_product_cme_code", "cme_code", unique=True),)
+
+    sec_id: Mapped[int] = mapped_column(ForeignKey("instrument.sec_id"), primary_key=True)
+    root: Mapped[str] = mapped_column(String(8))  # TY
+    cme_code: Mapped[str] = mapped_column(String(8))  # ZN, the product's identity
+    kind: Mapped[str] = mapped_column(String(10))  # treasury | stir | fx
+    info: Mapped[dict] = mapped_column(JSON_DOC)
+    seed_sha256: Mapped[str] = mapped_column(String(64))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class FuturesSpec(Base):
+    """A product's contract specs as CME states them, effective-dated, with history like security_terms."""
+
+    __tablename__ = "futures_spec"
+    __table_args__ = (Index("ix_futures_spec_sec_id", "sec_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sec_id: Mapped[int] = mapped_column(ForeignKey("instrument.sec_id"))
+    valid_from: Mapped[date] = mapped_column(Date)
+    valid_to: Mapped[date | None] = mapped_column(Date)
+    source: Mapped[str] = mapped_column(Text)  # CME's spec page
+    fields: Mapped[dict] = mapped_column(JSON_DOC)  # contract_unit, minimum_price_fluctuation, ... verbatim
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    superseded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class FuturesContract(Base):
+    """A futures contract's dates, generated from its product's rules (app/futures.py), with history.
+
+    One current row per contract (superseded_at null); a contract is its product and contract month.
+    `rules` says how each date was derived (rule and calendars), or why it's unknown. `status` is the
+    contract's own: listed, delivery (a Treasury contract between first intention day and last delivery
+    day) or expired; the instrument's status is active or expired.
+    """
+
+    __tablename__ = "futures_contract"
+    __table_args__ = (
+        Index("uq_futures_contract_current", "sec_id", unique=True,
+              postgresql_where=text("superseded_at IS NULL"), sqlite_where=text("superseded_at IS NULL")),
+        Index("uq_futures_contract_month", "product_sec_id", "contract_month", unique=True,
+              postgresql_where=text("superseded_at IS NULL"), sqlite_where=text("superseded_at IS NULL")),
+        Index("ix_futures_contract_last_trade", "last_trade_date"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sec_id: Mapped[int] = mapped_column(ForeignKey("instrument.sec_id"))
+    product_sec_id: Mapped[int] = mapped_column(ForeignKey("instrument.sec_id"))
+    contract_month: Mapped[date] = mapped_column(Date)  # first of the month
+    status: Mapped[str] = mapped_column(String(10))
+    first_trade_date: Mapped[date | None] = mapped_column(Date)
+    last_trade_date: Mapped[date] = mapped_column(Date)
+    first_intention_date: Mapped[date | None] = mapped_column(Date)
+    first_notice_date: Mapped[date | None] = mapped_column(Date)
+    first_delivery_date: Mapped[date | None] = mapped_column(Date)
+    last_delivery_date: Mapped[date | None] = mapped_column(Date)
+    reference_start: Mapped[date | None] = mapped_column(Date)
+    reference_end: Mapped[date | None] = mapped_column(Date)  # excluded
+    final_settlement_date: Mapped[date | None] = mapped_column(Date)
+    settlement_date: Mapped[date | None] = mapped_column(Date)  # FX delivery
+    rules: Mapped[dict] = mapped_column(JSON_DOC)
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    superseded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class FuturesRun(Base):
+    """Each futures generation run (app/futures_load.py): how it went and what it did."""
+
+    __tablename__ = "futures_run"
+    __table_args__ = (CheckConstraint("outcome IN ('ok', 'error')", name="ck_futures_run_outcome"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    outcome: Mapped[str] = mapped_column(String(8))
+    seed_sha256: Mapped[str] = mapped_column(String(64))
+    detail: Mapped[str] = mapped_column(Text)  # JSON summary, or the error

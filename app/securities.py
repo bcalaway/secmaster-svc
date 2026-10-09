@@ -14,6 +14,9 @@ from sqlalchemy.orm import Session
 
 from app.models import (
     Auction,
+    FuturesContract,
+    FuturesProduct,
+    FuturesSpec,
     Identifier,
     Instrument,
     InstrumentName,
@@ -97,7 +100,7 @@ def get(s: Session, sec_id: int | None = None, name: str = "", as_of: date | Non
     """One instrument by sec_id, or by short name or alias, with its identifiers and notes.
 
     An on-the-run name (UST-10Y-OTR) resolves to the security on the run on
-    `as_of` (default today).
+    `as_of` (default today), and a futures generic (TY1) to that day's contract.
     """
     if sec_id:
         inst = s.get(Instrument, sec_id)
@@ -132,6 +135,18 @@ def get(s: Session, sec_id: int | None = None, name: str = "", as_of: date | Non
     if strip is not None:
         out["strip"] = _plain(strip, skip=("sec_id", "provenance", "checks", "updated_at"))
         out["provenance"], out["checks"] = strip.provenance, strip.checks
+    product = s.get(FuturesProduct, inst.sec_id)
+    if product is not None:
+        out["futures_product"] = product.info
+        out["specs"] = [_plain(x, skip=("id", "sec_id", "superseded_at")) for x in s.scalars(
+            select(FuturesSpec).where(FuturesSpec.sec_id == inst.sec_id, FuturesSpec.superseded_at.is_(None))
+            .order_by(FuturesSpec.valid_from))]
+    contract = s.scalar(select(FuturesContract).where(FuturesContract.sec_id == inst.sec_id,
+                                                      FuturesContract.superseded_at.is_(None)))
+    if contract is not None:
+        out["contract"] = _plain(contract, skip=("id", "sec_id", "rules", "superseded_at"))
+        out["contract"]["product"] = _names(s, [contract.product_sec_id])[contract.product_sec_id]["short_name"]
+        out["provenance"] = contract.rules
     return out
 
 
@@ -152,8 +167,9 @@ def index_ratio(s: Session, base_cpi, on: date) -> dict | None:
 
 
 def _on_the_run(s: Session, name: str, on: date) -> int | None:
+    """An on-the-run alias (UST-10Y-OTR) or a futures generic (TY1) on a date."""
     return s.scalar(select(Identifier.sec_id).where(
-        Identifier.scheme == "OTR", Identifier.value == name, Identifier.removed_at.is_(None),
+        Identifier.scheme.in_(("OTR", "GENERIC")), Identifier.value == name, Identifier.removed_at.is_(None),
         or_(Identifier.valid_from.is_(None), Identifier.valid_from <= on),
         or_(Identifier.valid_to.is_(None), Identifier.valid_to >= on)))
 

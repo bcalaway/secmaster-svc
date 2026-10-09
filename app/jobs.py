@@ -80,6 +80,22 @@ def run_rebuild() -> dict:
         raise HTTPException(502, str(e)) from None
 
 
+@router.post("/futures", dependencies=[Depends(require_token)])
+def run_futures() -> dict:
+    """Generate futures products and contracts from seeds/futures.toml and calendar-svc's business days.
+
+    502 when calendar-svc can't be read, the seed is bad or a rule can't be applied (nothing is changed).
+    """
+    from app import futures_load
+    from app.calendars import GrpcCalendars
+
+    try:
+        with db.session() as s, GrpcCalendars(settings.calendar_svc_grpc) as cals:
+            return futures_load.run(s, cals)
+    except futures_load.FuturesError as e:
+        raise HTTPException(502, str(e)) from None
+
+
 @router.post("/figi", dependencies=[Depends(require_token)])
 def run_figi() -> dict:
     """Ask OpenFIGI about Treasury CUSIPs not looked up yet; keep FIGI, composite FIGI and ticker. 502 if unreachable."""

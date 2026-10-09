@@ -1,0 +1,162 @@
+syntax = "proto3";
+
+package calendar_svc;
+
+// A copy of calendar-svc's proto/calendars.proto (the contract calendar-svc
+// owns and serves at calendar-svc:9090); secmaster-svc is a client of it, for
+// the business days its futures contracts are generated from (mkt-data's
+// docs/phase-4.md, step 2a). Keep it identical below this note: change it in
+// calendar-svc first, then copy it here.
+
+// The golden holiday calendars (mkt-data's docs/phase-2.md, Part A): FED,
+// SIFMA-US, NYSE. Internal-only per ADR-0020: reachable as calendar-svc:9090
+// on the home-platform Docker network, never through Traefik. Dates are ISO
+// strings (YYYY-MM-DD), close times HH:MM local to the calendar (empty for
+// none).
+service Calendars {
+  // Every calendar: name, time zone, covered years.
+  rpc ListCalendars(ListCalendarsRequest) returns (ListCalendarsResponse);
+  // Is this date a business day? NOT_FOUND for an unknown calendar,
+  // OUT_OF_RANGE for a year no source covers.
+  rpc BusinessDay(BusinessDayRequest) returns (BusinessDayResponse);
+  // Closed and early-close weekdays in a date range (inclusive).
+  rpc Closes(ClosesRequest) returns (ClosesResponse);
+  // Every covered year, with the source credited for it and that source's
+  // kind (published, rules, projected).
+  rpc Coverage(CoverageRequest) returns (CoverageResponse);
+  // The calendar's sources in precedence order, with the years each is
+  // credited for (mkt-data's docs/phase-3.md, step 8: the Calendars screen).
+  rpc ListSources(ListCalendarSourcesRequest) returns (ListCalendarSourcesResponse);
+  // Every version of a day's row, oldest first: how its status changed.
+  rpc DayHistory(DayHistoryRequest) returns (DayHistoryResponse);
+  // Days where a source (not a projection) says something other than the
+  // calendar, because another source decided them. Read from mkt-data's
+  // current rows at call time, so it takes a few seconds.
+  rpc Disagreements(DisagreementsRequest) returns (DisagreementsResponse);
+}
+
+message ListCalendarsRequest {}
+
+message CalendarInfo {
+  string name = 1;          // e.g. SIFMA-US
+  string description = 2;
+  string timezone = 3;      // IANA, e.g. America/New_York
+  int32 first_year = 4;     // 0 if not loaded yet
+  int32 last_year = 5;
+}
+
+message ListCalendarsResponse {
+  repeated CalendarInfo calendars = 1;
+}
+
+message BusinessDayRequest {
+  string calendar = 1;
+  string date = 2;
+}
+
+message BusinessDayResponse {
+  string calendar = 1;
+  string date = 2;
+  bool business_day = 3;
+  string status = 4;        // open | closed | early_close | weekend
+  string holiday = 5;
+  string close_time = 6;
+  bool projected = 7;       // from a year no publisher covers yet: a best guess
+}
+
+message ClosesRequest {
+  string calendar = 1;
+  string start = 2;
+  string end = 3;
+}
+
+message Close {
+  string date = 1;
+  string status = 2;        // closed | early_close
+  string holiday = 3;
+  string close_time = 4;
+  bool projected = 5;
+  string source = 6;        // the mkt-data source that decided the day
+}
+
+message ClosesResponse {
+  string calendar = 1;
+  repeated Close closes = 2;
+}
+
+message CoverageRequest {
+  string calendar = 1;
+}
+
+message YearCoverage {
+  int32 year = 1;
+  string source = 2;        // the mkt-data source credited, e.g. SIFMA-US-ARCHIVE
+  string kind = 3;          // published | rules | projected
+}
+
+message CoverageResponse {
+  string calendar = 1;
+  repeated YearCoverage years = 2;
+}
+
+message ListCalendarSourcesRequest {
+  string calendar = 1;
+}
+
+message CalendarSource {
+  string name = 1;          // mkt-data's source, e.g. SIFMA-US-HOLIDAYS
+  string kind = 2;          // published | rules | projected
+  int32 rank = 3;           // 1 is the highest precedence
+  int32 years = 4;          // years credited to it
+  int32 first_year = 5;     // 0 if none
+  int32 last_year = 6;
+}
+
+message ListCalendarSourcesResponse {
+  string calendar = 1;
+  repeated CalendarSource sources = 2;
+}
+
+message DayHistoryRequest {
+  string calendar = 1;
+  string date = 2;
+}
+
+message DayVersion {
+  string date = 1;
+  string status = 2;        // closed | early_close
+  string holiday = 3;
+  string close_time = 4;
+  string source = 5;
+  int64 capture_id = 6;     // mkt-data's capture it came from
+  string valid_from = 7;
+  string valid_to = 8;      // empty: current
+}
+
+message DayHistoryResponse {
+  string calendar = 1;
+  string date = 2;
+  repeated DayVersion versions = 3;  // empty: the day has always been open (or a weekend)
+}
+
+message DisagreementsRequest {
+  string calendar = 1;
+}
+
+message Disagreement {
+  string date = 1;
+  string source = 2;          // the source that disagrees
+  string differs = 3;         // status | time | name
+  string source_says = 4;     // open | closed | early_close 13:00
+  string source_holiday = 5;
+  string calendar_says = 6;
+  string calendar_holiday = 7;
+  string decided_by = 8;      // the source the calendar took the day from; empty if the calendar is open
+  bool decided_by_higher = 9; // false: a lower source decided (worth a look)
+}
+
+message DisagreementsResponse {
+  string calendar = 1;
+  repeated Disagreement days = 2;
+}
+
