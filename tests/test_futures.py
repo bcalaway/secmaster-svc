@@ -22,7 +22,7 @@ TODAY = date(2026, 10, 8)
 
 def cals() -> f.Calendars:
     us = frozenset(US_2026)
-    names = ("CME-IR", "CME-FX", "FED", "TARGET", "JP", "GB", "AU", "CA", "CH", "MX", "NZ")
+    names = ("CME-IR", "CME-FX", "FED", "TARGET", "JP", "GB", "AU", "CA", "CH", "MX", "NZ", "NO", "SE")
     closed = {n: us for n in names} | {"TARGET": frozenset(TARGET_2026)}
     return f.Calendars(closed, dict.fromkeys(names, (1990, 2100)))
 
@@ -41,14 +41,26 @@ def contract(seed, root, year, month, today=TODAY):
     return next(d for d in got.contracts if d.contract.month == date(year, month, 1))
 
 
-def test_seed_parses_twenty_products(seed):
+def test_seed_parses_every_product(seed):
     roots = [p.product.root for p in seed.products]
-    assert len(roots) == 20 and len(set(roots)) == 20
+    assert len(roots) == 45 and len(set(roots)) == 45  # the main 20 and step 2c's 25 FX products
     assert {"TU", "3Y", "FV", "TY", "UXY", "TWEA", "US", "WN", "FF", "SER", "SFR", "TZR",
-            "EC", "JY", "BP", "AD", "CD", "SF", "PE", "NV"} == set(roots)
+            "EC", "JY", "BP", "AD", "CD", "SF", "PE", "NV"} <= set(roots)
     for p in seed.products:
         assert p.specs and all(s.source.startswith("https://www.cmegroup.com/") for s in p.specs)
         assert set(p.rule_sources) == set(p.product.rules)
+
+
+def test_step_2c_fx(seed):
+    """A cross settles where both its currencies (and New York) are open; a micro lists two quarterlies."""
+    ps = {p.product.cme_code: p for p in seed.products}
+    assert ps["PSF"].product.settle_calendars == ("GB", "CH", "FED")
+    assert ps["PSF"].currency == "CHF" and ps["M6E"].currency == "USD"
+    got = f.generate(ps["M6E"].product, cals(), TODAY)
+    assert [x.contract.short_name for x in got.contracts if x.listed_today] == ["CREZ26", "CREH27"]
+    d = next(x for x in got.contracts if x.contract.short_name == "CREZ26")
+    assert d.dates["last_trade_date"] == date(2026, 12, 14) and d.dates["settlement_date"] == date(2026, 12, 16)
+    assert contract(seed, "MCD", 2026, 12).dates["last_trade_date"] == date(2026, 12, 15)  # 1 business day
 
 
 def test_ten_year_dates(seed):
