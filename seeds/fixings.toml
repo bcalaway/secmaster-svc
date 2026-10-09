@@ -1,0 +1,609 @@
+# Fixings: the security master's seed for the rates and FX rates CME's futures settle on or track
+# (mkt-data's docs/phase-4.md, step 4; Bill, 2026-10-07). Like seeds/cmt.toml, no feed defines these, so
+# this file is their source of truth, changed only in a reviewed PR.
+#
+# Identifier schemes are mkt-data's source names and values the source's own keys, so quote-svc maps an
+# observation straight to an instrument:
+#   NYFED-SOFR, NYFED-EFFR  the New York Fed's reference rates (the record's `type`)
+#   FRB-H10-RATES           the Fed's H.10 daily rates, DDP series (RXI$US_N.B.EU: dollars per euro;
+#                           RXI_N.B.JA: yen per dollar)
+#   FRB-H10                 the H.10 nominal dollar indexes, DDP series
+#   ECB-EXR                 the ECB's euro reference rates, SDMX key (EXR.D.JPY.EUR.SP00.A: yen per euro)
+#
+# Each FX fixing is quoted as its source prints it, never inverted: the short name says which way
+# (EURUSD-H10 is dollars per euro, USDJPY-H10 yen per dollar, EURJPY-ECB yen per euro), and `currency`
+# is the currency the quote is in. No averages (the SOFR Averages and Index): averaging is analytics,
+# for a later phase (Bill, 2026-10-09).
+
+[defaults]
+country = "US"
+
+[[instruments]]
+short_name = "SOFR"
+type = "rate_fixing"
+currency = "USD"
+calendar = "SIFMA-US"
+description = "Secured Overnight Financing Rate (New York Fed): rate, percentiles and volume"
+identifiers = { NYFED-SOFR = "SOFR" }
+notes = [
+  { key = "first-published", date = "2018-04-02", text = "First published, for 2018-04-02." },
+]
+
+[[instruments]]
+short_name = "EFFR"
+type = "rate_fixing"
+currency = "USD"
+calendar = "FED"
+description = "Effective federal funds rate (New York Fed): rate, percentiles, volume and the FOMC's target range"
+identifiers = { NYFED-EFFR = "EFFR" }
+notes = [
+  { key = "methodology-2016", date = "2016-03-01", text = "The New York Fed began calculating EFFR as a volume-weighted median of FR 2420 data (from a volume-weighted mean of brokered trades)." },
+]
+
+[[instruments]]
+short_name = "AUDUSD-H10"
+type = "fx_fixing"
+currency = "USD"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: US dollars per Australian dollar"
+identifiers = { FRB-H10-RATES = "RXI$US_N.B.AL" }
+
+[[instruments]]
+short_name = "EURUSD-H10"
+type = "fx_fixing"
+currency = "USD"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: US dollars per euro"
+identifiers = { FRB-H10-RATES = "RXI$US_N.B.EU" }
+
+[[instruments]]
+short_name = "NZDUSD-H10"
+type = "fx_fixing"
+currency = "USD"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: US dollars per New Zealand dollar"
+identifiers = { FRB-H10-RATES = "RXI$US_N.B.NZ" }
+
+[[instruments]]
+short_name = "GBPUSD-H10"
+type = "fx_fixing"
+currency = "USD"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: US dollars per pound sterling"
+identifiers = { FRB-H10-RATES = "RXI$US_N.B.UK" }
+
+[[instruments]]
+short_name = "USDBRL-H10"
+type = "fx_fixing"
+currency = "BRL"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: Brazilian real per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.BZ" }
+
+[[instruments]]
+short_name = "USDCAD-H10"
+type = "fx_fixing"
+currency = "CAD"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: Canadian dollar per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.CA" }
+
+[[instruments]]
+short_name = "USDCNY-H10"
+type = "fx_fixing"
+currency = "CNY"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: Chinese yuan per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.CH" }
+
+[[instruments]]
+short_name = "USDDKK-H10"
+type = "fx_fixing"
+currency = "DKK"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: Danish krone per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.DN" }
+
+[[instruments]]
+short_name = "USDHKD-H10"
+type = "fx_fixing"
+currency = "HKD"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: Hong Kong dollar per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.HK" }
+
+[[instruments]]
+short_name = "USDINR-H10"
+type = "fx_fixing"
+currency = "INR"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: Indian rupee per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.IN" }
+
+[[instruments]]
+short_name = "USDJPY-H10"
+type = "fx_fixing"
+currency = "JPY"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: Japanese yen per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.JA" }
+
+[[instruments]]
+short_name = "USDMYR-H10"
+type = "fx_fixing"
+currency = "MYR"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: Malaysian ringgit per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.MA" }
+
+[[instruments]]
+short_name = "USDMXN-H10"
+type = "fx_fixing"
+currency = "MXN"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: Mexican peso per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.MX" }
+
+[[instruments]]
+short_name = "USDNOK-H10"
+type = "fx_fixing"
+currency = "NOK"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: Norwegian krone per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.NO" }
+
+[[instruments]]
+short_name = "USDZAR-H10"
+type = "fx_fixing"
+currency = "ZAR"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: South African rand per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.SF" }
+
+[[instruments]]
+short_name = "USDSGD-H10"
+type = "fx_fixing"
+currency = "SGD"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: Singapore dollar per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.SI" }
+
+[[instruments]]
+short_name = "USDKRW-H10"
+type = "fx_fixing"
+currency = "KRW"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: South Korean won per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.KO" }
+
+[[instruments]]
+short_name = "USDLKR-H10"
+type = "fx_fixing"
+currency = "LKR"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: Sri Lankan rupee per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.SL" }
+
+[[instruments]]
+short_name = "USDSEK-H10"
+type = "fx_fixing"
+currency = "SEK"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: Swedish krona per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.SD" }
+
+[[instruments]]
+short_name = "USDCHF-H10"
+type = "fx_fixing"
+currency = "CHF"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: Swiss franc per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.SZ" }
+
+[[instruments]]
+short_name = "USDTWD-H10"
+type = "fx_fixing"
+currency = "TWD"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: Taiwan dollar per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.TA" }
+
+[[instruments]]
+short_name = "USDTHB-H10"
+type = "fx_fixing"
+currency = "THB"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: Thai baht per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.TH" }
+
+[[instruments]]
+short_name = "USDVEB-H10"
+type = "fx_fixing"
+currency = "VEB"
+calendar = "FED"
+description = "H.10 noon buying rate in New York: Venezuelan bolivar per US dollar"
+identifiers = { FRB-H10-RATES = "RXI_N.B.VE" }
+
+[[instruments]]
+short_name = "USD-BROAD-H10"
+type = "fx_index"
+currency = "USD"
+calendar = "FED"
+description = "H.10 nominal broad dollar index (January 2006 = 100)"
+identifiers = { FRB-H10 = "JRXWTFB_N.B" }
+
+[[instruments]]
+short_name = "USD-AFE-H10"
+type = "fx_index"
+currency = "USD"
+calendar = "FED"
+description = "H.10 nominal advanced foreign economies dollar index (January 2006 = 100)"
+identifiers = { FRB-H10 = "JRXWTFN_N.B" }
+
+[[instruments]]
+short_name = "USD-EME-H10"
+type = "fx_index"
+currency = "USD"
+calendar = "FED"
+description = "H.10 nominal emerging market economies dollar index (January 2006 = 100)"
+identifiers = { FRB-H10 = "JRXWTFO_N.B" }
+
+[[instruments]]
+short_name = "EURAUD-ECB"
+type = "fx_fixing"
+currency = "AUD"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Australian dollar per euro"
+identifiers = { ECB-EXR = "EXR.D.AUD.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURBGN-ECB"
+type = "fx_fixing"
+currency = "BGN"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Bulgarian lev per euro"
+identifiers = { ECB-EXR = "EXR.D.BGN.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURBRL-ECB"
+type = "fx_fixing"
+currency = "BRL"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Brazilian real per euro"
+identifiers = { ECB-EXR = "EXR.D.BRL.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURCAD-ECB"
+type = "fx_fixing"
+currency = "CAD"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Canadian dollar per euro"
+identifiers = { ECB-EXR = "EXR.D.CAD.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURCHF-ECB"
+type = "fx_fixing"
+currency = "CHF"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Swiss franc per euro"
+identifiers = { ECB-EXR = "EXR.D.CHF.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURCNY-ECB"
+type = "fx_fixing"
+currency = "CNY"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Chinese yuan renminbi per euro"
+identifiers = { ECB-EXR = "EXR.D.CNY.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURCYP-ECB"
+type = "fx_fixing"
+currency = "CYP"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Cyprus pound per euro"
+identifiers = { ECB-EXR = "EXR.D.CYP.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURCZK-ECB"
+type = "fx_fixing"
+currency = "CZK"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Czech koruna per euro"
+identifiers = { ECB-EXR = "EXR.D.CZK.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURDKK-ECB"
+type = "fx_fixing"
+currency = "DKK"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Danish krone per euro"
+identifiers = { ECB-EXR = "EXR.D.DKK.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EUREEK-ECB"
+type = "fx_fixing"
+currency = "EEK"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Estonian kroon per euro"
+identifiers = { ECB-EXR = "EXR.D.EEK.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURGBP-ECB"
+type = "fx_fixing"
+currency = "GBP"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: pound sterling per euro"
+identifiers = { ECB-EXR = "EXR.D.GBP.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURGRD-ECB"
+type = "fx_fixing"
+currency = "GRD"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Greek drachma per euro"
+identifiers = { ECB-EXR = "EXR.D.GRD.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURHKD-ECB"
+type = "fx_fixing"
+currency = "HKD"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Hong Kong dollar per euro"
+identifiers = { ECB-EXR = "EXR.D.HKD.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURHRK-ECB"
+type = "fx_fixing"
+currency = "HRK"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Croatian kuna per euro"
+identifiers = { ECB-EXR = "EXR.D.HRK.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURHUF-ECB"
+type = "fx_fixing"
+currency = "HUF"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Hungarian forint per euro"
+identifiers = { ECB-EXR = "EXR.D.HUF.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURIDR-ECB"
+type = "fx_fixing"
+currency = "IDR"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Indonesian rupiah per euro"
+identifiers = { ECB-EXR = "EXR.D.IDR.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURILS-ECB"
+type = "fx_fixing"
+currency = "ILS"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Israeli shekel per euro"
+identifiers = { ECB-EXR = "EXR.D.ILS.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURINR-ECB"
+type = "fx_fixing"
+currency = "INR"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Indian rupee per euro"
+identifiers = { ECB-EXR = "EXR.D.INR.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURISK-ECB"
+type = "fx_fixing"
+currency = "ISK"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Icelandic krona per euro"
+identifiers = { ECB-EXR = "EXR.D.ISK.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURJPY-ECB"
+type = "fx_fixing"
+currency = "JPY"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Japanese yen per euro"
+identifiers = { ECB-EXR = "EXR.D.JPY.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURKRW-ECB"
+type = "fx_fixing"
+currency = "KRW"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: South Korean won per euro"
+identifiers = { ECB-EXR = "EXR.D.KRW.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURLTL-ECB"
+type = "fx_fixing"
+currency = "LTL"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Lithuanian litas per euro"
+identifiers = { ECB-EXR = "EXR.D.LTL.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURLVL-ECB"
+type = "fx_fixing"
+currency = "LVL"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Latvian lats per euro"
+identifiers = { ECB-EXR = "EXR.D.LVL.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURMTL-ECB"
+type = "fx_fixing"
+currency = "MTL"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Maltese lira per euro"
+identifiers = { ECB-EXR = "EXR.D.MTL.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURMXN-ECB"
+type = "fx_fixing"
+currency = "MXN"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Mexican peso per euro"
+identifiers = { ECB-EXR = "EXR.D.MXN.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURMYR-ECB"
+type = "fx_fixing"
+currency = "MYR"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Malaysian ringgit per euro"
+identifiers = { ECB-EXR = "EXR.D.MYR.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURNOK-ECB"
+type = "fx_fixing"
+currency = "NOK"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Norwegian krone per euro"
+identifiers = { ECB-EXR = "EXR.D.NOK.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURNZD-ECB"
+type = "fx_fixing"
+currency = "NZD"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: New Zealand dollar per euro"
+identifiers = { ECB-EXR = "EXR.D.NZD.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURPHP-ECB"
+type = "fx_fixing"
+currency = "PHP"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Philippine peso per euro"
+identifiers = { ECB-EXR = "EXR.D.PHP.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURPLN-ECB"
+type = "fx_fixing"
+currency = "PLN"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Polish zloty per euro"
+identifiers = { ECB-EXR = "EXR.D.PLN.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURRON-ECB"
+type = "fx_fixing"
+currency = "RON"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Romanian leu per euro"
+identifiers = { ECB-EXR = "EXR.D.RON.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURRUB-ECB"
+type = "fx_fixing"
+currency = "RUB"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Russian rouble per euro"
+identifiers = { ECB-EXR = "EXR.D.RUB.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURSEK-ECB"
+type = "fx_fixing"
+currency = "SEK"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Swedish krona per euro"
+identifiers = { ECB-EXR = "EXR.D.SEK.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURSGD-ECB"
+type = "fx_fixing"
+currency = "SGD"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Singapore dollar per euro"
+identifiers = { ECB-EXR = "EXR.D.SGD.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURSIT-ECB"
+type = "fx_fixing"
+currency = "SIT"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Slovenian tolar per euro"
+identifiers = { ECB-EXR = "EXR.D.SIT.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURSKK-ECB"
+type = "fx_fixing"
+currency = "SKK"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Slovak koruna per euro"
+identifiers = { ECB-EXR = "EXR.D.SKK.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURTHB-ECB"
+type = "fx_fixing"
+currency = "THB"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Thai baht per euro"
+identifiers = { ECB-EXR = "EXR.D.THB.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURTRY-ECB"
+type = "fx_fixing"
+currency = "TRY"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: Turkish lira per euro"
+identifiers = { ECB-EXR = "EXR.D.TRY.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURUSD-ECB"
+type = "fx_fixing"
+currency = "USD"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: US dollar per euro"
+identifiers = { ECB-EXR = "EXR.D.USD.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURZAR-ECB"
+type = "fx_fixing"
+currency = "ZAR"
+calendar = "TARGET"
+country = "EU"
+description = "ECB euro reference rate, 14:15 CET: South African rand per euro"
+identifiers = { ECB-EXR = "EXR.D.ZAR.EUR.SP00.A" }
