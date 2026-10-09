@@ -188,3 +188,53 @@ def test_futures_identifiers_are_current_only(migrated_db):
         n = s.scalar(select(func.count()).select_from(Identifier).where(
             Identifier.scheme == "GENERIC", Identifier.removed_at.is_(None)))
         assert n > 10000
+
+
+
+def test_a_corrected_rule_redates_and_withdraws(migrated_db, monkeypatch):
+    """Step 2a dated SR3 by the month its reference quarter ends in; CME names it by the month it starts."""
+    from app import futures
+
+    # The old convention, as first deployed: reference quarter ending in the contract month, 6 nearest serials.
+    def old(c, cals_):
+        d = real(c, cals_)
+        if c.product.root == "SFR":
+            d.dates["reference_start"] = futures.third_wednesday(futures._add_months(c.month, -3))
+            d.dates["reference_end"] = futures.third_wednesday(c.month)
+            d.dates["last_trade_date"] = futures._step(cals_, c.product.trade_calendars, d.dates["reference_end"], -1)
+        return d
+
+    real = futures.dates_for
+    body = futures_seed.PATH.read_text().replace("listing = { quarterly = 39, serial_months = 7 }",
+                                                 "listing = { quarterly = 39, serial_nearest = 6 }", 1)
+    monkeypatch.setattr(futures, "dates_for", old)
+    run(seed=futures_seed.parse(body.encode()))
+    with db.session() as s:
+        k7 = securities.get(s, name="SFRK27")["sec_id"]
+        z6 = securities.get(s, name="SFRZ26")
+        assert z6["contract"]["last_trade_date"] == "2026-12-15"
+    monkeypatch.setattr(futures, "dates_for", real)
+    out = run()
+    # Withdrawn: SFRK27 (not a listed serial) and SFRM36 (the 40th quarter); new: SFRN26, SFRQ26, SFRU26.
+    assert out["contracts_withdrawn"] == 2 and out["contracts_created"] == 3
+    with db.session() as s:
+        z6 = securities.get(s, name="SFRZ26")
+        assert z6["contract"]["last_trade_date"] == "2027-03-16" and z6["sec_id"]
+        assert z6["contract"]["reference_start"] == "2026-12-16"
+        k = securities.get(s, sec_id=k7)
+        assert k["status"] == "withdrawn" and k["contract"]["status"] == "withdrawn"
+        assert not [i for i in k["identifiers"] if i["scheme"] in ("CME", "GENERIC")]
+        assert securities.get(s, name="SFR1", as_of=TODAY)["short_name"] == "SFRU26"
+        assert securities.resolve(s, "CME", ["SR3U6"], as_of=TODAY)["matches"][0]["short_name"] == "SFRU26"
+    assert not run()["changed"]
+
+
+def test_a_serial_month_expires_when_it_stops_trading(migrated_db):
+    run()
+    later = date(2026, 10, 21)  # SR3N6 and TBF3V6 stopped trading on the 20th and 19th
+    out = run(today=later, now=datetime(2026, 10, 21, 12, tzinfo=UTC))
+    assert out["contracts_expired"] >= 2 and out["contracts_withdrawn"] == 0
+    with db.session() as s:
+        for name in ("SFRN26", "TZRV26"):
+            got = securities.get(s, name=name)
+            assert got["status"] == "expired" and got["contract"]["status"] == "expired"

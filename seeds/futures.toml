@@ -483,11 +483,12 @@ settle_calendars = ["CME-IR"]
 generics = 12
 history_from = 2018-05-07
 history_source = "SOFR futures launched 2018-05-07 (RJ O'Brien, 'SOFR futures launch this Monday May 7'; CME press release of 2018-05-08 on the first trades). The first contract month isn't confirmed."
-listing = { quarterly = 39, serial_nearest = 6 }
-rules = { last_trade_date = "third_wed_minus:1", reference = "imm_quarter" }
+listing = { quarterly = 39, serial_months = 7 }
+listing_source = "spec page, Listed contracts: 39 consecutive quarters and \"the nearest 6 serial contract months\"; CME's quotes page on 2026-10-08 listed seven serials (Jul, Aug, Oct, Nov 2026; Jan, Feb, Apr 2027), the ones still trading that start before May 2027, which is what serial_months = 7 lists (to re-check once SR3N6 stops trading on 2026-10-20). The far end of the 39 quarters wasn't on the page as read."
+rules = { last_trade_date = "ref_end_minus:1", reference = "imm_quarter" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: business day prior to the 3rd Wednesday of the contract delivery month"
-reference = "spec page, Price quotation: Reference Quarter from (and including) the 3rd Wednesday of the 3rd month preceding the delivery month to (and not including) the 3rd Wednesday of the delivery month"
+last_trade_date = "spec page, Termination of trading: business day prior to the 3rd Wednesday of the contract delivery month, the month the reference quarter ends in (see reference)"
+reference = "spec page, Price quotation: Reference Quarter from (and including) the 3rd Wednesday of the 3rd month preceding the delivery month to (and not including) the 3rd Wednesday of the delivery month. CME names a contract by the month its reference quarter starts: its quotes page on 2026-10-08 still listed the Jul, Aug and Sep 2026 contracts (SR3N6, SR3Q6, SR3U6), so SR3U6's reference quarter is Sep 16 to Dec 16, 2026"
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/interest-rates/stirs/three-month-sofr.contractSpecs.html"
@@ -521,7 +522,8 @@ settle_calendars = ["CME-IR"]
 generics = 4
 history_from = 2023-10-02
 history_source = "Launched 2023-10-02 (Mondo Visione, 'CME Group to launch T-Bill futures on October 2', 2023-09-05). The first contract month isn't confirmed."
-listing = { quarterly = 4, serial_nearest = 2 }
+listing = { quarterly = 4, serial_months = 4 }
+listing_source = "spec page, Listed contracts: 4 consecutive quarters and \"the nearest 2 serial contract months\"; CME's quotes page on 2026-10-08 listed three serials (Oct, Nov 2026, Jan 2027), the ones still trading in months before Feb 2027, which is what serial_months = 4 lists (to re-check once TBF3V6 stops trading on 2026-10-19)."
 rules = { last_trade_date = "monday_before_third_wed" }
 [products.rule_sources]
 last_trade_date = "spec page, Termination of trading: the Monday prior to the 3rd Wednesday of the contract month, or the next business day if that Monday isn't one"

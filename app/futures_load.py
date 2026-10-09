@@ -14,8 +14,11 @@ generates each product's contracts (app/futures.py) and brings the security mast
   date or rule changes. A first trading day, once derived, is kept after the contract expires.
 - **Generics** (`TY1`, `TY2`) are identifiers (scheme `GENERIC`) with validity, like on-the-run.
 
-Idempotent: a second run on the same day changes nothing. Contracts the rules stop generating (a
-later history start) are left as they are and counted. Each run is recorded in futures_run.
+Idempotent: a second run on the same day changes nothing. A stored contract the rules stop generating
+is counted and gets a status of its own: `expired` once its dates have passed (a serial month, or a
+product kept to today's listings, drops out of generation when it stops trading), else `withdrawn` (a
+corrected rule doesn't list it: its CME code, generics and ticker are retired, and it comes back if the
+cycle lists it later). Its dates are kept. Each run is recorded in futures_run.
 """
 
 import json
@@ -48,7 +51,19 @@ class FuturesError(RuntimeError):
 
 
 def _instrument_status(status: str) -> str:
-    return "expired" if status == "expired" else "active"
+    return status if status in ("expired", "withdrawn") else "active"
+
+
+def _stored_status(row: FuturesContract, kind: str, today: date) -> str:
+    """The status of a stored contract the rules no longer generate: expired once its dates have passed
+    (a serial month, or a product kept to today's listings, drops out of generation when it stops trading),
+    otherwise withdrawn (a corrected rule doesn't list it; it comes back if the cycle lists it later)."""
+    end = row.last_delivery_date if kind == "treasury" and row.last_delivery_date else row.last_trade_date
+    return "expired" if today > end else "withdrawn"
+
+
+_COPY = ("first_trade_date", "last_trade_date", "first_intention_date", "first_notice_date", "first_delivery_date",
+         "last_delivery_date", "reference_start", "reference_end", "final_settlement_date", "settlement_date", "rules")
 
 
 class _Names:
@@ -191,7 +206,7 @@ def _sync_identifiers(s: Session, scheme: str, want: dict[tuple[str, date], tupl
 
 
 def _contracts(s: Session, ps: futures_seed.ProductSeed, product_sec_id: int, gen: futures.Generated,
-               names: _Names, now: datetime, out: dict) -> None:
+               names: _Names, now: datetime, out: dict, today: date) -> None:
     p = ps.product
     rows = {r.contract_month: r for r in s.scalars(select(FuturesContract).where(
         FuturesContract.product_sec_id == product_sec_id, FuturesContract.superseded_at.is_(None)))}
@@ -234,8 +249,33 @@ def _contracts(s: Session, ps: futures_seed.ProductSeed, product_sec_id: int, ge
         names.set_short(sec_id, d.contract.short_name)
         by_sec[sec_id] = d
         valued.append((d, values))
-    out["contracts_not_generated"] += len(set(rows) - {d.contract.month for d in gen.contracts})
+    generated = {d.contract.month for d in gen.contracts}
+    out["contracts_not_generated"] += len(set(rows) - generated)
+    withdrawn: set[int] = set()
+    for m, row in rows.items():
+        if m in generated:
+            continue
+        status = _stored_status(row, p.kind, today)
+        if status == "withdrawn":
+            withdrawn.add(row.sec_id)
+        if row.status != status:
+            row.superseded_at = now
+            s.flush()
+            s.add(FuturesContract(sec_id=row.sec_id, product_sec_id=product_sec_id, contract_month=m,
+                                  recorded_at=now, status=status, **{k: getattr(row, k) for k in _COPY}))
+            inst = existing[row.sec_id]
+            inst.status, inst.updated_at = _instrument_status(status), now
+            out[f"contracts_{status}"] += 1
     s.flush()
+    if withdrawn:
+        # A withdrawn contract keeps its names and FIGI, but nothing that says it trades.
+        for r in s.scalars(select(Identifier).where(Identifier.sec_id.in_(sorted(withdrawn)),
+                                                    Identifier.scheme.in_((CME, GENERIC, "TICKER")),
+                                                    Identifier.removed_at.is_(None))):
+            r.removed_at = now
+            out["cme_codes_removed" if r.scheme == CME else "generics_removed" if r.scheme == GENERIC
+                else "tickers_removed"] += 1
+        s.flush()
 
     sec_of = {id(d): sec for sec, d in by_sec.items()}
     validity = _symbol_validity(valued)
@@ -255,13 +295,14 @@ def _contracts(s: Session, ps: futures_seed.ProductSeed, product_sec_id: int, ge
 def _apply(s: Session, seed: futures_seed.FuturesSeed, cals: futures.Calendars, today: date, now: datetime) -> dict:
     out = dict.fromkeys(("products_created", "products_updated", "specs_changed", "contracts_created",
                          "contracts_changed", "contracts_not_generated", "cme_codes_added", "cme_codes_removed",
-                         "generics_added", "generics_removed"), 0)
+                         "generics_added", "generics_removed", "contracts_expired", "contracts_withdrawn",
+                         "tickers_removed"), 0)
     names = _Names(s, now)
     products = {}
     for ps in seed.products:
         sec_id = _product(s, ps, seed.sha256, names, now, out)
         gen = futures.generate(ps.product, cals, today, HORIZON_YEARS)
-        _contracts(s, ps, sec_id, gen, names, now, out)
+        _contracts(s, ps, sec_id, gen, names, now, out, today)
         listed = [d for d in gen.contracts if d.listed_today]
         products[ps.product.root] = {"contracts": len(gen.contracts), "listed": len(listed),
                                      "front": listed[0].contract.short_name if listed else None}
