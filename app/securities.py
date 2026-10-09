@@ -53,20 +53,34 @@ def _iso(d) -> str:
     return d.isoformat() if d else ""
 
 
-def _names(s: Session, sec_ids) -> dict[int, dict]:
+def _names(s: Session, sec_ids, every: bool = False) -> dict[int, dict]:
+    """Each instrument's short name and aliases. `every`: the caller wants (nearly) all of them, so read the
+    whole table rather than send thousands of ids in an IN list."""
     out = {i: {"short_name": "", "aliases": []} for i in sec_ids}
-    rows = s.scalars(select(InstrumentName).where(
-        InstrumentName.sec_id.in_(list(sec_ids)), InstrumentName.removed_at.is_(None)).order_by(InstrumentName.name))
-    for r in rows:
-        if r.kind == "short":
-            out[r.sec_id]["short_name"] = r.name
+    q = select(InstrumentName.sec_id, InstrumentName.name, InstrumentName.kind).where(
+        InstrumentName.removed_at.is_(None))
+    if not every:
+        q = q.where(InstrumentName.sec_id.in_(list(sec_ids)))
+    for sec_id, name, kind in s.execute(q.order_by(InstrumentName.name)):
+        if sec_id not in out:
+            continue
+        if kind == "short":
+            out[sec_id]["short_name"] = name
         else:
-            out[r.sec_id]["aliases"].append(r.name)
+            out[sec_id]["aliases"].append(name)
     return out
 
 
-def _describe(s: Session, insts: list[Instrument], full: bool) -> list[dict]:
-    names = _names(s, [i.sec_id for i in insts])
+# The columns a list shows. Lists read these as plain rows, not ORM objects: an Instrument object (and a
+# SecurityTerms one, with its provenance and checks) costs several times its columns, and at ~10,000
+# instruments that was enough to take the 256 MB container past its limit (2026-10-09).
+SUMMARY = (Instrument.sec_id, Instrument.type, Instrument.currency, Instrument.country, Instrument.curve,
+           Instrument.tenor, Instrument.calendar, Instrument.status, Instrument.description)
+
+
+def _describe(s: Session, insts: list, full: bool, every: bool = False) -> list[dict]:
+    """Instruments (ORM objects or SUMMARY rows) as dicts; `full` adds identifiers and notes."""
+    names = _names(s, [i.sec_id for i in insts], every=every)
     ids: dict[int, list] = {i.sec_id: [] for i in insts}
     notes: dict[int, list] = {i.sec_id: [] for i in insts}
     if full and insts:
@@ -203,14 +217,15 @@ def _plain(row, skip=()) -> dict:
 def list_instruments(s: Session, type: str = "", curve: str = "", include_inactive: bool = False,
                      full: bool = False) -> list[dict]:
     """Instruments, by type, curve and tenor."""
-    q = select(Instrument)
+    q = select(*SUMMARY)
     if type:
         q = q.where(Instrument.type == type)
     if curve:
         q = q.where(Instrument.curve == curve.upper())
     if not include_inactive:
         q = q.where(Instrument.status == "active")
-    return _describe(s, _order(list(s.scalars(q))), full=full)
+    rows = _order(list(s.execute(q)))
+    return _describe(s, rows, full=full, every=not (type or curve) and len(rows) > 500)
 
 
 def resolve(s: Session, scheme: str, values: list[str], as_of: date | None = None) -> dict:
@@ -247,7 +262,7 @@ def search(s: Session, query: str, limit: int = 20) -> list[dict]:
     ids |= set(s.scalars(select(Identifier.sec_id).where(
         Identifier.value.ilike(like), Identifier.removed_at.is_(None))))
     ids |= set(s.scalars(select(Instrument.sec_id).where(Instrument.description.ilike(like))))
-    insts = _order(list(s.scalars(select(Instrument).where(Instrument.sec_id.in_(ids))))) if ids else []
+    insts = _order(list(s.execute(select(*SUMMARY).where(Instrument.sec_id.in_(ids))))) if ids else []
     return _describe(s, insts[:limit], full=False)
 
 
@@ -287,7 +302,9 @@ def list_securities(s: Session, security_type: str = "", include_inactive: bool 
     """
     on = as_of or today_ny()
     limit = min(limit or LIST_LIMIT, LIST_MAX)
-    q = (select(SecurityTerms, Instrument.status, Instrument.description)
+    t_ = SecurityTerms
+    q = (select(t_.sec_id, t_.cusip, t_.security_type, t_.cmb, t_.term, t_.original_term, t_.coupon_rate,
+                t_.frn_spread, t_.issue_date, t_.dated_date, t_.maturity_date, Instrument.status, Instrument.description)
          .join(Instrument, Instrument.sec_id == SecurityTerms.sec_id)
          .where(SecurityTerms.superseded_at.is_(None)))
     if security_type:
@@ -300,11 +317,12 @@ def list_securities(s: Session, security_type: str = "", include_inactive: bool 
         q = q.where(SecurityTerms.maturity_date <= maturing_to)
     rows = s.execute(q.order_by(SecurityTerms.maturity_date, SecurityTerms.security_type, SecurityTerms.cusip)).all()
     shown = rows[:limit]
-    ids = [t.sec_id for t, _, _ in shown]
+    ids = [t.sec_id for t in shown]
     names = _names(s, ids)
     otr = _otr(s, ids, on)
     out = []
-    for t, status, description in shown:
+    for t in shown:
+        status, description = t.status, t.description
         out.append({
             "sec_id": t.sec_id, "short_name": names[t.sec_id]["short_name"], "cusip": t.cusip,
             "security_type": t.security_type, "cmb": bool(t.cmb), "term": t.term or "",
