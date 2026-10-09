@@ -205,3 +205,11 @@ def test_step_2c_cash_settled_treasury(seed):
     got = f.generate(product(seed, "YQT"), cals(), TODAY)
     assert [x.contract.short_name for x in got.contracts if x.listed_today] == ["YQTV26", "YQTX26"]
     assert next(x for x in got.contracts if x.contract.short_name == "YQTV26").dates["last_trade_date"] == date(2026, 10, 30)
+
+
+def test_every_kind_fits_its_column():
+    """SQLite doesn't enforce String lengths; Postgres does (treasury_cash overflowed String(10), 2026-10-09)."""
+    from app.models import FuturesContract, FuturesProduct
+
+    assert max(len(k) for k in f.KINDS) <= FuturesProduct.__table__.c.kind.type.length
+    assert max(len(s) for s in ("listed", "delivery", "expired", "withdrawn")) <= FuturesContract.__table__.c.status.type.length
