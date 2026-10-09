@@ -17,16 +17,18 @@
 #   absent: only what's listed today, until the launch date is found. `history_source` says which.
 # - `specs` are effective-dated, verbatim from CME's spec pages as read on 2026-10-08 into mkt-data's
 #   docs/cme-contract-specs-2026-10.md. Earlier specs aren't recorded yet, so each starts on the date read.
-# - Bloomberg roots come from the phase plan or CME's overview pages; `root_confirmed = false` until
-#   OpenFIGI confirms them (step 2b). A root change renames contracts and keeps their sec_ids.
+# - Bloomberg roots come from the phase plan or CME's overview pages; `root_confirmed = true` once
+#   OpenFIGI finds every listed contract by that ticker and they're all the one future, checked by name
+#   in the futures FIGI job's log (step 2b, 2026-10-08). A root change renames contracts and keeps their
+#   sec_ids.
 
 read_on = 2026-10-08
 reference = "mkt-data docs/cme-contract-specs-2026-10.md"
 
 [[products]]
 root = "TU"
-root_confirmed = false
-root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+root_confirmed = true
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b); confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): all 3 listed contracts found by ticker, all one future, \"US 2YR NOTE (CBT)\" (TUZ6 Comdty, CBT)"
 cme_code = "ZT"
 clearing_code = "26"
 name = "2-Year T-Note Futures"
@@ -70,8 +72,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "3Y"
-root_confirmed = false
-root_source = "CME's overview page vendor-codes table, read 2026-10-08 (mkt-data docs/cme-contract-specs-2026-10.md): Bloomberg 3Y"
+root_confirmed = true
+root_source = "CME's overview page vendor-codes table, read 2026-10-08 (mkt-data docs/cme-contract-specs-2026-10.md): Bloomberg 3Y; confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): all 3 listed contracts found by ticker, all one future, \"US 3YR NOTE (CBT)\" (3YZ6 Comdty, CBT)"
 cme_code = "Z3N"
 clearing_code = "3YR"
 name = "3-Year T-Note Futures"
@@ -108,8 +110,8 @@ vendor_codes = "Specs page: not shown (links to \"Quote Vendor Symbols Listing\"
 
 [[products]]
 root = "FV"
-root_confirmed = false
-root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+root_confirmed = true
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b); confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): all 3 listed contracts found by ticker, all one future, \"US 5YR NOTE (CBT)\" (FVZ6 Comdty, CBT)"
 cme_code = "ZF"
 clearing_code = "25"
 name = "5-Year T-Note Futures"
@@ -155,8 +157,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "TY"
-root_confirmed = false
-root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+root_confirmed = true
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b); confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): all 3 listed contracts found by ticker, all one future, \"US 10YR NOTE (CBT)\" (TYZ6 Comdty, CBT)"
 cme_code = "ZN"
 clearing_code = "21"
 name = "10-Year T-Note Futures"
@@ -204,8 +206,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "UXY"
-root_confirmed = false
-root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+root_confirmed = true
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b); confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): all 3 listed contracts found by ticker, all one future, \"US 10yr Ultra Fut\" (UXYZ6 Comdty, CBT)"
 cme_code = "TN"
 clearing_code = "TN"
 name = "Ultra 10-Year U.S. Treasury Note Futures"
@@ -254,7 +256,7 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 [[products]]
 root = "TWEA"
 root_confirmed = false
-root_source = "CME's overview page vendor-codes table, read 2026-10-08 (mkt-data docs/cme-contract-specs-2026-10.md): Bloomberg TWEA"
+root_source = "CME's overview page vendor-codes table, read 2026-10-08 (mkt-data docs/cme-contract-specs-2026-10.md): Bloomberg TWEA; not confirmed: OpenFIGI found none of TWEAZ6, TWEAZ26 (Comdty) on 2026-10-08"
 cme_code = "TWE"
 clearing_code = "TWE"
 name = "20-Year U.S. Treasury Bond Futures"
@@ -295,8 +297,8 @@ vendor_codes = "Specs page: not shown (links to \"Quote Vendor Symbols Listing\"
 
 [[products]]
 root = "US"
-root_confirmed = false
-root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+root_confirmed = true
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b); confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): all 3 listed contracts found by ticker, all one future, \"US LONG BOND(CBT)\" (USZ6 Comdty, CBT)"
 cme_code = "ZB"
 clearing_code = "17"
 name = "U.S. Treasury Bond Futures"
@@ -344,8 +346,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "WN"
-root_confirmed = false
-root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+root_confirmed = true
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b); confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): all 3 listed contracts found by ticker, all one future, \"US ULTRA BOND CBT\" (WNZ6 Comdty, CBT)"
 cme_code = "UB"
 clearing_code = "UBE"
 name = "Ultra U.S. Treasury Bond Futures"
@@ -393,8 +395,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "FF"
-root_confirmed = false
-root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+root_confirmed = true
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b); confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): all 60 listed contracts found by ticker, all one future, \"FED FUND 30DAY\" (FFV6 Comdty, CBT)"
 cme_code = "ZQ"
 clearing_code = "41"
 name = "30 Day Federal Funds Futures"
@@ -433,8 +435,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "SER"
-root_confirmed = false
-root_source = "Unconfirmed: no source for SER yet (mkt-data docs/phase-4.md); OpenFIGI in step 2b"
+root_confirmed = true
+root_source = "Unconfirmed: no source for SER yet (mkt-data docs/phase-4.md); OpenFIGI in step 2b; confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): all 25 listed contracts found by ticker, all one future, \"1 MONTH SOFR FUT\" (SERV6 Comdty, CME)"
 cme_code = "SR1"
 clearing_code = "SR1"
 name = "One-Month SOFR Futures"
@@ -471,8 +473,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "SFR"
-root_confirmed = false
-root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+root_confirmed = true
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b); confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): 43 of 45 listed contracts found by ticker, all one future, \"3 MONTH SOFR FUT\" (SFRV6 Comdty, CME)"
 cme_code = "SR3"
 clearing_code = "SR3"
 name = "Three-Month SOFR Futures"
@@ -509,8 +511,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "TZR"
-root_confirmed = false
-root_source = "CME's overview page vendor-codes table, read 2026-10-08 (mkt-data docs/cme-contract-specs-2026-10.md): Bloomberg TZR"
+root_confirmed = true
+root_source = "CME's overview page vendor-codes table, read 2026-10-08 (mkt-data docs/cme-contract-specs-2026-10.md): Bloomberg TZR; confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): all 6 listed contracts found by ticker, all one future, \"13-Week T-bill Fu\" (TZRV6 Comdty, CME)"
 cme_code = "TBF3"
 clearing_code = "TBF3"
 name = "U.S. T-Bill Futures (overview text calls it \"13-Week U.S. Treasury Bill futures\")"
@@ -546,8 +548,8 @@ vendor_codes = "Specs page: not shown (links to \"Quote Vendor Symbols Listing\"
 
 [[products]]
 root = "EC"
-root_confirmed = false
-root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+root_confirmed = true
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b); confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): all 31 listed contracts found by ticker, all one future, \"EURO FX CURR FUT\" (ECV6 Curncy, CME)"
 cme_code = "6E"
 clearing_code = "EC"
 name = "Euro FX Futures"
@@ -595,8 +597,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "JY"
-root_confirmed = false
-root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+root_confirmed = true
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b); confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): all 31 listed contracts found by ticker, all one future, \"JPN YEN CURR FUT\" (JYV6 Curncy, CME)"
 cme_code = "6J"
 clearing_code = "J1"
 name = "Japanese Yen Futures"
@@ -638,8 +640,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "BP"
-root_confirmed = false
-root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+root_confirmed = true
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b); confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): all 31 listed contracts found by ticker, all one future, \"BP CURRENCY FUT\" (BPV6 Curncy, CME)"
 cme_code = "6B"
 clearing_code = "BP"
 name = "British Pound Futures"
@@ -681,8 +683,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "AD"
-root_confirmed = false
-root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+root_confirmed = true
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b); confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): all 31 listed contracts found by ticker, all one future, \"AUDUSD Crncy Fut\" (ADV6 Curncy, CME)"
 cme_code = "6A"
 clearing_code = "AD"
 name = "Australian Dollar Futures"
@@ -724,8 +726,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "CD"
-root_confirmed = false
-root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+root_confirmed = true
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b); confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): 30 of 31 listed contracts found by ticker, all one future, \"C$ CURRENCY FUT\" (CDV6 Curncy, CME)"
 cme_code = "6C"
 clearing_code = "C1"
 name = "Canadian Dollar Futures"
@@ -767,8 +769,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "SF"
-root_confirmed = false
-root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+root_confirmed = true
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b); confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): all 20 listed contracts found by ticker, all one future, \"CHF CURRENCY FUT\" (SFZ6 Curncy, CME)"
 cme_code = "6S"
 clearing_code = "E1"
 name = "Swiss Franc Futures"
@@ -807,8 +809,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "PE"
-root_confirmed = false
-root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+root_confirmed = true
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b); confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): all 31 listed contracts found by ticker, all one future, \"MEXICAN PESO FUT\" (PEV6 Curncy, CME)"
 cme_code = "6M"
 clearing_code = "MP"
 name = "Mexican Peso Futures"
@@ -847,8 +849,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "NV"
-root_confirmed = false
-root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+root_confirmed = true
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b); confirmed 2026-10-08 through OpenFIGI (secmaster-svc's futures FIGI job): all 6 listed contracts found by ticker, all one future, \"NEW ZEALAND $ FUT\" (NVZ6 Curncy, CME)"
 cme_code = "6N"
 clearing_code = "NE"
 name = "New Zealand Dollar Futures"
