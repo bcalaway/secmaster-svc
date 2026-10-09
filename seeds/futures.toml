@@ -1,4 +1,4 @@
-# CME rates and FX futures: the security master's product seed (mkt-data's docs/phase-4.md, step 2a).
+# CME rates and FX futures: the security master's product seed (mkt-data's docs/phase-4.md, steps 2a and 2c).
 #
 # One entry per product. Like seeds/cmt.toml it's the source of truth, changed only in a reviewed PR, but
 # it isn't an instrument seed: app/futures_load.py reads it (POST /jobs/futures, the daily DAG
@@ -9,6 +9,8 @@
 #   Trade rules count business days in `trade_calendars`, delivery and settlement rules in
 #   `settle_calendars`. FX: CME's FX calendar and the Fed's (Chicago and New York bank holidays) to trade;
 #   the delivery country's and the Fed's to deliver (CME rulebook, chapters 251-261).
+#   A cross (step 2c, from the products at the end) delivers where both its currencies and New York are
+#   open: both countries' calendars and the Fed's, assumed from the majors until its chapter is read.
 # - `listing` is the cycle on CME's spec page: `quarterly` consecutive March-cycle contracts, `monthly`
 #   consecutive months, `serial_nearest` non-quarterly months, or `serial_months`, the non-quarterly
 #   months within that many months (an interpretation of "serial contracts listed for 16 months", to
@@ -882,6 +884,952 @@ settlement_method = "Deliverable"
 settlement_procedures = """
 Physical Delivery
 New Zealand Dollar Settlement Procedures (link)"""
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "SE"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"SWEDISH KRONA FUT\" futures on CME (SEH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "SEK"
+clearing_code = "SE"
+name = "Swedish Krona Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["SE", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT 2 business days prior to the 3rd Wednesday of the contract month.\""
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/swedish-krona/specs"
+contract_unit = "2,000,000 Swedish kronor"
+minimum_price_fluctuation = """
+CME Globex:
+0.000025 per SEK increment = $50.00
+Spreads: 0.000005 per SEK increment = $10.00
+CME ClearPort:
+0.000001 per SEK increment = $2.00"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT 2 business days prior to the 3rd Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "SEK/USD Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday 5:00 p.m. - Friday - 4:00 p.m. CT with a daily maintenance period from 4:00 p.m. - 5:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "NO"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"NORWEGIAN KRONE\" futures on CME (NOH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "NOK"
+clearing_code = "UN"
+name = "Norwegian Krone Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["NO", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT 2 business days prior to the third Wednesday of the contract quarter\""
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/norwegian-krone/specs"
+contract_unit = "2,000,000 Norwegian kroner"
+minimum_price_fluctuation = """
+CME Globex:
+0.000025 per Norwegian krone increment = $50.00
+Spreads: 0.000005 per Norwegian krone increment = $10.00
+CME ClearPort:
+0.000001 per Norwegian krone increments ($2.00/contract)."""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT 2 business days prior to the third Wednesday of the contract quarter"
+settlement_method = "Deliverable"
+settlement_procedures = "NOK/USD Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday 5:00 p.m. - Friday - 4:00 p.m. CT with a daily maintenance period from 4:00 p.m. - 5:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "CRE"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro, EUR/USD\" futures on CME (CREH7 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "M6E"
+clearing_code = "M6E"
+name = "Micro EUR/USD Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["TARGET", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 2 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT 2 business day prior to the 3rd Wednesday of the contract quarter.\""
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/e-micro-euro/specs"
+contract_unit = "12,500 euros"
+minimum_price_fluctuation = "0.0001 per euro = $1.25"
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 2 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT 2 business day prior to the 3rd Wednesday of the contract quarter."
+settlement_method = "Deliverable"
+settlement_procedures = "Micro Euro/American Dollar Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "CRP"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro, GBP/USD\" futures on CME (CRPH7 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "M6B"
+clearing_code = "M6B"
+name = "Micro GBP/USD Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["GB", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 2 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT 2 business day prior to the 3rd Wednesday of the contract quarter.\""
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/e-micro-british-pound/specs"
+contract_unit = "6,250 British pounds"
+minimum_price_fluctuation = "0.0001 per GBP increment = $0.625"
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 2 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT 2 business day prior to the 3rd Wednesday of the contract quarter."
+settlement_method = "Deliverable"
+settlement_procedures = "Micro British Pound/American Dollar Futures Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday 5:00 p.m. - Friday - 4:00 p.m. CT with a daily maintenance period from 4:00 p.m. - 5:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "CRD"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro, AUD/USD\" futures on CME (CRDH7 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "M6A"
+clearing_code = "M6A"
+name = "Micro AUD/USD Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["AU", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 2 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates 2 business day prior to the 3rd Wednesday of the contract quarter.\""
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/e-micro-australian-dollar/specs"
+contract_unit = "10,000 Australlian Dollars (sic)"
+minimum_price_fluctuation = "0.0001 per Australian dollar = $1.00"
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 2 consecutive quarters"
+termination_of_trading = "Trading terminates 2 business day prior to the 3rd Wednesday of the contract quarter."
+settlement_method = "Deliverable"
+settlement_procedures = "Micro Australian Dollar/American Dollar Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday 5:00 p.m. - Friday - 4:00 p.m. CT with a daily maintenance period from 4:00 p.m. - 5:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "MJY"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro, JPY/USD\" futures on CME (MJYH7 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "MJY"
+clearing_code = "MJY"
+name = "Micro JPY/USD Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["JP", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 2 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT 2 business day prior to the 3rd Wednesday of the contract quarter.\""
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/micro-jpy-usd/specs"
+contract_unit = "1,250,000 JPY"
+minimum_price_fluctuation = "0.000001 per JPY increment = $1.25"
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 2 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT 2 business day prior to the 3rd Wednesday of the contract quarter."
+settlement_method = "Deliverable"
+settlement_procedures = "Micro Japanese Yen/U.S. Dollar Futures Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday 5:00 p.m. - Friday - 4:00 p.m. CT with a daily maintenance period from 4:00 p.m. - 5:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CTT (sic)"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "MCD"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro, CAD/USD\" futures on CME (MCDH7 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "MCD"
+clearing_code = "MCD"
+name = "Micro CAD/USD Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["CA", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 2 }
+rules = { last_trade_date = "third_wed_minus:1", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates 1 business day prior to the 3rd Wednesday of the contract quarter.\""
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/e-micro-canadian-dollar-us-dollar/specs"
+contract_unit = "10,000 Canadian dollars"
+minimum_price_fluctuation = "0.0001 per Canadian dollar increment = $1.00"
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 2 consecutive quarters"
+termination_of_trading = "Trading terminates 1 business day prior to the 3rd Wednesday of the contract quarter."
+settlement_method = "Deliverable"
+settlement_procedures = "Micro Canadian Dollar/American Dollar Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday 5:00 p.m. - Friday - 4:00 p.m. CT with a daily maintenance period from 4:00 p.m. - 5:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "MSS"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro, CHF/USD\" futures on CME (MSSH7 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "MSF"
+clearing_code = "MSF"
+name = "Micro CHF/USD Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["CH", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 2 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. 2 business day prior to the third Wednesday of the contract month.\""
+settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/e-micro-swiss-franc-us-dollar/specs"
+contract_unit = "12,500 CHF"
+minimum_price_fluctuation = "0.0001 per CHF increment = $1.25"
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 2 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. 2 business day prior to the third Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "Micro Swiss Franc/American Dollar Futures Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "EA"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EUR/AUD X-RAT\" futures on CME (EAH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "EAD"
+clearing_code = "CA"
+name = "Euro/Australian Dollar Futures"
+kind = "fx"
+currency = "AUD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["TARGET", "AU", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT 2 business days prior to the 3rd Wednesday of the contract quarter.\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/cross-rates/euro-fx-australian-dollar/specs"
+contract_unit = "125,000 Euro"
+minimum_price_fluctuation = """
+CME Globex:
+0.0001 per Euro increment = 12.5 AUD
+Spreads: 0.00005 per Euro increment = 6.25 AUD
+CME ClearPort:
+0.00001 per Euro increment = 1.25 AUD"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT 2 business days prior to the 3rd Wednesday of the contract quarter."
+settlement_method = "Deliverable"
+settlement_procedures = "EUR/AUD Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday 5:00 p.m. - Friday - 4:00 p.m. CT with a daily maintenance period from 4:00 p.m. - 5:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "CA"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EUR/CAD X-RATE\" futures on CME (CAH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "ECD"
+clearing_code = "CC"
+name = "Euro/Canadian Dollar Futures"
+kind = "fx"
+currency = "CAD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["TARGET", "CA", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT 2 business day prior to the 3rd Wednesday of the contract quqrter. (sic)\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/cross-rates/euro-fx-canadian-dollar/specs"
+contract_unit = "125,000 Euro"
+minimum_price_fluctuation = """
+CME Globex:
+0.0001 per Euro increment = 12.50 Canadian dollars
+Spreads: 0.00005 per Euro increment = 6.25 Canadian dollars
+CME ClearPort:
+0.00001 per Euro increment = 1.25 Canadian dollars"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT 2 business day prior to the 3rd Wednesday of the contract quqrter. (sic)"
+settlement_method = "Deliverable"
+settlement_procedures = "EUR/CAD Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "EN"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EUR/NOR KRONE\" futures on CME (ENH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "ENK"
+clearing_code = "CN"
+name = "Euro/Norwegian Krone Futures"
+kind = "fx"
+currency = "NOK"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["TARGET", "NO", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT, 2 business days prior to the 3rd Wednesday of the contract month\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/cross-rates/euro-fx-norwegian-krone/specs"
+contract_unit = "125,000 Euro"
+minimum_price_fluctuation = """
+CME Globex:
+0.0025 per Euro increment = 312.5 Norwegian krone
+Intra-currency spreads: 0.00025 per euro increment = 31.25 Norwegian krone
+CME ClearPort:
+0.0001 per Euro increment = 12.5 Norwegian krone"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business days prior to the 3rd Wednesday of the contract month"
+settlement_method = "Deliverable"
+settlement_procedures = "EUR/NOK Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "EW"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EUR/SWED KRNA\" futures on CME (EWH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "ESK"
+clearing_code = "KE"
+name = "Euro/Swedish Krona Futures"
+kind = "fx"
+currency = "SEK"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["TARGET", "SE", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT on the second business day prior to the third Wednesday of the contract month (usually Monday).\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/cross-rates/euro-fx-swedish-krona/specs"
+contract_unit = "125,000 euro"
+minimum_price_fluctuation = """
+CME Globex:
+0.0025 per euro increments = 312.50 Swedish krona
+0.00025 per euro increment = 31.25 Swedish krona for EUR/SEK futures intra-currency spreads executed electronically.
+CME ClearPort:
+0.0001 per Euro increments = 12.50 Swedish krona"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT on the second business day prior to the third Wednesday of the contract month (usually Monday)."
+settlement_method = "Deliverable"
+settlement_procedures = "EUR/SEK Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m. CT (sic)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "BYE"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EUR/NZD Future\" futures on CME (BYEH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "ENZ"
+clearing_code = "ENZ"
+name = "EUR/NZD Futures"
+kind = "fx"
+currency = "NZD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["TARGET", "NZ", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT, 2 business day prior to the 3rd Wednesday of the contract month.\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/eur-nzd/specs"
+contract_unit = "125,000 EUR"
+minimum_price_fluctuation = """
+CME Globex:
+0.00005 New Zealand dollar per EUR increment = 6.25 NZD
+Calendar spreads: 0.000025 New Zealand dollar per EUR increment = 3.125 NZD
+CME ClearPort:
+0.000005 New Zealand dollar per EUR increment = .625 NZD"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business day prior to the 3rd Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "not shown"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "PS"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"GBP/CHF X-RATE\" futures on CME (PSH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "PSF"
+clearing_code = "BF"
+name = "British Pound/Swiss Franc Futures"
+kind = "fx"
+currency = "CHF"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["GB", "CH", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates on 2nd business day before 3rd wednesday of the contract month.\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/cross-rates/british-pound-swiss-franc/specs"
+contract_unit = "125,000 British pounds"
+minimum_price_fluctuation = """
+CME Globex:
+0.0001 per GBP increment = 12.50 Swiss francs
+CME ClearPort:
+0.00001 per GBP increment = 1.25 Swiss francs
+CALENDAR SPREAD
+0.00005 per GBP increment = 6.25 Swiss francs"""
+listed_contracts = "Six months in the March quarterly cycle (Mar, Jun, Sep, Dec)"
+termination_of_trading = "Trading terminates on 2nd business day before 3rd wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "Daily GBP/CHF Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. Chicago Time/CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "PJ"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"GBP/JPY X-RATE\" futures on CME (PJH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "PJY"
+clearing_code = "BY"
+name = "British Pound/Japanese Yen Futures"
+kind = "fx"
+currency = "JPY"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["GB", "JP", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT on the second business day prior to the third Wednesday of the contract month.\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/cross-rates/british-pound-japanese-yen/specs"
+contract_unit = "125,000 British pounds"
+minimum_price_fluctuation = """
+CME Globex:
+0.01 per British pound = 1,250 Japanese yen.
+Spreads: 0.005 per British pound 625 Japanese yen
+CME ClearPort:
+0.001 per British pound = 125 Japanese yen."""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT on the second business day prior to the third Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "GBP/JPY Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "BVB"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"GBP AUD Crs R Fut\" futures on CME (BVBH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "PAD"
+clearing_code = "PAD"
+name = "GBP/AUD Futures"
+kind = "fx"
+currency = "AUD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["GB", "AU", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT, 2 business day prior to the 3rd Wednesday of the contract month.\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/gbp-aud/specs"
+contract_unit = "125,000 GBP"
+minimum_price_fluctuation = """
+CME Globex:
+0.0001 Australian dollar per GBP increment = 12.5 AUD
+Calendar spreads: 0.00005 Australian dollar per GBP increment = 6.25 AUD
+CME ClearPort:
+0.00001 Australian dollar per GBP increment = 1.25 AUD"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business day prior to the 3rd Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "not shown"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "BVC"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"GBP CAD Crs R Fut\" futures on CME (BVCH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "PCD"
+clearing_code = "PCD"
+name = "GBP/CAD Futures"
+kind = "fx"
+currency = "CAD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["GB", "CA", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT, 2 business day prior to the 3rd Wednesday of the contract month.\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/gbp-cad/specs"
+contract_unit = "125,000 GBP"
+minimum_price_fluctuation = """
+CME Globex:
+0.0001 Canadian dollar per GBP increment = 12.5 CAD
+Calendar spreads: 0.00005 Canadian dollar per GBP increment = 6.25 CAD
+CME ClearPort:
+0.00001 Canadian dollar per GBP increment = 1.25 CAD"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business day prior to the 3rd Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "not shown"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "BVD"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"GBP/NOK Future\" futures on CME (BVDH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "PNK"
+clearing_code = "PNK"
+name = "GBP/NOK Futures"
+kind = "fx"
+currency = "NOK"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["GB", "NO", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT, 2 business day prior to the 3rd Wednesday of the contract month.\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/gbp-nok/specs"
+contract_unit = "125,000 GBP"
+minimum_price_fluctuation = """
+CME Globex:
+0.0001 Norwegian krone per GBP increment = 12.5 NOK
+Calendar spreads: 0.00005 Norwegian krone per GBP increment = 6.25 NOK
+CME ClearPort:
+0.00001 Norwegian krone per GBP increment = 1.25 NOK"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business day prior to the 3rd Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "not shown"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "BVE"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"GBP/SEK Future\" futures on CME (BVEH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "PSK"
+clearing_code = "PSK"
+name = "GBP/SEK Futures"
+kind = "fx"
+currency = "SEK"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["GB", "SE", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT, 2 business day prior to the 3rd Wednesday of the contract month.\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/gbp-sek/specs"
+contract_unit = "125,000 GBP"
+minimum_price_fluctuation = """
+CME Globex:
+0.0001 Swedish krona per GBP increment = 12.5SEK
+Calendar spreads: 0.00005 Swedish krona per GBP increment = 6.25 SEK
+CME ClearPort:
+0.00001 Swedish krona per GBP increment = 1.25SEK"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business day prior to the 3rd Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "not shown"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "AJ"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"AUD/JPY X-RATE\" futures on CME (AJH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "AJY"
+clearing_code = "AJ"
+name = "Australian Dollar/Japanese Yen Futures"
+kind = "fx"
+currency = "JPY"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["AU", "JP", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday).\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/cross-rates/australian-dollar-japanese-yen/specs"
+contract_unit = "200,000 Australian dollars"
+minimum_price_fluctuation = """
+CME Globex:
+0.01 Japanese yen per Australian dollar increments (2,000 Japanese yen).
+0.005 Japanese yen per Australian dollar increments (1,000 Japanese yen) for AUD/JPY futures intra-currency spreads executed electronically.
+CME ClearPort:
+0.001 Japanese yen per Australian dollar increments (200 Japanese yen)."""
+listed_contracts = "Six months in the March quarterly cycle (Mar, Jun, Sep, Dec)"
+termination_of_trading = "9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday)."
+settlement_method = "Deliverable"
+settlement_procedures = "AUD/JPY Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. Chicago Time/CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "AIA"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"NZD/CAD Cross Fut\" futures on CME (AIAH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "NZC"
+clearing_code = "NZC"
+name = "NZD/CAD Futures"
+kind = "fx"
+currency = "CAD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["NZ", "CA", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT, 2 business day prior to the 3rd Wednesday of the contract month.\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/nzd-cad/specs"
+contract_unit = "100,000 NZD"
+minimum_price_fluctuation = """
+CME Globex:
+0.00005 Canadian dollar per NZD increment = 5 CAD
+Calendar spreads: 0.000025 Canadian dollar per NZD increment = 2.5 CAD
+CME ClearPort:
+0.000005 Canadian dollar per NZD increment = .5 CAD"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business day prior to the 3rd Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "not shown"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "AIP"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"NZD/JPY Future\" futures on CME (AIPH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "NJY"
+clearing_code = "NJY"
+name = "NZD/JPY Futures"
+kind = "fx"
+currency = "JPY"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["NZ", "JP", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT, 2 business day prior to the 3rd Wednesday of the contract month.\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/nzd-jpy/specs"
+contract_unit = "200,000 NZD"
+minimum_price_fluctuation = """
+CME Globex:
+0.005 Japanese Yen per NZD increment = 1000 JPY
+Calendar spreads: 0.0025 Japanese Yen per NZD increment = 500 JPY
+CME ClearPort:
+0.0005 Japanese Yen per NZD increment = 100 JPY"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business day prior to the 3rd Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "not shown"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "CY"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"CAD/JPY X-RATE\" futures on CME (CYH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "CJY"
+clearing_code = "CY"
+name = "Canadian Dollar/Japanese Yen Futures"
+kind = "fx"
+currency = "JPY"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["CA", "JP", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday).\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/cross-rates/canadian-dollar-japanese-yen/specs"
+contract_unit = "200,000 Canadian dollars"
+minimum_price_fluctuation = """
+CME Globex:
+0.01 Japanese yen per Canadian dollar increments (2,000 Japanese yen).
+0.005 Japanese yen per Canadian dollar increments (1,000 Japanese yen) for CAD/JPY futures intra-currency spreads executed electronically.
+CME ClearPort:
+0.001 Japanese yen per Canadian dollar increments (200 Japanese yen)."""
+listed_contracts = "Six months in the March quarterly cycle (Mar, Jun, Sep, Dec)"
+termination_of_trading = "9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday)."
+settlement_method = "Deliverable"
+settlement_procedures = "CAD/JPY Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. Chicago Time/CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "SJ"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"CHF/JPY X-RATE\" futures on CME (SJH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "SJY"
+clearing_code = "SJ"
+name = "Swiss Franc/Japanese Yen Futures"
+kind = "fx"
+currency = "JPY"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["CH", "JP", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday).\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/cross-rates/swiss-franc-japanese-yen/specs"
+contract_unit = "250,000 Swiss francs"
+minimum_price_fluctuation = """
+CME Globex:
+0.005 Japanese yen per Swiss Franc increments (1,250 Japanese yen).
+0.0025 Japanese yen per Swiss Franc increments (625 Japanese yen) for CHF/JPY futures intra-currency spreads executed electronically.
+CME ClearPort:
+0.001 Japanese yen per Swiss Franc increments (250 Japanese yen)."""
+listed_contracts = "Six months in the March quarterly cycle (Mar, Jun, Sep, Dec)"
+termination_of_trading = "9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday)."
+settlement_method = "Deliverable"
+settlement_procedures = "CHF/JPY Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. Chicago Time/CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "AAO"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"NOK/SEK Future\" futures on CME (AAOH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "NSK"
+clearing_code = "NSK"
+name = "NOK/SEK Futures"
+kind = "fx"
+currency = "SEK"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["NO", "SE", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT, 2 business day prior to the 3rd Wednesday of the contract month.\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/nok-sek/specs"
+contract_unit = "1,000,000 NOK"
+minimum_price_fluctuation = """
+CME Globex:
+0.00001 Swedish krona per NOK increment = 10 SEK
+Calendar spreads: 0.000005 Swedish krona per NOK increment = 5 SEK
+CME ClearPort:
+0.000001 Swedish krona per NOK increment = 1 SEK"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business day prior to the 3rd Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "not shown"
 trading_hours = """
 CME Globex:
 Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
