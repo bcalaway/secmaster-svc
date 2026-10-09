@@ -42,6 +42,10 @@ def report_figi(result: dict) -> dict:
             ex = p["example"]
             line += (f"; e.g. {ex.get('contract')} = {ex.get('ticker')} ({ex.get('name')}, {ex.get('exch_code')}, "
                      f"{ex.get('figi')})")
+        if len(p.get("names") or {}) > 1:
+            line += f"; MORE THAN ONE FUTURE: {p['names']}"
+        elif p.get("names"):
+            line += f"; all {next(iter(p['names']))}"
         if p.get("exchange_said"):
             line += f"; by CME's code OpenFIGI said {p['exchange_said']}"
         if p.get("first_not_found"):
