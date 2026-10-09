@@ -56,8 +56,10 @@ from datetime import date, timedelta
 
 MONTH_CODES = "FGHJKMNQUVXZ"
 QUARTERLY = frozenset({3, 6, 9, 12})
-KINDS = frozenset({"treasury", "stir", "fx"})
-TYPES = {"treasury": "fut_treasury", "stir": "fut_stir", "fx": "fut_fx"}
+# treasury_cash: a Treasury future settled in cash at its last trade (the micro Ultras, the yield futures; step 2c),
+# so no intention, notice or delivery days, and its generics roll after its last trading day.
+KINDS = frozenset({"treasury", "treasury_cash", "stir", "fx"})
+TYPES = {"treasury": "fut_treasury", "treasury_cash": "fut_treasury", "stir": "fut_stir", "fx": "fut_fx"}
 
 # Date fields a contract can carry, in display order.
 DATE_FIELDS = (
