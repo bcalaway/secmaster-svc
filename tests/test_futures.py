@@ -181,6 +181,38 @@ def test_calendar_coverage_is_checked(seed):
         f.generate(product(seed, "TY"), c, TODAY)
 
 
+def test_a_calendar_that_ends_early_shrinks_the_window(seed):
+    # MXN lists 20 quarterlies (to 2031): a delivery calendar published only to 2032 still dates them all.
+    full, c = f.generate(product(seed, "PE"), cals(), TODAY), cals()
+    c.years["MX"] = (2015, 2032)
+    short = f.generate(product(seed, "PE"), c, TODAY)
+    assert [(d.contract.month, d.dates) for d in short.contracts] == [(d.contract.month, d.dates) for d in full.contracts]
+
+
+def test_a_listing_past_the_calendars_end_is_refused(seed):
+    c = cals()
+    c.years["MX"] = (2015, 2027)
+    with pytest.raises(f.CalendarError, match="lists past"):
+        f.generate(product(seed, "PE"), c, TODAY)
+
+
+def test_a_calendar_that_starts_late_leaves_older_first_trades_unknown(seed):
+    c = cals()
+    c.years["MX"] = (2025, 2100)
+    got = sorted(f.generate(product(seed, "PE"), c, TODAY).contracts, key=lambda d: d.contract.month)
+    by_month = {d.contract.month: d for d in got}
+    assert by_month[date(2031, 9, 1)].dates["first_trade_date"] >= date(2025, 1, 1)  # listed lately: known
+    assert by_month[date(2026, 10, 1)].dates["first_trade_date"] == date(2025, 7, 1)  # a serial, since 2025
+    assert by_month[date(2026, 12, 1)].dates["first_trade_date"] is None  # listed since 2021: not known
+
+
+def test_calendars_with_no_common_year_are_refused():
+    c = cals()
+    c.years["MX"], c.years["FED"] = (2020, 2021), (2023, 2100)
+    with pytest.raises(f.CalendarError, match="no year in common"):
+        c.span(["MX", "FED"])
+
+
 @pytest.mark.parametrize("bad, why", [
     ('read_on = 2026-10-08\n', "no products"),
     ('read_on = 2026-10-08\n[[products]]\nroot = "t"\n', "bad root"),

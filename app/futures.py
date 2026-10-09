@@ -129,6 +129,16 @@ class Calendars:
             if start.year < first or end.year > last:
                 raise CalendarError(f"calendar {n} covers {first}-{last}, not {start.year}-{end.year}")
 
+    def span(self, names) -> tuple[int, int]:
+        """The years every one of the calendars covers."""
+        for n in names:
+            if n not in self.years:
+                raise CalendarError(f"calendar {n} isn't loaded")
+        firsts, lasts = zip(*(self.years[n] for n in names), strict=True)
+        if max(firsts) > min(lasts):
+            raise CalendarError(f"calendars {', '.join(names)} cover no year in common")
+        return max(firsts), min(lasts)
+
     def business(self, day: date, names) -> bool:
         return day.weekday() < 5 and not any(day in self.closed[n] for n in names)
 
@@ -361,6 +371,8 @@ def _first_trades(p: Product, ordered: list[Dated], ltds: list[date], targets: l
             continue
         while i > 0 and id(d) in listed_from(i - 1):
             i -= 1
+        if i == 0:
+            continue  # listed since the window's start: when it was first listed isn't known
         out[id(d)] = _on_or_after(cals, p.trade_calendars, points[i])
     return out
 
@@ -378,8 +390,16 @@ def generate(p: Product, cals: Calendars, today: date, horizon_years: int = 15) 
     the generics' intervals to today."""
     # Candidates reach back far enough to replay the listing cycle to today's listings, and to the history.
     window_start = _add_months(today.replace(day=1), -horizon_years * 12)
-    first_month = min(window_start, p.history_from.replace(day=1)) if p.history_from else window_start
     last_month = _add_months(today.replace(day=1), horizon_years * 12)
+    # A calendar set from published lists (lunar or announced holidays) ends at its last published year and
+    # may start late, so the window shrinks to the years every calendar covers (the last contract month two
+    # before its end, for settlement); the history start, if any, must still be covered.
+    lo, hi = cals.span(p.calendars)
+    window_start = max(window_start, date(lo, 1, 1))
+    clamped_end = _add_months(date(hi, 12, 1), -2)
+    clamped = clamped_end < last_month
+    last_month = min(last_month, clamped_end)
+    first_month = min(window_start, p.history_from.replace(day=1)) if p.history_from else window_start
     cals.check(p.calendars, first_month, _add_months(last_month, 2))
     candidates = [dates_for(Contract(p, m), cals) for m in _months(p, first_month, last_month)]
     ordered = sorted(candidates, key=lambda d: d.contract.month)
@@ -390,6 +410,10 @@ def generate(p: Product, cals: Calendars, today: date, horizon_years: int = 15) 
     listed = listed_on(p, ordered, ltds, today)
     if not listed:
         raise RuleError(f"{p.root}: nothing listed on {today}")
+    if clamped and listed[-1] is ordered[-1]:
+        # Today's cycle may reach past the last contract the calendars can date.
+        raise CalendarError(f"{p.root}: lists past {last_month:%Y-%m}, the last month its calendars "
+                            f"({', '.join(p.calendars)}) can date")
     listed_ids = {id(d) for d in listed}
     furthest = max(d.contract.month for d in listed)
 
