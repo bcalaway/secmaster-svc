@@ -1958,8 +1958,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "UMT"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro Ult 10yr Fut\" futures on CBT (UMTH7 Comdty); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro Ult 10yr Fut\" futures on CBT (UMTH7 Comdty); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 2 listed contracts found by ticker, all one future, \"Micro Ult 10yr Fut\" (UMTZ6 Comdty, CBT)"
 cme_code = "MTN"
 clearing_code = "MTN"
 name = "Micro Ultra 10-Year U.S. Treasury Note Futures"
@@ -1995,8 +1995,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "UMW"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro Ult Bond Fut\" futures on CBT (UMWH7 Comdty); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro Ult Bond Fut\" futures on CBT (UMWH7 Comdty); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 2 listed contracts found by ticker, all one future, \"Micro Ult Bond Fut\" (UMWZ6 Comdty, CBT)"
 cme_code = "MWN"
 clearing_code = "MWN"
 name = "Micro Ultra U.S. Treasury Bond Futures"
@@ -2032,8 +2032,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "YQI"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"2yr Yld Fut\" futures on CBT (YQIV6 Comdty); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"2yr Yld Fut\" futures on CBT (YQIV6 Comdty); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): both listed contracts found by ticker on CBT: Oct26 named \"2yr Yld Fut\" and Nov26 \"Micro 2yr Yld Fut\" (YQIV6 and YQIX6 Comdty), read as one product under two names (CME's spec page calls it Yield Futures at a micro-2-year-yield URL)"
 cme_code = "2YY"
 clearing_code = "2YY"
 name = "2-Year Yield Futures"
@@ -2065,8 +2065,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "YQE"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"5yr Yld Fut\" futures on CBT (YQEV6 Comdty); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"5yr Yld Fut\" futures on CBT (YQEV6 Comdty); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): both listed contracts found by ticker on CBT: Oct26 named \"5yr Yld Fut\" and Nov26 \"Micro 5yr Yld Fut\" (YQEV6 and YQEX6 Comdty), read as one product under two names (CME's spec page calls it Yield Futures at a micro-5-year-yield URL)"
 cme_code = "5YY"
 clearing_code = "5YY"
 name = "5-Year Yield Futures"
@@ -2098,8 +2098,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "YQT"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"10yr Yld Fut\" futures on CBT (YQTV6 Comdty); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"10yr Yld Fut\" futures on CBT (YQTV6 Comdty); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): both listed contracts found by ticker on CBT: Oct26 named \"10yr Yld Fut\" and Nov26 \"Micro 10yr Yld Fut\" (YQTV6 and YQTX6 Comdty), read as one product under two names (CME's spec page calls it Yield Futures at a micro-10-year-yield URL)"
 cme_code = "10Y"
 clearing_code = "10Y"
 name = "10-Year Yield Futures"
@@ -2131,8 +2131,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "YQB"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"30yr Yld Fut\" futures on CBT (YQBV6 Comdty); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"30yr Yld Fut\" futures on CBT (YQBV6 Comdty); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): both listed contracts found by ticker on CBT: Oct26 named \"30yr Yld Fut\" and Nov26 \"Micro 30yr Yld Fut\" (YQBV6 and YQBX6 Comdty), read as one product under two names (CME's spec page calls it Yield Futures at a micro-30-year-yield URL)"
 cme_code = "30Y"
 clearing_code = "30Y"
 name = "30-Year Yield Futures"
