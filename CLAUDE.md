@@ -1,6 +1,6 @@
 # Claude Code Instructions — secmaster-svc
 
-The market data platform's security master: instrument identity, short names (`UST-10Y-CMT`, `UST-4.25-2035-08-15`), aliases, identifiers (a source's key, CUSIP, ISIN) and, for Treasury securities, their terms and auctions, built from mkt-data's near-raw records. The overview is in `README.md`; the plan and status are in mkt-data's current phase doc (`docs/phase-3.md`; the CMTs were `docs/phase-2.md`, Part B), which is the one place for status. Platform mechanics (CI/CD, secrets, database onboarding, Airflow) live in `bcalaway/nyc_pa_aws_gitops`: start with its `docs/app-platform.md`, and keep this repo consistent with it rather than re-explaining it here.
+The market data platform's security master: instrument identity, short names (`UST-10Y-CMT`, `UST-4.25-2035-08-15`), aliases, identifiers (a source's key, CUSIP, ISIN) and, for Treasury securities, their terms and auctions, built from mkt-data's near-raw records, and CME's rates and FX futures, generated from product rules. The overview is in `README.md`; the plan and status are in mkt-data's current phase doc (`docs/phase-4.md`; Treasury securities were `docs/phase-3.md`, the CMTs `docs/phase-2.md`, Part B), which is the one place for status. Platform mechanics (CI/CD, secrets, database onboarding, Airflow) live in `bcalaway/nyc_pa_aws_gitops`: start with its `docs/app-platform.md`, and keep this repo consistent with it rather than re-explaining it here.
 
 ## Git
 
@@ -14,7 +14,8 @@ The market data platform's security master: instrument identity, short names (`U
 - No secrets in code, in the repo, or on command lines. App secrets go in SSM under `/home-platform/secmaster-svc/` (add a row to the platform's `docs/ssm-parameters.md`).
 - Keep `deploy/docker-compose.yml`'s `mem_limit`; the hub deploy rejects services without one.
 - Treasury securities are never seeded or edited by hand: they come from mkt-data's records through the load job, and a rebuild must reproduce them (identity is the CUSIP, so sec_ids survive it).
-- Update mkt-data's current phase doc (`docs/phase-3.md`) when a step lands.
+- The futures product seed (`seeds/futures.toml`) is the source of truth for futures products and the rules their contracts are generated from: every spec cited, every rule with its source, changed in a reviewed PR. Contracts are never seeded or edited by hand: the futures job regenerates them (identity is the product's CME code and the contract month, so sec_ids survive a rename).
+- Update mkt-data's current phase doc (`docs/phase-4.md`) when a step lands.
 
 ## Testing where PyPI is blocked
 

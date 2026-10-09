@@ -1,0 +1,886 @@
+# CME rates and FX futures: the security master's product seed (mkt-data's docs/phase-4.md, step 2a).
+#
+# One entry per product. Like seeds/cmt.toml it's the source of truth, changed only in a reviewed PR, but
+# it isn't an instrument seed: app/futures_load.py reads it (POST /jobs/futures, the daily DAG
+# secmaster_svc__futures), makes each product an instrument named by its Bloomberg root (`TY`) and
+# generates every contract from the rules here and calendar-svc's business days (app/futures.py).
+#
+# - `rules` name the date rules app/futures.py implements; `rule_sources` say where each comes from.
+#   Trade rules count business days in `trade_calendars`, delivery and settlement rules in
+#   `settle_calendars`. FX: CME's FX calendar and the Fed's (Chicago and New York bank holidays) to trade;
+#   the delivery country's and the Fed's to deliver (CME rulebook, chapters 251-261).
+# - `listing` is the cycle on CME's spec page: `quarterly` consecutive March-cycle contracts, `monthly`
+#   consecutive months, `serial_nearest` non-quarterly months, or `serial_months`, the non-quarterly
+#   months within that many months (an interpretation of "serial contracts listed for 16 months", to
+#   confirm).
+# - `history_from`: contracts expiring on or after it are generated (1990 or launch, Bill 2026-10-08);
+#   absent: only what's listed today, until the launch date is found. `history_source` says which.
+# - `specs` are effective-dated, verbatim from CME's spec pages as read on 2026-10-08 into mkt-data's
+#   docs/cme-contract-specs-2026-10.md. Earlier specs aren't recorded yet, so each starts on the date read.
+# - Bloomberg roots come from the phase plan or CME's overview pages; `root_confirmed = false` until
+#   OpenFIGI confirms them (step 2b). A root change renames contracts and keeps their sec_ids.
+
+read_on = 2026-10-08
+reference = "mkt-data docs/cme-contract-specs-2026-10.md"
+
+[[products]]
+root = "TU"
+root_confirmed = false
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+cme_code = "ZT"
+clearing_code = "26"
+name = "2-Year T-Note Futures"
+kind = "treasury"
+currency = "USD"
+trade_calendars = ["CME-IR"]
+settle_calendars = ["CME-IR"]
+generics = 3
+history_source = "Launch date not confirmed (CME's 2020 article marks 30 years of the 2-year note, so 1990, day unknown): only contracts listed today until it's found."
+listing = { quarterly = 3 }
+rules = { last_trade_date = "last_bd", first_intention_date = "first_bd_minus:2", first_notice_date = "first_bd_minus:1", first_delivery_date = "first_bd", last_delivery_date = "last_bd_plus:3" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: the last business day of the contract month"
+first_intention_date = "CBOT Treasury delivery practice: position (intention) day is two business days before the first delivery day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
+last_delivery_date = "spec page, Last delivery date: third business day following the last trading day"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/2-year-us-treasury-note.contractSpecs.html"
+contract_unit = "Face value at maturity of $200,000"
+minimum_price_fluctuation = """
+1/8 of 1/32 of one point (0.00390625) = $7.8125
+TAS: Zero or +/- 4 ticks in the minimum tick increment of the outright"""
+listed_contracts = """
+Quarterly contracts (Mar, Jun, Sep, Dec) listed for 3 consecutive quarters
+TAS: A new TAS month will be listed on the 15th calendar day 3 months prior to the first day of the delivery month. Two TAS months (and corresponding calendar spread) will be supported for the two weeks prior to the nearer month's expiration."""
+termination_of_trading = """
+Trading terminates at 12:01 p.m.CT  on the last business day of the contract month
+TAS:Trading terminates at 2:00 p.m.CT on the last business day of the calendar month preceding the contract month"""
+settlement_method = "Deliverable"
+settlement_procedures = "Treasury Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m.ET (5:00 p.m. - 4:00 p.m. CT).  Monday - Thursday 5:00 p.m. - 6:00 p.m. ET (4:00 p.m. - 5:00 p.m. CT) daily maintenance period.
+TAS: Sunday - Friday 6:00 p.m. - 3:00 p.m. ET (5:00 p.m. - 2:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT
+TAS: Sunday 5:00 p.m. (6:00 p.m. ET) - Friday 2:00 p.m. - (3:00 p.m. ET) with a pause from 2:00 p.m. - 6:00 p.m. CT (3:00 p.m. - 7:00 p.m. ET), Monday - Thursday"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab with a vendor-codes table)"
+
+[[products]]
+root = "3Y"
+root_confirmed = false
+root_source = "CME's overview page vendor-codes table, read 2026-10-08 (mkt-data docs/cme-contract-specs-2026-10.md): Bloomberg 3Y"
+cme_code = "Z3N"
+clearing_code = "3YR"
+name = "3-Year T-Note Futures"
+kind = "treasury"
+currency = "USD"
+trade_calendars = ["CME-IR"]
+settle_calendars = ["CME-IR"]
+generics = 3
+history_from = 2020-07-13
+history_source = "The enhanced 3-year contract, effective 2020-07-13 (Benzinga, 'A User's Guide to Enhanced 3-Year US Treasury Note Futures'). The original 3-year (launched 2009) had a different basket and isn't generated."
+listing = { quarterly = 3 }
+rules = { last_trade_date = "last_bd", first_intention_date = "first_bd_minus:2", first_notice_date = "first_bd_minus:1", first_delivery_date = "first_bd", last_delivery_date = "last_bd_plus:3" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: the last business day of the contract month"
+first_intention_date = "CBOT Treasury delivery practice: position (intention) day is two business days before the first delivery day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
+last_delivery_date = "spec page, Last delivery date: third business day following the last trading day"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/3-year-us-treasury-note.contractSpecs.html"
+contract_unit = "Face value at maturity of $200,000"
+minimum_price_fluctuation = "1/8 of 1/32 of a point (0.00390625) = $7.8125"
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 3 consecutive quarters"
+termination_of_trading = "Trading terminates at 12:01 p.m. CT, on the last business day of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "Treasury Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m.ET (5:00 p.m. - 4:00 p.m. CT).  Monday - Thursday 5:00 p.m. - 6:00 p.m. ET (4:00 p.m. - 5:00 p.m. CT) daily maintenance period.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "Specs page: not shown (links to \"Quote Vendor Symbols Listing\"). Overview page vendor-codes table (outright): Bloomberg 3Y; Refinitiv Globex RIC Root 1Y; Refinitiv Composite RIC Root YR"
+
+[[products]]
+root = "FV"
+root_confirmed = false
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+cme_code = "ZF"
+clearing_code = "25"
+name = "5-Year T-Note Futures"
+kind = "treasury"
+currency = "USD"
+trade_calendars = ["CME-IR"]
+settle_calendars = ["CME-IR"]
+generics = 3
+history_from = 1990-01-01
+history_source = "Listed well before 1990 (CME's product history; not verified here). Contracts are generated from 1990, the calendars' start (Bill, 2026-10-08)."
+listing = { quarterly = 3 }
+rules = { last_trade_date = "last_bd", first_intention_date = "first_bd_minus:2", first_notice_date = "first_bd_minus:1", first_delivery_date = "first_bd", last_delivery_date = "last_bd_plus:3" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: the last business day of the contract month"
+first_intention_date = "CBOT Treasury delivery practice: position (intention) day is two business days before the first delivery day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
+last_delivery_date = "spec page, Last delivery date: third business day following the last trading day"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/5-year-us-treasury-note.contractSpecs.html"
+contract_unit = "Face value at maturity of $100,000"
+minimum_price_fluctuation = """
+1/4 of 1/32 of one point (0.0078125) = $7.8125
+TAS: Zero or +/- 4 ticks in the minimum tick increment of the outright
+Calendar Spread: 1/8 of 1/32 of one point (0.00390625) = $3.90625"""
+listed_contracts = """
+Quarterly contracts (Mar, Jun, Sep, Dec) listed for 3 consecutive quarters
+TAS:  A new TAS month will be listed on the 15th calendar day 3 months prior to the first day of the delivery month. Two TAS months (and corresponding calendar spread) will be supported for the two weeks prior to the nearer month's expiration."""
+termination_of_trading = """
+Trading terminates at 12:01 p.m.CT  on the last business day of the contract month
+TAS:Trading terminates at 2:00 p.m.CT on the last business day of the calendar month preceding the contract month"""
+settlement_method = "Deliverable"
+settlement_procedures = "Treasury Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m. CT
+TAS: Sunday - Friday 5:00 p.m. - 2:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. – 6:00 p.m. CT
+TAS: Sunday 5:00 p.m. - Friday 2:00 p.m. - with a pause from 2:00 p.m. - 6:00 p.m. CT, Monday - Thursday"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; overview page has no vendor-codes table)"
+
+[[products]]
+root = "TY"
+root_confirmed = false
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+cme_code = "ZN"
+clearing_code = "21"
+name = "10-Year T-Note Futures"
+kind = "treasury"
+currency = "USD"
+trade_calendars = ["CME-IR"]
+settle_calendars = ["CME-IR"]
+generics = 3
+history_from = 1990-01-01
+history_source = "Listed well before 1990 (CME's product history; not verified here). Contracts are generated from 1990, the calendars' start (Bill, 2026-10-08)."
+listing = { quarterly = 3 }
+rules = { last_trade_date = "last_bd_minus:7", first_intention_date = "first_bd_minus:2", first_notice_date = "first_bd_minus:1", first_delivery_date = "first_bd", last_delivery_date = "last_bd" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: 7 business days prior to the last business day of the contract month"
+first_intention_date = "CBOT Treasury delivery practice: position (intention) day is two business days before the first delivery day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
+last_delivery_date = "spec page, Last delivery date: last business day of the delivery month"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/10-year-us-treasury-note.contractSpecs.html"
+contract_unit = "Face value at maturity of $100,000"
+minimum_price_fluctuation = """
+Outright:
+1/2 of 1/32 of one point (0.015625) = $15.625
+TAS: Zero or +/- 4 ticks in the minimum tick increment of the outright
+CALENDAR SPREAD
+1/4 of 1/32 of one point (0.0078125) = $7.8125"""
+listed_contracts = """
+Quarterly contracts (Mar, Jun, Sep, Dec) listed for 3 consecutive quarters
+New contract months become TAS eligible on the 15th day 3 months prior to the first day of the contract month. Two TAS months (and corresponding calendar spread) are supported for the two weeks prior to the nearer month's termination."""
+termination_of_trading = """
+Trading terminates at 12:01 p.m. CT, 7 business days prior to the last business day of the contract month.
+TAS trading terminates at 2:00 p.m.CT on the last business day of the month prior to the contract month."""
+settlement_method = "Deliverable"
+settlement_procedures = "Treasury Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m. CT
+TAS: Sunday - Friday 5:00 p.m. - 2:00 p.m. CT (6:00 p.m. - 3:00 p.m. ET)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. – 6:00 p.m. CT
+TAS: Sunday 5:00 p.m. - Friday 2:00 p.m. - with a pause from 2:00 p.m. - 6:00 p.m. CT, Monday - Thursday"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; overview page has no vendor-codes table)"
+
+[[products]]
+root = "UXY"
+root_confirmed = false
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+cme_code = "TN"
+clearing_code = "TN"
+name = "Ultra 10-Year U.S. Treasury Note Futures"
+kind = "treasury"
+currency = "USD"
+trade_calendars = ["CME-IR"]
+settle_calendars = ["CME-IR"]
+generics = 3
+history_from = 2016-01-11
+history_source = "First trades at the Sunday 2016-01-10 evening open, trade date 2016-01-11 (CME press release of 2016-01-15, as carried by Mondo Visione). The first contract month isn't confirmed."
+listing = { quarterly = 3 }
+rules = { last_trade_date = "last_bd_minus:7", first_intention_date = "first_bd_minus:2", first_notice_date = "first_bd_minus:1", first_delivery_date = "first_bd", last_delivery_date = "last_bd" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: 7 business days prior to the last business day of the contract month"
+first_intention_date = "CBOT Treasury delivery practice: position (intention) day is two business days before the first delivery day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
+last_delivery_date = "spec page, Last delivery date: last business day of the delivery month"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/ultra-10-year-us-treasury-note.contractSpecs.html"
+contract_unit = "Face value at maturity of $100,000"
+minimum_price_fluctuation = """
+Outright:
+1/2 of 1/32 of one point (0.015625) = $15.625
+TAS: Zero or +/- 4 ticks in the minimum tick increment of the outright
+CALENDAR SPREAD
+1/4 of 1/32 of one point (0.0078125) = $7.8125"""
+listed_contracts = """
+Quarterly contracts (Mar, Jun, Sep, and Dec) listed for 3 consecutive quarters.
+TAS becomes available for a new contract month on the 15th day 3 months prior to the first day of the contract month. Two TAS months (and corresponding calendar spread) are supported for the two weeks prior to the nearer month's termination."""
+termination_of_trading = """
+Trading terminates at 12:01 p.m. CT, 7 business days prior to the last business day of the contract month.
+TAS trading terminates at 2:00 p.m.CT on the last business day of the month prior to the contract month."""
+settlement_method = "Deliverable"
+settlement_procedures = "Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT (6:00 p.m. - 5:00 p.m.ET).  Monday - Thursday 4:00 p.m. - 5:00 p.m. CT (5:00 p.m. - 6:00 p.m. ET) daily maintenance period.
+TAS: Sunday - Friday 5:00 p.m. - 2:00 p.m. CT (6:00 p.m. - 3:00 p.m. ET)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT
+TAS: Sunday 5:00 p.m. (6:00 p.m. ET) - Friday 2:00 p.m. - (3:00 p.m. ET) with a pause from 2:00 p.m. - 6:00 p.m. CT (3:00 p.m. - 7:00 p.m. ET), Monday - Thursday"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; overview page has no vendor-codes table)"
+
+[[products]]
+root = "TWEA"
+root_confirmed = false
+root_source = "CME's overview page vendor-codes table, read 2026-10-08 (mkt-data docs/cme-contract-specs-2026-10.md): Bloomberg TWEA"
+cme_code = "TWE"
+clearing_code = "TWE"
+name = "20-Year U.S. Treasury Bond Futures"
+kind = "treasury"
+currency = "USD"
+trade_calendars = ["CME-IR"]
+settle_calendars = ["CME-IR"]
+generics = 3
+history_from = 2022-03-07
+history_source = "Launched 2022-03-07 (CME news, 'CME Group to launch 20-Year U.S. Treasury Bond futures on March 7'). The first contract month isn't confirmed: a contract expiring soon after launch may not have been listed."
+listing = { quarterly = 3 }
+rules = { last_trade_date = "last_bd_minus:7", first_intention_date = "first_bd_minus:2", first_notice_date = "first_bd_minus:1", first_delivery_date = "first_bd", last_delivery_date = "last_bd" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: 7 business days prior to the last business day of the contract month"
+first_intention_date = "CBOT Treasury delivery practice: position (intention) day is two business days before the first delivery day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
+last_delivery_date = "spec page, Last delivery date: last business day of the delivery month"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/20-year-us-treasury-bond.contractSpecs.html"
+contract_unit = "Face value at maturity of $100,000"
+minimum_price_fluctuation = """
+Outright:
+1/32 of one point (0.03125) = $31.25
+CALENDAR SPREAD
+1/4 of 1/32 of one point (0.0078125) = $7.8125"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 3 consecutive quarters"
+termination_of_trading = "Trading terminates at 12:01 p.m. CT, 7 business days prior to the last business day of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "Treasury Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday 5:00 p.m. - Friday 4:00 p.m. CT with a daily maintenance period from 4:00 p.m. - 5:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "Specs page: not shown (links to \"Quote Vendor Symbols Listing\"). Overview page \"Vendor trading codes\" table, 20-Year T-Bond Futures row: Bloomberg TWEA; Refinitiv ZP"
+
+[[products]]
+root = "US"
+root_confirmed = false
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+cme_code = "ZB"
+clearing_code = "17"
+name = "U.S. Treasury Bond Futures"
+kind = "treasury"
+currency = "USD"
+trade_calendars = ["CME-IR"]
+settle_calendars = ["CME-IR"]
+generics = 3
+history_from = 1990-01-01
+history_source = "Listed well before 1990 (CME's product history; not verified here). Contracts are generated from 1990, the calendars' start (Bill, 2026-10-08)."
+listing = { quarterly = 3 }
+rules = { last_trade_date = "last_bd_minus:7", first_intention_date = "first_bd_minus:2", first_notice_date = "first_bd_minus:1", first_delivery_date = "first_bd", last_delivery_date = "last_bd" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: 7 business days prior to the last business day of the contract month"
+first_intention_date = "CBOT Treasury delivery practice: position (intention) day is two business days before the first delivery day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
+last_delivery_date = "spec page, Last delivery date: last business day of the delivery month"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/30-year-us-treasury-bond.contractSpecs.html"
+contract_unit = "Face value at maturity of $100,000"
+minimum_price_fluctuation = """
+Outright:
+1/32 of one point (0.03125) = $31.25
+TAS: Zero or +/- 4 ticks in the minimum tick increment of the outright
+CALENDAR SPREAD
+1/4 of 1/32 of one point (0.0078125) = $7.8125"""
+listed_contracts = """
+Quarterly contracts (Mar, Jun, Sep, Dec) listed for 3 consecutive quarters
+TAS becomes available for a new contract month on the 15th day 3 months prior to the first day of the contract month. Two TAS months (and corresponding calendar spread) are supported for the two weeks prior to the nearer month's termination."""
+termination_of_trading = """
+Trading terminates at 12:01 p.m. CT, 7 business days prior to the last business day of the contract month.
+TAS trading terminates at 2:00 p.m.CT on the last business day of the month prior to the contract month."""
+settlement_method = "Deliverable"
+settlement_procedures = "Treasury Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT (6:00 p.m. - 5:00 p.m.ET).  Monday - Thursday 4:00 p.m. - 5:00 p.m. CT (5:00 p.m. - 6:00 p.m. ET) daily maintenance period.
+TAS: Sunday - Friday 5:00 p.m. - 2:00 p.m. CT (6:00 p.m. - 3:00 p.m. ET)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT
+TAS: Sunday 5:00 p.m. (6:00 p.m. ET) - Friday 2:00 p.m. - (3:00 p.m. ET) with a pause from 2:00 p.m. - 6:00 p.m. CT (3:00 p.m. - 7:00 p.m. ET), Monday - Thursday"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; overview page has no vendor-codes table)"
+
+[[products]]
+root = "WN"
+root_confirmed = false
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+cme_code = "UB"
+clearing_code = "UBE"
+name = "Ultra U.S. Treasury Bond Futures"
+kind = "treasury"
+currency = "USD"
+trade_calendars = ["CME-IR"]
+settle_calendars = ["CME-IR"]
+generics = 3
+history_from = 2010-01-11
+history_source = "Launched 2010-01-11 (CME notice SER-5096, 'CME Group Announces the Launch of Long-Term \"Ultra\" U.S. Treasury Bond Futures on January 11, 2010'). The first contract month isn't confirmed."
+listing = { quarterly = 3 }
+rules = { last_trade_date = "last_bd_minus:7", first_intention_date = "first_bd_minus:2", first_notice_date = "first_bd_minus:1", first_delivery_date = "first_bd", last_delivery_date = "last_bd" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: 7 business days prior to the last business day of the contract month"
+first_intention_date = "CBOT Treasury delivery practice: position (intention) day is two business days before the first delivery day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
+last_delivery_date = "spec page, Last delivery date: last business day of the delivery month"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/ultra-t-bond.contractSpecs.html"
+contract_unit = "Face value at maturity of $100,000"
+minimum_price_fluctuation = """
+Outright:
+1/32 of a point (0.03125) = $31.25
+TAS: Zero or +/- 4 ticks in the minimum tick increment of the outright
+CALENDAR SPREAD
+1/4 of 1/32 of a point (0.0078125) = $7.8125"""
+listed_contracts = """
+Quarterly contracts (Mar, Jun, Sep, Dec) listed for 3 consecutive quarters
+TAS becomes available for a new contract month on the 15th day 3 months prior to the first day of the contract month. Two TAS months (and corresponding calendar spread) are supported for the two weeks prior to the nearer month's termination."""
+termination_of_trading = """
+Trading terminates at 12:01 p.m. CT, 7 business days prior to the last business day of the contract month.
+TAS trading terminates at 2:00 p.m.CT on the last business day of the month prior to the contract month."""
+settlement_method = "Deliverable"
+settlement_procedures = "Treasury Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT (6:00 p.m. - 5:00 p.m.ET).  Monday - Thursday 4:00 p.m. - 5:00 p.m. CT (5:00 p.m. - 6:00 p.m. ET) daily maintenance period.
+TAS: Sunday - Friday 5:00 p.m. - 2:00 p.m. CT (6:00 p.m. - 3:00 p.m. ET)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT
+TAS: Sunday 5:00 p.m. (6:00 p.m. ET) - Friday 2:00 p.m. - (3:00 p.m. ET) with a pause from 2:00 p.m. - 6:00 p.m. CT (3:00 p.m. - 7:00 p.m. ET), Monday - Thursday"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab with a vendor-codes table)"
+
+[[products]]
+root = "FF"
+root_confirmed = false
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+cme_code = "ZQ"
+clearing_code = "41"
+name = "30 Day Federal Funds Futures"
+kind = "stir"
+currency = "USD"
+trade_calendars = ["CME-IR"]
+settle_calendars = ["CME-IR"]
+generics = 12
+history_from = 1990-01-01
+history_source = "Listed well before 1990 (CME's product history; not verified here). Contracts are generated from 1990, the calendars' start (Bill, 2026-10-08)."
+listing = { monthly = 60 }
+rules = { last_trade_date = "last_bd", reference = "month", final_settlement_date = "ltd_plus:1" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: last business day of the contract month"
+reference = "spec page, Price quotation: average of daily effective federal funds rates during the contract month"
+final_settlement_date = "spec page, Settlement procedures: final settlement on the first business day following the last trading day"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund.contractSpecs.html"
+contract_unit = "$4,167 x Contract IMM Index"
+minimum_price_fluctuation = """
+1/2 of one basis point (0.005) = $20.835
+Beginning at 5:00 p.m. CT on the Sunday preceding the first business day of the spot month: 1/4 of one basis point (0.0025) = $10.4175"""
+listed_contracts = "Monthly contracts listed for 60 consecutive months"
+termination_of_trading = "Trading terminates on the last business day of the contract month."
+settlement_method = "Financially Settled"
+settlement_procedures = """
+Expiring contracts are cash settled against the average daily Fed Funds overnight rate for the delivery month, rounded to the nearest one-tenth of one basis point. Final settlement occurs on the first business day following the last trading day. The daily Fed Funds overnight rate is calculated and reported by the Federal Reserve Bank of New York.
+Settlement Procedures (link)"""
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m.ET (5:00 p.m. - 4:00 p.m. CT).  Monday - Thursday 5:00 p.m. - 6:00 p.m. ET (4:00 p.m. - 5:00 p.m. CT) daily maintenance period.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; overview page has no vendor-codes table)"
+
+[[products]]
+root = "SER"
+root_confirmed = false
+root_source = "Unconfirmed: no source for SER yet (mkt-data docs/phase-4.md); OpenFIGI in step 2b"
+cme_code = "SR1"
+clearing_code = "SR1"
+name = "One-Month SOFR Futures"
+kind = "stir"
+currency = "USD"
+trade_calendars = ["CME-IR"]
+settle_calendars = ["CME-IR"]
+generics = 12
+history_from = 2018-05-07
+history_source = "SOFR futures launched 2018-05-07 (RJ O'Brien, 'SOFR futures launch this Monday May 7'; CME press release of 2018-05-08 on the first trades). The first contract month isn't confirmed."
+listing = { monthly = 25 }
+rules = { last_trade_date = "last_bd", reference = "month" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: last business day of the contract month"
+reference = "spec page, Price quotation: arithmetic average of SOFR during the contract delivery month"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/interest-rates/stirs/one-month-sofr.contractSpecs.html"
+contract_unit = "$4,167 x contract-grade IMM Index"
+minimum_price_fluctuation = """
+Nearby delivery month:  0.0025 IMM index points (¼ basis point per annum) = $10.4175
+All other delivery months: 0.005 IMM index points (½ basis point per annum) = $20.835
+Min final settle fluctuation: 0.001 IMM index points"""
+listed_contracts = "Monthly contracts listed for 25 consecutive months"
+termination_of_trading = "Trading terminates on the last business day of the contract month."
+settlement_method = "Financially Settled"
+settlement_procedures = "SR1 Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. (6:00 p.m. - 5:00 p.m. ET) with a 60-minute break each day beginning at 4:00 p.m. (5:00 p.m. ET)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab with a vendor-codes table)"
+
+[[products]]
+root = "SFR"
+root_confirmed = false
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+cme_code = "SR3"
+clearing_code = "SR3"
+name = "Three-Month SOFR Futures"
+kind = "stir"
+currency = "USD"
+trade_calendars = ["CME-IR"]
+settle_calendars = ["CME-IR"]
+generics = 12
+history_from = 2018-05-07
+history_source = "SOFR futures launched 2018-05-07 (RJ O'Brien, 'SOFR futures launch this Monday May 7'; CME press release of 2018-05-08 on the first trades). The first contract month isn't confirmed."
+listing = { quarterly = 39, serial_nearest = 6 }
+rules = { last_trade_date = "third_wed_minus:1", reference = "imm_quarter" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: business day prior to the 3rd Wednesday of the contract delivery month"
+reference = "spec page, Price quotation: Reference Quarter from (and including) the 3rd Wednesday of the 3rd month preceding the delivery month to (and not including) the 3rd Wednesday of the delivery month"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/interest-rates/stirs/three-month-sofr.contractSpecs.html"
+contract_unit = "$2,500 x contract-grade IMM Index"
+minimum_price_fluctuation = """
+All contract months with four months or less until last day of trading (as defined in Rulebook section 46002.C): 0.0025 IMM Index points (¼ basis point per annum) = $6.25
+All other contract months: 0.005 IMM Index points (½ basis point per annum) = $12.50
+Min Final Settle Fluctuation: 0.0001 IMM Index points"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 39 consecutive quarters and the nearest 6 serial contract months"
+termination_of_trading = "Trading terminates on the business day prior to the 3rd Wednesday of contract delivery month."
+settlement_method = "Financially Settled"
+settlement_procedures = "SR3 Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. (6:00 p.m. - 5:00 p.m. ET) with a 60-minute break each day beginning at 4:00 p.m. (5:00 p.m. ET)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; overview page has no vendor-codes table)"
+
+[[products]]
+root = "TZR"
+root_confirmed = false
+root_source = "CME's overview page vendor-codes table, read 2026-10-08 (mkt-data docs/cme-contract-specs-2026-10.md): Bloomberg TZR"
+cme_code = "TBF3"
+clearing_code = "TBF3"
+name = "U.S. T-Bill Futures (overview text calls it \"13-Week U.S. Treasury Bill futures\")"
+kind = "stir"
+currency = "USD"
+trade_calendars = ["CME-IR"]
+settle_calendars = ["CME-IR"]
+generics = 4
+history_from = 2023-10-02
+history_source = "Launched 2023-10-02 (Mondo Visione, 'CME Group to launch T-Bill futures on October 2', 2023-09-05). The first contract month isn't confirmed."
+listing = { quarterly = 4, serial_nearest = 2 }
+rules = { last_trade_date = "monday_before_third_wed" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: the Monday prior to the 3rd Wednesday of the contract month, or the next business day if that Monday isn't one"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/interest-rates/stirs/us-t-bill.contractSpecs.html"
+contract_unit = "$2,500 x contract-grade IMM Index"
+minimum_price_fluctuation = """
+All contract months with one month or less until last day of trading (as defined in Rulebook section 45702.G): 0.0025 IMM Index points (¼ basis point per annum) = $6.25
+All other contract months: 0.005 IMM Index points (½ basis point per annum) = $12.50
+Min Final Settle Fluctuation: 0.001 IMM Index points"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 4 consecutive quarters and the nearest 2 serial contract months"
+termination_of_trading = "Trading terminates on the Monday prior to the 3rd Wednesday of contract month. If Monday is not a business day, then trading terminates on the next immediate business day."
+settlement_method = "Financially Settled"
+settlement_procedures = "CME 13-Week U.S. Treasury Bill Futures Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. (6:00 p.m. - 5:00 p.m. ET) with a 60-minute break each day beginning at 4:00 p.m. (5:00 p.m. ET)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "Specs page: not shown (links to \"Quote Vendor Symbols Listing\"). Overview page \"Vendor Codes\" table (outrights): Bloomberg TZR; Refinitiv TB3F. (SOFR-TBILL ICS column: Bloomberg SFRTZR Comdty; Refinitiv SRA-TB3F)"
+
+[[products]]
+root = "EC"
+root_confirmed = false
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+cme_code = "6E"
+clearing_code = "EC"
+name = "Euro FX Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["TARGET", "FED"]
+generics = 4
+history_from = 1999-01-01
+history_source = "The euro's first year (Bill, 2026-10-08: contracts from 1990, the euro from 1999); TARGET starts in 1999."
+listing = { quarterly = 20, serial_months = 16 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: 9:16 a.m. CT, 2 business days prior to the third Wednesday; rulebook: earlier if a Chicago or New York bank holiday"
+settlement_date = "rulebook: physical delivery on the 3rd Wednesday, later if it isn't a business day in the delivery country or is a Chicago or New York bank holiday"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/euro-fx/specs"
+contract_unit = "125,000 Euro"
+minimum_price_fluctuation = """
+CME Globex:
+0.000050 per Euro increment = $6.25
+BTIC: 0.000005 per Euro increment = $0.625
+Spreads: 0.00002 per Euro increment = $2.50
+Final Settlement: 0.00005
+CME ClearPort:
+0.000010 per Euro increment = $1.25
+BTIC: 0.000001 per Euro increment = $0.125"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 20 consecutive quarters and serial contracts listed for 16 months"
+termination_of_trading = """
+Trading terminates at 9:16 a.m. CT, 2 business day prior to the third Wednesday of the contract month.
+BTIC: Trading terminates at 3:40pm London time (9:40am CT) one business day prior to futures last trade date."""
+settlement_method = "Deliverable"
+settlement_procedures = """
+Physical Delivery
+EUR/USD Futures Settlement Procedures (link)"""
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m. CT
+BTIC: Sunday - Friday 5:00 p.m. - 4:00 p.m. CT with a trading close from 3:40 p.m. - 4:30 p.m. London time (9:40 a.m. - 10:30 a.m. CT)  and a 60-minute break each day beginning at 4:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT
+BTIC: Sunday - Friday 5:00 p.m. - 5:45p.m. CT with a trading halt 9:40 a.m. to 11:30 a.m. CT, and with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; overview page has no vendor-codes table)"
+
+[[products]]
+root = "JY"
+root_confirmed = false
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+cme_code = "6J"
+clearing_code = "J1"
+name = "Japanese Yen Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["JP", "FED"]
+generics = 4
+history_from = 1990-01-01
+history_source = "Listed well before 1990 (CME's product history; not verified here). Contracts are generated from 1990, the calendars' start (Bill, 2026-10-08)."
+listing = { quarterly = 20, serial_months = 16 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: 9:16 a.m. CT, 2 business days prior to the third Wednesday; rulebook: earlier if a Chicago or New York bank holiday"
+settlement_date = "rulebook: physical delivery on the 3rd Wednesday, later if it isn't a business day in the delivery country or is a Chicago or New York bank holiday"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/japanese-yen/specs"
+contract_unit = "12,500,000 Japanese yen"
+minimum_price_fluctuation = """
+CME Globex:
+0.0000005 per JPY increment = $6.25
+Spreads: 0.0000002 per JPY increment = $2.50
+Final Settlement: 0.0000005
+CME ClearPort:
+0.0000001 per JPY increment = $1.25"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 20 consecutive quarters and serial contracts listed for 16 months"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business day prior to the third Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = """
+Physical Delivery
+JPY/USD Futures Settlement Procedures (link)"""
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. (6:00 p.m. - 5:00 p.m. ET) with a 60-minute break each day beginning at 4:00 p.m. (5:00 p.m. ET)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; overview page has no vendor-codes table)"
+
+[[products]]
+root = "BP"
+root_confirmed = false
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+cme_code = "6B"
+clearing_code = "BP"
+name = "British Pound Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["GB", "FED"]
+generics = 4
+history_from = 1990-01-01
+history_source = "Listed well before 1990 (CME's product history; not verified here). Contracts are generated from 1990, the calendars' start (Bill, 2026-10-08)."
+listing = { quarterly = 20, serial_months = 16 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: 9:16 a.m. CT, 2 business days prior to the third Wednesday; rulebook: earlier if a Chicago or New York bank holiday"
+settlement_date = "rulebook: physical delivery on the 3rd Wednesday, later if it isn't a business day in the delivery country or is a Chicago or New York bank holiday"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/british-pound/specs"
+contract_unit = "62,500 British pounds"
+minimum_price_fluctuation = """
+CME Globex:
+0.0001 per GBP increments = $6.25
+Spreads: .000025 per GBP increment = $1.5625
+Final Settlement: 0.0001
+CME ClearPort:
+0.00001 per GBP increment = $0.625"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 20 consecutive quarters and serial contracts listed for 16 months"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business days prior to the third Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = """
+Physical Delivery
+GBP/USD Futures Settlement Procedures (link)"""
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; Overview page has no vendor-codes table)"
+
+[[products]]
+root = "AD"
+root_confirmed = false
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+cme_code = "6A"
+clearing_code = "AD"
+name = "Australian Dollar Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["AU", "FED"]
+generics = 4
+history_from = 1990-01-01
+history_source = "Listed well before 1990 (CME's product history; not verified here). Contracts are generated from 1990, the calendars' start (Bill, 2026-10-08)."
+listing = { quarterly = 20, serial_months = 16 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: 9:16 a.m. CT, 2 business days prior to the third Wednesday; rulebook: earlier if a Chicago or New York bank holiday"
+settlement_date = "rulebook: physical delivery on the 3rd Wednesday, later if it isn't a business day in the delivery country or is a Chicago or New York bank holiday"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/australian-dollar/specs"
+contract_unit = "100,000 Australian dollars"
+minimum_price_fluctuation = """
+CME Globex:
+0.00005 per AUD increment = $5.00
+Spreads: 0.00002 per AUD increment = $2.00
+Final Settlement: 0.00005
+CME ClearPort:
+0.00001 per AUD increment = $1.00"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 20 consecutive quarters and serial contracts listed for 16 months"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business days prior to the third Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = """
+Physical Delivery
+AUD/USD Futures Settlement Procedures (link)"""
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT (with a 60-minute break each day beginning at 4:00 p.m.CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; Overview page has no vendor-codes table)"
+
+[[products]]
+root = "CD"
+root_confirmed = false
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+cme_code = "6C"
+clearing_code = "C1"
+name = "Canadian Dollar Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["CA", "FED"]
+generics = 4
+history_from = 1990-01-01
+history_source = "Listed well before 1990 (CME's product history; not verified here). Contracts are generated from 1990, the calendars' start (Bill, 2026-10-08)."
+listing = { quarterly = 20, serial_months = 16 }
+rules = { last_trade_date = "third_wed_minus:1", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: 9:16 a.m. CT, 1 business day prior to the third Wednesday; rulebook: earlier if a Chicago or New York bank holiday"
+settlement_date = "rulebook: physical delivery on the 3rd Wednesday, later if it isn't a business day in the delivery country or is a Chicago or New York bank holiday"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/canadian-dollar/specs"
+contract_unit = "100,000 Canadian dollars"
+minimum_price_fluctuation = """
+CME Globex:
+0.00005 per CAD increment = $5.00
+Spreads: 0.00002 per CAD increment = $2.00
+Final Settlement: 0.00005
+CME ClearPort:
+0.00001 per CAD increment = $1.00"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 20 consecutive quarters and serial contracts listed for 16 months"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 1 business day prior to the third Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = """
+Physical Delivery
+Canadian Dollar Settlement Procedures (link)"""
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; Overview page has no vendor-codes table)"
+
+[[products]]
+root = "SF"
+root_confirmed = false
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+cme_code = "6S"
+clearing_code = "E1"
+name = "Swiss Franc Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["CH", "FED"]
+generics = 4
+history_from = 1990-01-01
+history_source = "Listed well before 1990 (CME's product history; not verified here). Contracts are generated from 1990, the calendars' start (Bill, 2026-10-08)."
+listing = { quarterly = 20 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: 9:16 a.m. CT, 2 business days prior to the third Wednesday; rulebook: earlier if a Chicago or New York bank holiday"
+settlement_date = "rulebook: physical delivery on the 3rd Wednesday, later if it isn't a business day in the delivery country or is a Chicago or New York bank holiday"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/swiss-franc/specs"
+contract_unit = "125,000 Swiss francs"
+minimum_price_fluctuation = """
+CME Globex:
+0.00005 CHF increment = $6.25
+Calendar spreads: 0.00005 CHF increment = $6.25
+CME ClearPort:
+0.00001 per CHF increment = $1.25"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 20 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business day prior to the third Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "CHF/USD Futures Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "PE"
+root_confirmed = false
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+cme_code = "6M"
+clearing_code = "MP"
+name = "Mexican Peso Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["MX", "FED"]
+generics = 4
+history_source = "Launch date not confirmed (CME's peso futures began in the mid-1990s): only contracts listed today until it's found."
+listing = { quarterly = 20, serial_months = 16 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: 9:16 a.m. CT, 2 business days prior to the third Wednesday; rulebook: earlier if a Chicago or New York bank holiday"
+settlement_date = "rulebook: physical delivery on the 3rd Wednesday, later if it isn't a business day in the delivery country or is a Chicago or New York bank holiday"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/emerging-market/mexican-peso/specs"
+contract_unit = "500,000 Mexican pesos"
+minimum_price_fluctuation = """
+CME Globex:
+0.00001 per MXN increment = $5.00
+CME ClearPort:
+0.000001 per MXN increment = $0.50"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 20 consecutive quarters and serial contracts listed for 16 months"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business day prior to the third Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = """
+Physical Delivery
+Mexican Peso Futures Settlement Procedures (link)"""
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT (with a 60-minute break each day beginning at 4:00 p.m.CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "NV"
+root_confirmed = false
+root_source = "mkt-data docs/phase-4.md, Products table (Bloomberg roots as planned; confirmed through OpenFIGI in step 2b)"
+cme_code = "6N"
+clearing_code = "NE"
+name = "New Zealand Dollar Futures"
+kind = "fx"
+currency = "USD"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["NZ", "FED"]
+generics = 4
+history_source = "Launch date not confirmed (late 1990s): only contracts listed today until it's found."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: 9:16 a.m. CT, 2 business days prior to the third Wednesday; rulebook: earlier if a Chicago or New York bank holiday"
+settlement_date = "rulebook: physical delivery on the 3rd Wednesday, later if it isn't a business day in the delivery country or is a Chicago or New York bank holiday"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/g10/new-zealand-dollar/specs"
+contract_unit = "100,000 New Zealand dollars"
+minimum_price_fluctuation = """
+CME Globex:
+0.00005 per New Zealand dollar =$5.00
+CME ClearPort:
+0.00001 per NZD increment = $1.00"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business day prior to the third Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = """
+Physical Delivery
+New Zealand Dollar Settlement Procedures (link)"""
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"

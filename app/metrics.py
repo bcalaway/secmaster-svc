@@ -20,6 +20,9 @@ from app import db, securities
 from app.models import (
     Auction,
     FigiLookup,
+    FuturesContract,
+    FuturesProduct,
+    FuturesRun,
     Identifier,
     Instrument,
     InstrumentName,
@@ -154,6 +157,21 @@ def render(s) -> str:
     figis = s.execute(select(FigiLookup.outcome, func.count()).group_by(FigiLookup.outcome)).all()
     out.metric("secmaster_svc_figi_lookups", "gauge", "CUSIPs looked up on OpenFIGI, by outcome.",
                [({"outcome": o}, n) for o, n in sorted(figis)])
+    # Futures (mkt-data's docs/phase-4.md, step 2a): contracts by product and status, and the daily run.
+    contracts = s.execute(
+        select(FuturesProduct.root, FuturesContract.status, func.count())
+        .join(FuturesProduct, FuturesProduct.sec_id == FuturesContract.product_sec_id)
+        .where(FuturesContract.superseded_at.is_(None))
+        .group_by(FuturesProduct.root, FuturesContract.status)).all()
+    out.metric("secmaster_svc_futures_contracts", "gauge", "Futures contracts, by product (Bloomberg root) and status.",
+               [({"product": r, "status": st}, n) for r, st, n in sorted(contracts)])
+    fruns = list(s.scalars(select(FuturesRun).order_by(FuturesRun.id.desc()).limit(20)))
+    fok = next((r for r in fruns if r.outcome == "ok"), None)
+    out.metric("secmaster_svc_futures_last_success_timestamp_seconds", "gauge",
+               "When the last successful futures generation run finished.",
+               [({}, _epoch(fok.finished_at))] if fok else [])
+    out.metric("secmaster_svc_futures_ok", "gauge", "1 if the latest futures generation run succeeded, 0 if it failed.",
+               [({}, int(fruns[0].outcome == "ok"))] if fruns else [])
     return out.text()
 
 
