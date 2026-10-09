@@ -2316,9 +2316,9 @@ Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 
 vendor_codes = "{NVX}"
 
 [[products]]
-root = "RMB"
+root = "DO"
 root_confirmed = false
-root_source = "Not found by the root search of 2026-10-09 (queries: CHINESE RENMINBI, RMB/USD, CNY CURRENCY); the matches were USD/CNY futures last listed in 2019, so the CME code stands in; to confirm by the futures FIGI job or a second search"
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09, second run): Bloomberg's \"RENMINBI CUR FUT\" futures on CME (DOH9 Curncy, Mar 2029); to confirm by ticker on every listed contract (the futures FIGI job)"
 cme_code = "RMB"
 clearing_code = "RMB"
 name = "Onshore Chinese Renminbi (CNY) Futures"
@@ -2351,9 +2351,9 @@ Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 
 vendor_codes = "{NVX}"
 
 [[products]]
-root = "RME"
+root = "DP"
 root_confirmed = false
-root_source = "Not found by the root search of 2026-10-09 (queries: RMB/EUR, RMB EUR, CNY/EUR); nothing on CME, so the CME code stands in; to confirm by the futures FIGI job or a second search"
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09, under the RMB queries): Bloomberg's \"RENMINBI EUR FUT\" futures on CME (DPV7 Curncy, Oct 2027); to confirm by ticker on every listed contract (the futures FIGI job)"
 cme_code = "RME"
 clearing_code = "RME"
 name = "Chinese Renminbi/Euro Futures"
@@ -2576,9 +2576,9 @@ Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 
 vendor_codes = "{NVX}"
 
 [[products]]
-root = "EPZ"
+root = "EI"
 root_confirmed = false
-root_source = "Not found by the root search of 2026-10-09 (queries: EUR/PLN, PLN/EUR, EUR/POLISH ZLOTY); only an EURO/PLN X-RATE contract last listed in 2012 (EI), so the CME code stands in; to confirm by the futures FIGI job or a second search"
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09, second run): Bloomberg's \"EURO/PLZ X-RATE\" futures on CME (EIH8 Curncy, Mar 2028); to confirm by ticker on every listed contract (the futures FIGI job)"
 cme_code = "EPZ"
 clearing_code = "Z"
 name = "Polish Zloty/Euro (PLN/EUR) Cross Rate Futures"
