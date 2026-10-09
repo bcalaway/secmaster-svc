@@ -27,7 +27,12 @@ from home_platform_jobs import call_app_job
 def report(result: dict) -> dict:
     """One log line per product (contracts, listed, front), then the rest of the summary."""
     for root, p in sorted((result.get("products") or {}).items()):
-        print(f"futures: {root}: {p.get('contracts')} contracts, {p.get('listed')} listed, front {p.get('front')}")
+        line = f"futures: {root}: {p.get('contracts')} contracts, {p.get('listed')} listed, front {p.get('front')}"
+        if p.get("baskets") is not None:
+            line += "; deliverable: " + (", ".join(f"{m} {n}" for m, n in p["baskets"].items()) or "none")
+        print(line)
+    print("futures: deliverables " + ", ".join(f"{k.removeprefix('deliverables_')} {result.get(k, 0)}" for k in (
+        "deliverables_added", "deliverables_changed", "deliverables_removed")))
     return {k: v for k, v in result.items() if k != "products"}
 
 

@@ -167,3 +167,4 @@ def test_the_20_year_takes_30_year_bonds_issued_before_august_2018_only():
 def test_the_two_year_rounds_the_remaining_term_down_before_the_window():
     # 2 years and 30 days from Dec 1, 2026 rounds down to 2 years: in, as in CME's table (91282CJR3).
     assert b.eligible(rule("TU"), sec(date(2028, 12, 31), issue=date(2023, 12, 31)), DEC26, date(2027, 1, 5)) == 24
+

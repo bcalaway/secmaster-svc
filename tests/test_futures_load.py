@@ -39,7 +39,8 @@ def test_first_run_builds_everything(migrated_db):
     out = run(source=src)
     assert out["products_created"] == 75 and out["contracts_created"] > 2000
     assert sorted(src.calls) == sorted(NAMES)  # each calendar once
-    assert out["products"]["TY"] == {"contracts": 150, "listed": 3, "front": "TYZ26"}
+    assert out["products"]["TY"] == {"contracts": 150, "listed": 3, "front": "TYZ26",
+                                     "baskets": {"2026-12": 0, "2027-03": 0, "2027-06": 0}}  # no securities loaded here
     with db.session() as s:
         assert s.scalar(select(func.count()).select_from(FuturesProduct)) == 75
         assert s.scalar(select(func.count()).select_from(FuturesSpec)) == 75
