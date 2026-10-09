@@ -893,8 +893,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "SE"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"SWEDISH KRONA FUT\" futures on CME (SEH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"SWEDISH KRONA FUT\" futures on CME (SEH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"SWEDISH KRONA FUT\" (SEZ6 Curncy, CME)"
 cme_code = "SEK"
 clearing_code = "SE"
 name = "Swedish Krona Futures"
@@ -932,8 +932,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "NO"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"NORWEGIAN KRONE\" futures on CME (NOH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"NORWEGIAN KRONE\" futures on CME (NOH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"NORWEGIAN KRONE\" (NOZ6 Curncy, CME)"
 cme_code = "NOK"
 clearing_code = "UN"
 name = "Norwegian Krone Futures"
@@ -971,8 +971,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "CRE"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro, EUR/USD\" futures on CME (CREH7 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro, EUR/USD\" futures on CME (CREH7 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 2 listed contracts found by ticker, all one future, \"Micro, EUR/USD\" (CREZ6 Curncy, CME)"
 cme_code = "M6E"
 clearing_code = "M6E"
 name = "Micro EUR/USD Futures"
@@ -1005,8 +1005,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "CRP"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro, GBP/USD\" futures on CME (CRPH7 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro, GBP/USD\" futures on CME (CRPH7 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 2 listed contracts found by ticker, all one future, \"Micro, GBP/USD\" (CRPZ6 Curncy, CME)"
 cme_code = "M6B"
 clearing_code = "M6B"
 name = "Micro GBP/USD Futures"
@@ -1039,8 +1039,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "CRD"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro, AUD/USD\" futures on CME (CRDH7 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro, AUD/USD\" futures on CME (CRDH7 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 2 listed contracts found by ticker, all one future, \"Micro, AUD/USD\" (CRDZ6 Curncy, CME)"
 cme_code = "M6A"
 clearing_code = "M6A"
 name = "Micro AUD/USD Futures"
@@ -1073,8 +1073,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "MJY"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro, JPY/USD\" futures on CME (MJYH7 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro, JPY/USD\" futures on CME (MJYH7 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 2 listed contracts found by ticker, all one future, \"Micro, JPY/USD\" (MJYZ6 Curncy, CME)"
 cme_code = "MJY"
 clearing_code = "MJY"
 name = "Micro JPY/USD Futures"
@@ -1107,8 +1107,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "MCD"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro, CAD/USD\" futures on CME (MCDH7 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro, CAD/USD\" futures on CME (MCDH7 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 2 listed contracts found by ticker, all one future, \"Micro, CAD/USD\" (MCDZ6 Curncy, CME)"
 cme_code = "MCD"
 clearing_code = "MCD"
 name = "Micro CAD/USD Futures"
@@ -1141,8 +1141,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "MSS"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro, CHF/USD\" futures on CME (MSSH7 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro, CHF/USD\" futures on CME (MSSH7 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 2 listed contracts found by ticker, all one future, \"Micro, CHF/USD\" (MSSZ6 Curncy, CME)"
 cme_code = "MSF"
 clearing_code = "MSF"
 name = "Micro CHF/USD Futures"
@@ -1175,8 +1175,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "EA"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EUR/AUD X-RAT\" futures on CME (EAH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EUR/AUD X-RAT\" futures on CME (EAH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"EUR/AUD X-RAT\" (EAZ6 Curncy, CME)"
 cme_code = "EAD"
 clearing_code = "CA"
 name = "Euro/Australian Dollar Futures"
@@ -1214,8 +1214,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "CA"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EUR/CAD X-RATE\" futures on CME (CAH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EUR/CAD X-RATE\" futures on CME (CAH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"EUR/CAD X-RATE\" (CAZ6 Curncy, CME)"
 cme_code = "ECD"
 clearing_code = "CC"
 name = "Euro/Canadian Dollar Futures"
@@ -1253,8 +1253,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "EN"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EUR/NOR KRONE\" futures on CME (ENH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EUR/NOR KRONE\" futures on CME (ENH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"EUR/NOR KRONE\" (ENZ6 Curncy, CME)"
 cme_code = "ENK"
 clearing_code = "CN"
 name = "Euro/Norwegian Krone Futures"
@@ -1292,8 +1292,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "EW"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EUR/SWED KRNA\" futures on CME (EWH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EUR/SWED KRNA\" futures on CME (EWH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"EUR/SWED KRNA\" (EWZ6 Curncy, CME)"
 cme_code = "ESK"
 clearing_code = "KE"
 name = "Euro/Swedish Krona Futures"
@@ -1331,8 +1331,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "BYE"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EUR/NZD Future\" futures on CME (BYEH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EUR/NZD Future\" futures on CME (BYEH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"EUR/NZD Future\" (BYEZ6 Curncy, CME)"
 cme_code = "ENZ"
 clearing_code = "ENZ"
 name = "EUR/NZD Futures"
@@ -1370,8 +1370,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "PS"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"GBP/CHF X-RATE\" futures on CME (PSH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"GBP/CHF X-RATE\" futures on CME (PSH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"GBP/CHF X-RATE\" (PSZ6 Curncy, CME)"
 cme_code = "PSF"
 clearing_code = "BF"
 name = "British Pound/Swiss Franc Futures"
@@ -1410,8 +1410,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "PJ"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"GBP/JPY X-RATE\" futures on CME (PJH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"GBP/JPY X-RATE\" futures on CME (PJH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"GBP/JPY X-RATE\" (PJZ6 Curncy, CME)"
 cme_code = "PJY"
 clearing_code = "BY"
 name = "British Pound/Japanese Yen Futures"
@@ -1449,8 +1449,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "BVB"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"GBP AUD Crs R Fut\" futures on CME (BVBH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"GBP AUD Crs R Fut\" futures on CME (BVBH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"GBP AUD Crs R Fut\" (BVBZ6 Curncy, CME)"
 cme_code = "PAD"
 clearing_code = "PAD"
 name = "GBP/AUD Futures"
@@ -1488,8 +1488,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "BVC"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"GBP CAD Crs R Fut\" futures on CME (BVCH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"GBP CAD Crs R Fut\" futures on CME (BVCH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"GBP CAD Crs R Fut\" (BVCZ6 Curncy, CME)"
 cme_code = "PCD"
 clearing_code = "PCD"
 name = "GBP/CAD Futures"
@@ -1527,8 +1527,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "BVD"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"GBP/NOK Future\" futures on CME (BVDH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"GBP/NOK Future\" futures on CME (BVDH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"GBP/NOK Future\" (BVDZ6 Curncy, CME)"
 cme_code = "PNK"
 clearing_code = "PNK"
 name = "GBP/NOK Futures"
@@ -1566,8 +1566,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "BVE"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"GBP/SEK Future\" futures on CME (BVEH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"GBP/SEK Future\" futures on CME (BVEH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"GBP/SEK Future\" (BVEZ6 Curncy, CME)"
 cme_code = "PSK"
 clearing_code = "PSK"
 name = "GBP/SEK Futures"
@@ -1605,8 +1605,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "AJ"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"AUD/JPY X-RATE\" futures on CME (AJH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"AUD/JPY X-RATE\" futures on CME (AJH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"AUD/JPY X-RATE\" (AJZ6 Curncy, CME)"
 cme_code = "AJY"
 clearing_code = "AJ"
 name = "Australian Dollar/Japanese Yen Futures"
@@ -1644,8 +1644,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "AIA"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"NZD/CAD Cross Fut\" futures on CME (AIAH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"NZD/CAD Cross Fut\" futures on CME (AIAH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"NZD/CAD Cross Fut\" (AIAZ6 Curncy, CME)"
 cme_code = "NZC"
 clearing_code = "NZC"
 name = "NZD/CAD Futures"
@@ -1683,8 +1683,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "AIP"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"NZD/JPY Future\" futures on CME (AIPH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"NZD/JPY Future\" futures on CME (AIPH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"NZD/JPY Future\" (AIPZ6 Curncy, CME)"
 cme_code = "NJY"
 clearing_code = "NJY"
 name = "NZD/JPY Futures"
@@ -1722,8 +1722,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "CY"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"CAD/JPY X-RATE\" futures on CME (CYH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"CAD/JPY X-RATE\" futures on CME (CYH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"CAD/JPY X-RATE\" (CYZ6 Curncy, CME)"
 cme_code = "CJY"
 clearing_code = "CY"
 name = "Canadian Dollar/Japanese Yen Futures"
@@ -1761,8 +1761,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "SJ"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"CHF/JPY X-RATE\" futures on CME (SJH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"CHF/JPY X-RATE\" futures on CME (SJH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"CHF/JPY X-RATE\" (SJZ6 Curncy, CME)"
 cme_code = "SJY"
 clearing_code = "SJ"
 name = "Swiss Franc/Japanese Yen Futures"
@@ -1800,8 +1800,8 @@ vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\";
 
 [[products]]
 root = "AAO"
-root_confirmed = false
-root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"NOK/SEK Future\" futures on CME (AAOH8 Curncy); to confirm by ticker on every listed contract (the futures FIGI job)"
+root_confirmed = true
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"NOK/SEK Future\" futures on CME (AAOH8 Curncy); confirmed 2026-10-09 through OpenFIGI (the futures FIGI job): all 6 listed contracts found by ticker, all one future, \"NOK/SEK Future\" (AAOZ6 Curncy, CME)"
 cme_code = "NSK"
 clearing_code = "NSK"
 name = "NOK/SEK Futures"
@@ -1833,6 +1833,123 @@ settlement_procedures = "not shown"
 trading_hours = """
 CME Globex:
 Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "RP"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EURO/GBP FUTURE\" futures on CME (RPZ99 Curncy, Dec 1999; no current contract in the search); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "RP"
+clearing_code = "RP"
+name = "Euro/British Pound Futures"
+kind = "fx"
+currency = "GBP"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["TARGET", "GB", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6, serial_months = 8 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT, 2 business days prior to the 3rd Wednesday of the contract month.\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/cross-rates/euro-fx-british-pound/specs"
+contract_unit = "125,000 euro"
+minimum_price_fluctuation = """
+CME Globex:
+0.00005 per EUR increment = £6.25
+Spreads: 0.000025 per EUR increment = £3.125
+CME ClearPort:
+0.00001 per EUR increment = £1.25"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters and serial contracts listed for 8 months."
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business days prior to the 3rd Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "EUR/GBP Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "RY"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EURO/JPY FUTURE\" futures on CME (RYZ99 Curncy, Dec 1999; no current contract in the search); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "RY"
+clearing_code = "RY"
+name = "Euro/Japanese Yen Futures"
+kind = "fx"
+currency = "JPY"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["TARGET", "JP", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT, 2 business day prior to the 3rd Wednesday of the contract month.\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/cross-rates/euro-fx-japanese-yen/specs"
+contract_unit = "125,000 euro"
+minimum_price_fluctuation = """
+CME Globex:
+0.01 Japanese yen per euro increment = ¥1,250
+Calendar spreads: 0.005 Japanese yen per euro increment = ¥625
+CME ClearPort:
+0.001 Japanese yen per Euro increment = ¥125"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business day prior to the 3rd Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "EUR/JPY Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 6:00 p.m. - 5:00 p.m. (5:00 p.m. - 4:00 p.m. CT) with a 60-minute break each day beginning at 5:00 p.m. (4:00 p.m. CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "RF"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"EURO/CHF FUTURE\" futures on CME (RFZ99 Curncy, Dec 1999; no current contract in the search); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "RF"
+clearing_code = "RF"
+name = "Euro/Swiss Franc Futures"
+kind = "fx"
+currency = "CHF"
+trade_calendars = ["CME-FX", "FED"]
+settle_calendars = ["TARGET", "CH", "FED"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 6 }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT, 2 business day prior to the third Wednesday of the contract month.\""
+settlement_date = "assumed from the majors (6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in a delivery country or is a Chicago or New York bank holiday; this product's rulebook chapter not read yet"
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/fx/cross-rates/euro-fx-swiss-franc/specs"
+contract_unit = "125,000 euro"
+minimum_price_fluctuation = """
+CME Globex:
+0.0001 Swiss francs per euro increment = 12.5 (Swiss francs)
+Calendar spreads: 0.00005 Swiss francs per euro increment = 6.25 (Swiss francs)
+CME ClearPort:
+0.00001 Swiss francs per euro increment = 1.25 (Swiss francs)"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 6 consecutive quarters"
+termination_of_trading = "Trading terminates at 9:16 a.m. CT, 2 business day prior to the third Wednesday of the contract month."
+settlement_method = "Deliverable"
+settlement_procedures = "EUR/CHF Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT (with a 60-minute break each day beginning at 4:00 p.m.CT)
 CME ClearPort:
 Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
 vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"

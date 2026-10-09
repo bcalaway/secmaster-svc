@@ -36,12 +36,12 @@ def run(today=TODAY, now=NOW, source=None, seed=None):
 def test_first_run_builds_everything(migrated_db):
     src = FakeCalendars()
     out = run(source=src)
-    assert out["products_created"] == 45 and out["contracts_created"] > 2000
+    assert out["products_created"] == 48 and out["contracts_created"] > 2000
     assert sorted(src.calls) == sorted(NAMES)  # each calendar once
     assert out["products"]["TY"] == {"contracts": 150, "listed": 3, "front": "TYZ26"}
     with db.session() as s:
-        assert s.scalar(select(func.count()).select_from(FuturesProduct)) == 45
-        assert s.scalar(select(func.count()).select_from(FuturesSpec)) == 45
+        assert s.scalar(select(func.count()).select_from(FuturesProduct)) == 48
+        assert s.scalar(select(func.count()).select_from(FuturesSpec)) == 48
         runs = list(s.scalars(select(FuturesRun)))
         assert [r.outcome for r in runs] == ["ok"]
 

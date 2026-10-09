@@ -11,6 +11,8 @@ from tests.test_futures_load import run as generate
 
 MISSING = {"warning": "No identifier found."}
 DEC26 = date(2026, 12, 1)
+# Contracts listed on 2026-10-08 under seeds/futures.toml (the generator on the test calendars).
+LISTED = 524
 
 
 def row(ticker, sector="Comdty", figi="BBG000000001", name="US 10YR NOTE (CBT)Dec26"):
@@ -92,7 +94,7 @@ def test_run_stores_figis_and_tickers(migrated_db):
     generate()
     fake = FakeFigi(roots={"SER": "SER1"}, unknown={"NV"})
     out = ask(fake)
-    assert out["asked"] == 500 and len(fake.calls[0]) == 3 * 500
+    assert out["asked"] == LISTED and len(fake.calls[0]) == 3 * LISTED
     assert out["products"]["TY"]["confirmed"] == 3 and out["products"]["TY"]["via"] == {"both": 3}
     assert out["products"]["SER"]["mismatch"] == 25 and out["products"]["SER"]["bloomberg_roots"] == ["SER1"]
     assert out["products"]["NV"]["not_found"] == 6
@@ -119,7 +121,7 @@ def test_confirmed_contracts_arent_asked_again(migrated_db):
     out = ask(fake)
     assert out["asked"] == 0 and out["tickers_added"] == out["tickers_changed"] == 0
     with db.session() as s:
-        assert s.scalar(select(func.count()).select_from(FuturesFigiLookup)) == 500
+        assert s.scalar(select(func.count()).select_from(FuturesFigiLookup)) == LISTED
 
 
 def test_new_listing_and_expiry(migrated_db):
@@ -139,7 +141,7 @@ def test_new_listing_and_expiry(migrated_db):
 def test_without_a_key_asks_a_hundred(migrated_db):
     generate()
     out = ask(FakeFigi(), key=None)
-    assert out["asked"] == 100 and out["left"] == 400 and not out["with_key"]
+    assert out["asked"] == 100 and out["left"] == LISTED - 100 and not out["with_key"]
 
 
 def test_job_dag_report_and_metrics(migrated_db, monkeypatch):
@@ -156,7 +158,7 @@ def test_job_dag_report_and_metrics(migrated_db, monkeypatch):
     auth = {"Authorization": "Bearer t"}
     assert client.post("/jobs/futures-figi").status_code == 401
     out = client.post("/jobs/futures-figi", headers=auth).json()
-    assert out["confirmed"] == 494
+    assert out["confirmed"] == LISTED - 6
     body = client.get("/metrics").text
     assert 'secmaster_svc_futures_figi_lookups{product="TY",outcome="confirmed"} 3' in body
     assert 'secmaster_svc_futures_figi_lookups{product="NV",outcome="not_found"} 6' in body
@@ -218,7 +220,7 @@ def test_a_newer_check_asks_again_and_retires_what_it_got_wrong(migrated_db):
             r.detail = {**(r.detail or {}), "check": 1}
         s.commit()
     out = ask(FakeFigi(unknown={"NV"}))
-    assert out["asked"] == 500 and out["retired_count"] == 500 and len(out["retired"]) == 20  # listed to 20
+    assert out["asked"] == LISTED and out["retired_count"] == LISTED and len(out["retired"]) == 20  # listed to 20
     with db.session() as s:
         got = {i["scheme"]: i["value"] for i in securities.get(s, name="TYZ26")["identifiers"]}
         assert got["FIGI"].startswith("BBG") and got["TICKER"] == "TYZ6 Comdty"

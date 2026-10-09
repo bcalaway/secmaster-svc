@@ -43,7 +43,7 @@ def contract(seed, root, year, month, today=TODAY):
 
 def test_seed_parses_every_product(seed):
     roots = [p.product.root for p in seed.products]
-    assert len(roots) == 45 and len(set(roots)) == 45  # the main 20 and step 2c's 25 FX products
+    assert len(roots) == 48 and len(set(roots)) == 48  # the main 20 and step 2c's 28 FX products
     assert {"TU", "3Y", "FV", "TY", "UXY", "TWEA", "US", "WN", "FF", "SER", "SFR", "TZR",
             "EC", "JY", "BP", "AD", "CD", "SF", "PE", "NV"} <= set(roots)
     for p in seed.products:

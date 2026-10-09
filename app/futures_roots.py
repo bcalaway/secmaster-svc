@@ -7,13 +7,14 @@ for rates) on its Bloomberg exchange (CME or CBT, sent as OpenFIGI's exchCode fi
 found are grouped by root (the ticker without its month and year) and name (without its month). The
 job's answer lists the groups per candidate, latest contract month first (a product CME still lists
 before one it retired), with that latest contract as the example, for a person to read: a root goes
-into seeds/futures.toml, in a reviewed PR, only once its name is plainly that product. Nothing is stored. Run by hand (the DAG
-secmaster_svc__futures_roots, POST /jobs/futures-roots); `only` limits it to some CME codes.
+into seeds/futures.toml, in a reviewed PR, only once its name is plainly that product. Nothing is stored.
+Run by hand (the DAG secmaster_svc__futures_roots, POST /jobs/futures-roots); `only` limits it to some CME codes.
 """
 
 import re
 import tomllib
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 
 from app import figi
@@ -27,9 +28,12 @@ NAME_MONTH = re.compile(r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)(\d{2
 
 
 def _month(name: str | None) -> tuple[int, int] | None:
-    """(year, month) from the end of a future's name ("... Dec26"), or None."""
+    """(year, month) from the end of a future's name ("... Dec26"; "Dec99" is 1999), or None."""
     m = NAME_MONTH.search((name or "").strip())
-    return (2000 + int(m[2]), MONTHS[m[1]]) if m else None
+    if not m:
+        return None
+    year = 2000 + int(m[2])
+    return (year if year <= datetime.now(UTC).year + 30 else year - 100, MONTHS[m[1]])
 
 
 class CandidateError(ValueError):
