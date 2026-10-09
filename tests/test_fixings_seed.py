@@ -33,4 +33,4 @@ def test_applies_once(migrated_db):
         sofr = s.scalar(select(InstrumentName.sec_id).where(InstrumentName.name == "SOFR"))
         assert s.get(Instrument, sofr).type == "rate_fixing"
         assert s.scalar(select(Identifier.value).where(Identifier.sec_id == sofr, Identifier.scheme == "NYFED-SOFR")) == "SOFR"
-    assert first["fixings"]["created"] == 68 and second["fixings"]["created"] == 0
+    assert first["fixings"]["created"] == 72 and second["fixings"]["created"] == 0

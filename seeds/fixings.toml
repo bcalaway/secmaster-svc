@@ -222,7 +222,8 @@ type = "fx_fixing"
 currency = "VEB"
 calendar = "FED"
 description = "H.10 noon buying rate in New York: Venezuelan bolivar per US dollar"
-identifiers = { FRB-H10-RATES = "RXI_N.B.VE" }
+# The DDP's series is RXI_N.B.VES (its Currency row says VEB), one series across the redenominations.
+identifiers = { FRB-H10-RATES = "RXI_N.B.VES" }
 
 [[instruments]]
 short_name = "USD-BROAD-H10"
@@ -607,3 +608,42 @@ calendar = "TARGET"
 country = "EU"
 description = "ECB euro reference rate, 14:15 CET: South African rand per euro"
 identifiers = { ECB-EXR = "EXR.D.ZAR.EUR.SP00.A" }
+
+# The ECB's indicative rates (OBS_COM "Indicative rate", titled "Indicative exchange rate, Euro/<currency>,
+# 2:15 pm (C.E.T.)"): the same series in the same dataflow as the reference rates, but not reference rates.
+
+[[instruments]]
+short_name = "EURARS-ECB"
+type = "fx_fixing"
+currency = "ARS"
+calendar = "TARGET"
+country = "EU"
+description = "ECB indicative rate, 14:15 CET: Argentine peso per euro"
+identifiers = { ECB-EXR = "EXR.D.ARS.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURDZD-ECB"
+type = "fx_fixing"
+currency = "DZD"
+calendar = "TARGET"
+country = "EU"
+description = "ECB indicative rate, 14:15 CET: Algerian dinar per euro"
+identifiers = { ECB-EXR = "EXR.D.DZD.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURMAD-ECB"
+type = "fx_fixing"
+currency = "MAD"
+calendar = "TARGET"
+country = "EU"
+description = "ECB indicative rate, 14:15 CET: Moroccan dirham per euro"
+identifiers = { ECB-EXR = "EXR.D.MAD.EUR.SP00.A" }
+
+[[instruments]]
+short_name = "EURTWD-ECB"
+type = "fx_fixing"
+currency = "TWD"
+calendar = "TARGET"
+country = "EU"
+description = "ECB indicative rate, 14:15 CET: New Taiwan dollar per euro"
+identifiers = { ECB-EXR = "EXR.D.TWD.EUR.SP00.A" }
