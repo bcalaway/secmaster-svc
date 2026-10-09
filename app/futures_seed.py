@@ -24,6 +24,7 @@ SPEC_FIELDS = ("contract_unit", "minimum_price_fluctuation", "listed_contracts",
 REQUIRED_RULES = {
     "treasury": {"last_trade_date", "first_intention_date", "first_notice_date", "first_delivery_date",
                  "last_delivery_date"},
+    "treasury_cash": {"last_trade_date"},
     "stir": {"last_trade_date"},
     "fx": {"last_trade_date", "settlement_date"},
 }

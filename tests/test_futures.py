@@ -43,7 +43,7 @@ def contract(seed, root, year, month, today=TODAY):
 
 def test_seed_parses_every_product(seed):
     roots = [p.product.root for p in seed.products]
-    assert len(roots) == 48 and len(set(roots)) == 48  # the main 20 and step 2c's 28 FX products
+    assert len(roots) == 54 and len(set(roots)) == 54  # the main 20 and step 2c's 28 FX and 6 rates products
     assert {"TU", "3Y", "FV", "TY", "UXY", "TWEA", "US", "WN", "FF", "SER", "SFR", "TZR",
             "EC", "JY", "BP", "AD", "CD", "SF", "PE", "NV"} <= set(roots)
     for p in seed.products:
@@ -194,3 +194,14 @@ def test_seed_rejects_unknown_rule():
     body = futures_seed.PATH.read_text().replace('"last_bd_minus:7"', '"last_bd_minus:x"', 1)
     with pytest.raises(futures_seed.FuturesSeedError, match="whole number"):
         futures_seed.parse(body.encode())
+
+
+def test_step_2c_cash_settled_treasury(seed):
+    """The micro Ultras stop two business days before the contract month; the yield futures on its last."""
+    d = contract(seed, "UMT", 2026, 12)
+    assert d.contract.short_name == "UMTZ26" and d.contract.cme_symbol == "MTNZ6"
+    assert d.dates["last_trade_date"] == date(2026, 11, 27)  # Nov 30 and 27 are the 2 business days before Dec 1
+    assert d.dates["first_notice_date"] is None and d.status == "listed"
+    got = f.generate(product(seed, "YQT"), cals(), TODAY)
+    assert [x.contract.short_name for x in got.contracts if x.listed_today] == ["YQTV26", "YQTX26"]
+    assert next(x for x in got.contracts if x.contract.short_name == "YQTV26").dates["last_trade_date"] == date(2026, 10, 30)

@@ -11,6 +11,8 @@
 #   the delivery country's and the Fed's to deliver (CME rulebook, chapters 251-261).
 #   A cross (step 2c, from the products at the end) delivers where both its currencies and New York are
 #   open: both countries' calendars and the Fed's, assumed from the majors until its chapter is read.
+# - `kind`: treasury (deliverable: intention, notice and delivery days), treasury_cash (the micro Ultras and
+#   the yield futures, settled in cash at the last trade), stir or fx.
 # - `listing` is the cycle on CME's spec page: `quarterly` consecutive March-cycle contracts, `monthly`
 #   consecutive months, `serial_nearest` non-quarterly months, or `serial_months`, the non-quarterly
 #   months within that many months (an interpretation of "serial contracts listed for 16 months", to
@@ -1950,6 +1952,212 @@ settlement_procedures = "EUR/CHF Settlement Procedures (link)"
 trading_hours = """
 CME Globex:
 Sunday - Friday 5:00 p.m. - 4:00 p.m. CT (with a 60-minute break each day beginning at 4:00 p.m.CT)
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "UMT"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro Ult 10yr Fut\" futures on CBT (UMTH7 Comdty); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "MTN"
+clearing_code = "MTN"
+name = "Micro Ultra 10-Year U.S. Treasury Note Futures"
+kind = "treasury_cash"
+currency = "USD"
+trade_calendars = ["CME-IR"]
+settle_calendars = ["CME-IR"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 2 }
+rules = { last_trade_date = "first_bd_minus:2" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 2:00 p.m. CT, 2 business days prior to the contract month.\""
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/micro-ultra-10-year-us-treasury-note.contractSpecs.html"
+contract_unit = "Face value at maturity of $10,000"
+minimum_price_fluctuation = """
+Outright:
+1/2 of 1/32 of one point (0.015625) = $1.5625
+CALENDAR SPREAD
+1/4 of 1/32 of one point (0.0078125) = $.78125"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, and Dec) listed for 2 consecutive quarters."
+termination_of_trading = "Trading terminates at 2:00 p.m. CT, 2 business days prior to the contract month."
+settlement_method = "Financially Settled"
+settlement_procedures = "Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT (6:00 p.m. - 5:00 p.m.ET).  Monday - Thursday 4:00 p.m. - 5:00 p.m. CT (5:00 p.m. - 6:00 p.m. ET) daily maintenance period.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; Overview page has no vendor-codes table)"
+
+[[products]]
+root = "UMW"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"Micro Ult Bond Fut\" futures on CBT (UMWH7 Comdty); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "MWN"
+clearing_code = "MWN"
+name = "Micro Ultra U.S. Treasury Bond Futures"
+kind = "treasury_cash"
+currency = "USD"
+trade_calendars = ["CME-IR"]
+settle_calendars = ["CME-IR"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { quarterly = 2 }
+rules = { last_trade_date = "first_bd_minus:2" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates at 2:00 p.m. CT, 2 business days prior to the contract month.\""
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/micro-ultra-us-treasury-bond.contractSpecs.html"
+contract_unit = "Face value at maturity of $10,000"
+minimum_price_fluctuation = """
+Outright:
+1/32 of a point (0.03125) = $3.125
+CALENDAR SPREAD
+1/4 of 1/32 of a point (0.0078125) = $.78125"""
+listed_contracts = "Quarterly contracts (Mar, Jun, Sep, Dec) listed for 2 consecutive quarters"
+termination_of_trading = "Trading terminates at 2:00 p.m. CT, 2 business days prior to the contract month."
+settlement_method = "Financially Settled"
+settlement_procedures = "Treasury Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT (6:00 p.m. - 5:00 p.m.ET).  Monday - Thursday 4:00 p.m. - 5:00 p.m. CT (5:00 p.m. - 6:00 p.m. ET) daily maintenance period.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; Overview page has no vendor-codes table)"
+
+[[products]]
+root = "YQI"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"2yr Yld Fut\" futures on CBT (YQIV6 Comdty); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "2YY"
+clearing_code = "2YY"
+name = "2-Year Yield Futures"
+kind = "treasury_cash"
+currency = "USD"
+trade_calendars = ["CME-IR"]
+settle_calendars = ["CME-IR"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { monthly = 2 }
+rules = { last_trade_date = "last_bd" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates on the last business day of the contract month\""
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/micro-2-year-yield.contractSpecs.html"
+contract_unit = "1,000 index points"
+minimum_price_fluctuation = "0.001 Index points (1/10th basis point per annum) = $1.00"
+listed_contracts = "Monthly contracts listed for 2 consecutive months"
+termination_of_trading = "Trading terminates on the last business day of the contract month"
+settlement_method = "Financially Settled"
+settlement_procedures = "Treasury Yield Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday 5:00 p.m. - Friday - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "YQE"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"5yr Yld Fut\" futures on CBT (YQEV6 Comdty); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "5YY"
+clearing_code = "5YY"
+name = "5-Year Yield Futures"
+kind = "treasury_cash"
+currency = "USD"
+trade_calendars = ["CME-IR"]
+settle_calendars = ["CME-IR"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { monthly = 2 }
+rules = { last_trade_date = "last_bd" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates on the last business day of the contract month\""
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/micro-5-year-yield.contractSpecs.html"
+contract_unit = "1,000 index points"
+minimum_price_fluctuation = "0.001 Index points (1/10th basis point per annum) = $1.00"
+listed_contracts = "Monthly contracts listed for 2 consecutive months"
+termination_of_trading = "Trading terminates on the last business day of the contract month"
+settlement_method = "Financially Settled"
+settlement_procedures = "Treasury Yield Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday 5:00 p.m. - Friday - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "YQT"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"10yr Yld Fut\" futures on CBT (YQTV6 Comdty); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "10Y"
+clearing_code = "10Y"
+name = "10-Year Yield Futures"
+kind = "treasury_cash"
+currency = "USD"
+trade_calendars = ["CME-IR"]
+settle_calendars = ["CME-IR"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { monthly = 2 }
+rules = { last_trade_date = "last_bd" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates on the last business day of the contract month\""
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/micro-10-year-yield.contractSpecs.html"
+contract_unit = "1,000 index points"
+minimum_price_fluctuation = "0.001 Index points (1/10th basis point per annum) = $1.00"
+listed_contracts = "Monthly contracts listed for 2 consecutive months"
+termination_of_trading = "Trading terminates on the last business day of the contract month"
+settlement_method = "Financially Settled"
+settlement_procedures = "Treasury Yield Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday 5:00 p.m. - Friday - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m. CT
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"
+
+[[products]]
+root = "YQB"
+root_confirmed = false
+root_source = "OpenFIGI search (secmaster-svc's futures root search, 2026-10-09): Bloomberg's \"30yr Yld Fut\" futures on CBT (YQBV6 Comdty); to confirm by ticker on every listed contract (the futures FIGI job)"
+cme_code = "30Y"
+clearing_code = "30Y"
+name = "30-Year Yield Futures"
+kind = "treasury_cash"
+currency = "USD"
+trade_calendars = ["CME-IR"]
+settle_calendars = ["CME-IR"]
+generics = 2
+history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+listing = { monthly = 2 }
+rules = { last_trade_date = "last_bd" }
+[products.rule_sources]
+last_trade_date = "spec page, Termination of trading: \"Trading terminates on the last business day of the contract month\""
+[[products.specs]]
+valid_from = 2026-10-08
+source = "https://www.cmegroup.com/markets/interest-rates/us-treasury/micro-30-year-yield.contractSpecs.html"
+contract_unit = "1,000 index points"
+minimum_price_fluctuation = "0.001 Index points (1/10th basis point per annum) = $1.00"
+listed_contracts = "Monthly contracts listed for 2 consecutive months"
+termination_of_trading = "Trading terminates on the last business day of the contract month"
+settlement_method = "Financially Settled"
+settlement_procedures = "Treasury Yield Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday 5:00 p.m. - Friday - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m. CT
 CME ClearPort:
 Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday from 5:45 p.m. - 6:00 p.m. CT"""
 vendor_codes = "not shown (specs page links to \"Quote Vendor Symbols Listing\"; product has no Overview tab)"

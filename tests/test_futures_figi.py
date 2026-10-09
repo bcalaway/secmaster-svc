@@ -12,7 +12,7 @@ from tests.test_futures_load import run as generate
 MISSING = {"warning": "No identifier found."}
 DEC26 = date(2026, 12, 1)
 # Contracts listed on 2026-10-08 under seeds/futures.toml (the generator on the test calendars).
-LISTED = 524
+LISTED = 536
 
 
 def row(ticker, sector="Comdty", figi="BBG000000001", name="US 10YR NOTE (CBT)Dec26"):
