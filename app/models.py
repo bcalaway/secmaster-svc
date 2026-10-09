@@ -428,7 +428,8 @@ class FuturesContract(Base):
     One current row per contract (superseded_at null); a contract is its product and contract month.
     `rules` says how each date was derived (rule and calendars), or why it's unknown. `status` is the
     contract's own: listed, delivery (a Treasury contract between first intention day and last delivery
-    day) or expired; the instrument's status is active or expired.
+    day), expired, or withdrawn (generated once, but a corrected rule doesn't list it); the instrument's
+    status is active, expired or withdrawn.
     """
 
     __tablename__ = "futures_contract"

@@ -52,6 +52,7 @@ class ProductSeed:
     history_source: str
     rule_sources: dict
     specs: tuple[Spec, ...]
+    listing_source: str = "spec page, Listed contracts"
 
     @property
     def info(self) -> dict:
@@ -61,7 +62,7 @@ class ProductSeed:
             "root": p.root, "root_confirmed": self.root_confirmed, "root_source": self.root_source,
             "cme_code": p.cme_code, "clearing_code": self.clearing_code, "name": self.name, "kind": p.kind,
             "trade_calendars": list(p.trade_calendars), "settle_calendars": list(p.settle_calendars),
-            "listing": {k: v for k, v in vars(p.listing).items() if v},
+            "listing": {k: v for k, v in vars(p.listing).items() if v}, "listing_source": self.listing_source,
             "rules": dict(p.rules), "rule_sources": dict(self.rule_sources), "generics": p.generics,
             "history_from": p.history_from.isoformat() if p.history_from else None,
             "history_source": self.history_source,
@@ -166,6 +167,8 @@ def parse(body: bytes) -> FuturesSeed:
                 check_rule(f, str(name))
             except RuleError as e:
                 raise FuturesSeedError(f"{where}: {e}") from None
+        if any(str(n).startswith("ref_end_minus") for n in rules.values()) and "reference" not in rules:
+            raise FuturesSeedError(f"{where}: ref_end_minus needs a reference period")
         sources = item.get("rule_sources") or {}
         if set(sources) != set(rules) or not all(isinstance(v, str) and v.strip() for v in sources.values()):
             raise FuturesSeedError(f"{where}: rule_sources must say where every rule comes from")
@@ -185,7 +188,8 @@ def parse(body: bytes) -> FuturesSeed:
             product=product, name=_text(item, "name", where), clearing_code=_text(item, "clearing_code", where),
             currency=_text(item, "currency", where), root_confirmed=bool(item.get("root_confirmed", False)),
             root_source=_text(item, "root_source", where), history_source=_text(item, "history_source", where),
-            rule_sources={k: str(v) for k, v in sources.items()}, specs=_specs(item.get("specs"), where)))
+            rule_sources={k: str(v) for k, v in sources.items()}, specs=_specs(item.get("specs"), where),
+            listing_source=str(item.get("listing_source") or "spec page, Listed contracts")))
     if not products:
         raise FuturesSeedError("futures seed: no products")
     return FuturesSeed(hashlib.sha256(body).hexdigest(), read_on, tuple(products))

@@ -18,8 +18,13 @@ recorded with the date says exactly how it was derived:
 - `third_wed_next_good`: the 3rd Wednesday, or the next day that is a business
   day in every settlement calendar (FX delivery).
 - `ltd_plus:N`: N business days after the last trading day.
-- Reference periods: `month` (the calendar month) and `imm_quarter` (3rd
-  Wednesday of the third month before to the contract month's 3rd Wednesday).
+- `ref_end_minus:N`: N business days before the reference period's end
+  (CME's Three-Month SOFR: the business day before the 3rd Wednesday of the
+  month its reference quarter ends in).
+- Reference periods: `month` (the calendar month) and `imm_quarter` (the
+  contract month's 3rd Wednesday to the 3rd Wednesday three months later: CME
+  names a Three-Month SOFR contract by the month its reference quarter starts,
+  so SR3U6 runs from Sep 16 to Dec 16, 2026 and still trades in October).
   Both ends are stored with the end excluded, as CME's rules state them.
 
 A rule counts business days in the product's trade calendars (or settlement
@@ -231,8 +236,8 @@ def _rule(name: str) -> tuple[str, int]:
 
 
 BASES = {"last_bd", "first_bd", "last_bd_minus", "first_bd_minus", "last_bd_plus", "third_wed_minus",
-         "monday_before_third_wed", "third_wed_next_good", "ltd_plus"}
-NEEDS_ARG = {"last_bd_minus", "first_bd_minus", "last_bd_plus", "third_wed_minus", "ltd_plus"}
+         "monday_before_third_wed", "third_wed_next_good", "ltd_plus", "ref_end_minus"}
+NEEDS_ARG = {"last_bd_minus", "first_bd_minus", "last_bd_plus", "third_wed_minus", "ltd_plus", "ref_end_minus"}
 REFERENCES = {"month", "imm_quarter"}
 
 
@@ -250,8 +255,13 @@ def check_rule(field_: str, name: str) -> None:
         raise RuleError("last_trade_date can't count from itself")
 
 
-def _apply_rule(name: str, month: date, cals: Calendars, names, ltd: date | None) -> date:
+def _apply_rule(name: str, month: date, cals: Calendars, names, ltd: date | None,
+                ref_end: date | None = None) -> date:
     base, n = _rule(name)
+    if base == "ref_end_minus":
+        if ref_end is None:
+            raise RuleError(f"rule {name!r} needs a reference period")
+        return _step(cals, names, ref_end, -n)
     if base == "last_bd":
         return _on_or_before(cals, names, _month_end(month))
     if base == "first_bd":
@@ -282,25 +292,25 @@ def dates_for(c: Contract, cals: Calendars) -> Dated:
     p = c.product
     dates: dict[str, date | None] = dict.fromkeys(DATE_FIELDS)
     rules: dict[str, str] = {}
+    ref = p.rules.get("reference")
+    if ref == "month":
+        dates["reference_start"], dates["reference_end"] = c.month, _add_months(c.month, 1)
+        rules["reference_start"] = rules["reference_end"] = "month (calendar month; end excluded)"
+    elif ref == "imm_quarter":
+        dates["reference_start"] = third_wednesday(c.month)
+        dates["reference_end"] = third_wednesday(_add_months(c.month, 3))
+        rules["reference_start"] = rules["reference_end"] = (
+            "imm_quarter (the contract month's 3rd Wednesday to the 3rd Wednesday three months later; end excluded)")
     ltd_rule = p.rules["last_trade_date"]
-    dates["last_trade_date"] = _apply_rule(ltd_rule, c.month, cals, p.trade_calendars, None)
+    dates["last_trade_date"] = _apply_rule(ltd_rule, c.month, cals, p.trade_calendars, None, dates["reference_end"])
     rules["last_trade_date"] = _describe(ltd_rule, p.trade_calendars)
     for f in TRADE_RULES[1:] + SETTLE_RULES:
         name = p.rules.get(f)
         if not name:
             continue
         names = p.trade_calendars if f in TRADE_RULES else p.settle_calendars
-        dates[f] = _apply_rule(name, c.month, cals, names, dates["last_trade_date"])
+        dates[f] = _apply_rule(name, c.month, cals, names, dates["last_trade_date"], dates["reference_end"])
         rules[f] = _describe(name, names)
-    ref = p.rules.get("reference")
-    if ref == "month":
-        dates["reference_start"], dates["reference_end"] = c.month, _add_months(c.month, 1)
-        rules["reference_start"] = rules["reference_end"] = "month (calendar month; end excluded)"
-    elif ref == "imm_quarter":
-        dates["reference_start"] = third_wednesday(_add_months(c.month, -3))
-        dates["reference_end"] = third_wednesday(c.month)
-        rules["reference_start"] = rules["reference_end"] = (
-            "imm_quarter (3rd Wednesday of the third month before to the contract month's 3rd Wednesday; end excluded)")
     return Dated(c, dates, rules)
 
 

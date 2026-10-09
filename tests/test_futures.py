@@ -114,19 +114,30 @@ def test_fed_funds_monthly(seed):
 
 
 def test_three_month_sofr(seed):
-    d = contract(seed, "SFR", 2026, 12)
+    # CME names a contract by the month its reference quarter starts: SR3U6 runs Sep 16 to Dec 16, 2026.
+    d = contract(seed, "SFR", 2026, 9)
     assert d.dates["last_trade_date"] == date(2026, 12, 15)
     assert (d.dates["reference_start"], d.dates["reference_end"]) == (date(2026, 9, 16), date(2026, 12, 16))
+    d = contract(seed, "SFR", 2026, 12)
+    assert d.dates["last_trade_date"] == date(2027, 3, 16)
     got = f.generate(product(seed, "SFR"), cals(), TODAY)
     listed = [x for x in got.contracts if x.listed_today]
-    assert sum(x.contract.quarterly for x in listed) == 39 and sum(not x.contract.quarterly for x in listed) == 6
+    assert sum(x.contract.quarterly for x in listed) == 39
+    # CME's quotes page on 2026-10-08, to Mar 2029 as shown.
+    assert [x.contract.cme_symbol for x in listed][:18] == [
+        "SR3N6", "SR3Q6", "SR3U6", "SR3V6", "SR3X6", "SR3Z6", "SR3F7", "SR3G7", "SR3H7", "SR3J7", "SR3M7", "SR3U7",
+        "SR3Z7", "SR3H8", "SR3M8", "SR3U8", "SR3Z8", "SR3H9"]
     # Serial months are kept only while listed; quarterly history goes back to the launch.
     assert all(x.contract.quarterly for x in got.contracts if not x.listed_today)
-    assert got.contracts[0].contract.short_name == "SFRM18"
+    assert got.contracts[0].contract.short_name == "SFRH18"
 
 
 def test_t_bill_last_trade_is_the_monday(seed):
     assert contract(seed, "TZR", 2026, 12).dates["last_trade_date"] == date(2026, 12, 14)
+    got = f.generate(product(seed, "TZR"), cals(), TODAY)
+    # CME's quotes page on 2026-10-08: three serials and four quarterlies.
+    assert [x.contract.cme_symbol for x in got.contracts if x.listed_today] == [
+        "TBF3V6", "TBF3X6", "TBF3Z6", "TBF3F7", "TBF3H7", "TBF3M7", "TBF3U7"]
 
 
 def test_fx_dates(seed):
