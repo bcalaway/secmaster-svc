@@ -22,7 +22,8 @@ TODAY = date(2026, 10, 8)
 
 def cals() -> f.Calendars:
     us = frozenset(US_2026)
-    names = ("CME-IR", "CME-FX", "FED", "TARGET", "JP", "GB", "AU", "CA", "CH", "MX", "NZ", "NO", "SE")
+    names = ("CME-IR", "CME-FX", "FED", "TARGET", "JP", "GB", "AU", "CA", "CH", "MX", "NZ", "NO", "SE",
+         "BR", "CL", "CN", "CZ", "HK", "HU", "ID", "IL", "IN", "KR", "PL", "SG", "TH", "TR", "ZA")
     closed = {n: us for n in names} | {"TARGET": frozenset(TARGET_2026)}
     return f.Calendars(closed, dict.fromkeys(names, (1990, 2100)))
 
@@ -43,7 +44,7 @@ def contract(seed, root, year, month, today=TODAY):
 
 def test_seed_parses_every_product(seed):
     roots = [p.product.root for p in seed.products]
-    assert len(roots) == 54 and len(set(roots)) == 54  # the main 20 and step 2c's 28 FX and 6 rates products
+    assert len(roots) == 75 and len(set(roots)) == 75  # the main 20, step 2c's 28 FX and 6 rates, step 2d's 21 EM
     assert {"TU", "3Y", "FV", "TY", "UXY", "TWEA", "US", "WN", "FF", "SER", "SFR", "TZR",
             "EC", "JY", "BP", "AD", "CD", "SF", "PE", "NV"} <= set(roots)
     for p in seed.products:
@@ -286,3 +287,20 @@ def test_rule_calendars_are_the_products_calendars(seed):
 def test_bad_emerging_market_rules(rule):
     with pytest.raises(f.RuleError):
         f.check_rule("last_trade_date", rule)
+
+
+def test_monthly_then_quarterly_listing(seed):
+    # 4 consecutive months, then the next 4 March-cycle months (SGD/USD and the other EM contracts' cycle).
+    p = product(seed, "PE")
+    q = f.Product(**{**p.__dict__, "listing": f.Listing(monthly=4, quarterly_after=4), "generics": 2})
+    got = sorted(d.contract.month for d in f.generate(q, cals(), TODAY).contracts if d.listed_today)
+    assert got == [date(2026, 10, 1), date(2026, 11, 1), date(2026, 12, 1), date(2027, 1, 1),
+                   date(2027, 3, 1), date(2027, 6, 1), date(2027, 9, 1), date(2027, 12, 1)]
+
+
+@pytest.mark.parametrize("bad", [
+    '{ quarterly = 4, quarterly_after = 2 }', '{ monthly = 4, serial_months = 2 }'])
+def test_seed_rejects_bad_listings(bad):
+    text = futures_seed.PATH.read_text().replace("listing = { quarterly = 20, serial_months = 16 }", f"listing = {bad}", 1)
+    with pytest.raises(futures_seed.FuturesSeedError, match="listing|monthly"):
+        futures_seed.parse(text.encode())

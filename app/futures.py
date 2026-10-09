@@ -47,7 +47,9 @@ local market's business days; several are joined with `+`.
 as CME's spec page states it (`quarterly`: that many consecutive March-cycle
 contracts; `monthly`: that many consecutive months; `serial_nearest`: the
 nearest that many non-quarterly months; `serial_months`: the non-quarterly
-months within that many months). A contract's first trading day is derived
+months within that many months; `monthly` with `quarterly_after`: that many
+consecutive months, then that many March-cycle months after them, as most
+emerging-market contracts list). A contract's first trading day is derived
 only while it's listed today: the first business day it has been listed
 since, under today's cycle. Earlier cycles aren't recorded, so an expired
 contract's first trading day is unknown (None), and serial months are
@@ -101,6 +103,7 @@ class Listing:
     monthly: int = 0
     serial_nearest: int = 0
     serial_months: int = 0
+    quarterly_after: int = 0  # with monthly: that many March-cycle months after the consecutive ones
 
     @property
     def has_serials(self) -> bool:
@@ -373,7 +376,8 @@ def listed_on(p: Product, ordered: list[Dated], ltds: list[date], day: date) -> 
     alive = [d for d in ordered[start:] if d.last_trade >= day]
     L = p.listing
     if L.monthly:
-        return alive[:L.monthly]
+        months = alive[:L.monthly]
+        return months + [d for d in alive[L.monthly:] if d.contract.quarterly][:L.quarterly_after]
     out = [d for d in alive if d.contract.quarterly][:L.quarterly]
     serials = [d for d in alive if not d.contract.quarterly]
     if L.serial_nearest:
