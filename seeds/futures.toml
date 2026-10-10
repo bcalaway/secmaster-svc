@@ -327,7 +327,7 @@ first_notice_date = "CBOT Treasury delivery practice: notice day is the business
 first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
 last_delivery_date = "spec page, Last delivery date: last business day of the delivery month"
 [products.basket]
-source = "CBOT 25 (read 2026-10-09): remaining term greater than or equal to 19 years 2 months but less than 19 years 11 months, from the first day of the contract month; the Exchange may exclude any new issue. CME's conversion factor table of 2026-10-08 lists the 30-year bonds issued through 2018-05 (912810RQ3 to 912810SC3) but none issued from 2018-08 (912810SD1 on), which reach the window from the 2028-12 contract: so 30-year bonds issued from 2018-08-01 are excluded here, inferred from the table; the notice behind it is still to find"
+source = "CBOT 25 (read 2026-10-09): remaining term greater than or equal to 19 years 2 months but less than 19 years 11 months, from the first day of the contract month; the Exchange may exclude any new issue. CME's conversion factor table of 2026-10-08 lists the 30-year bonds issued through 2018-05 (912810RQ3 to 912810SC3) but none issued from 2018-08 (912810SD1 on), which reach the window from the 2028-12 contract: so 30-year bonds issued from 2018-08-01 are excluded here, inferred from the table. No CME notice of that cut-off was found (2026-10-10): the grade's own text is SER 8978 (2022-04-22, https://www.cmegroup.com/content/dam/cmegroup/notices/ser/2022/04/SER-8978.pdf), Rule 25101.A from the September 2022 contract, 'a remaining term to maturity of greater than or equal to 19 years 2 months; but less than 19 years 11 months', with no original-term limit and 'the right to exclude any new issue from the contract grade or to further limit outstanding issues'. The cut-off changes no contract listed on 2026-10-10 (912810SD1 first reaches the window with the 2028-12 contract), so it stays an inference to recheck against CME's table when the 2028-12 contract lists"
 remaining_min_months = 230
 remaining_max_months = 239
 max_inclusive = false
@@ -2278,7 +2278,7 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { monthly = 60 }
 rules = { last_trade_date = "prev_last_bd@BR" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:15 a.m. CT on the last business day of the month prior to the contract month, on which the Central Bank of Brazil is scheduled to publish its final end-of-month (EOM), \"Commercial exchange rate for Brazilian reais per U.S. dollar for cash delivery\" (PTAX rate).\""
+last_trade_date = "CME rulebook chapter 257, rule 25701.G (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/250/257/257.pdf: \"Futures trading shall terminate on the last Business Day of the month, immediately preceding the contract month, on which the Central Bank of Brazil is scheduled to publish its final end-of-month (EOM) \"Commercial exchange rate for Brazilian reais per U.S. dollar for cash delivery\" (PTAX rate). If the foregoing date for termination is a holiday for the Exchange and GLOBEX®, futures trading shall terminate on the next preceding Business Day for either the Exchange or GLOBEX®.\" Final settlement: the reciprocal of the BRL PTAX rate (BRL09), 25702.B. Also spec page, Termination of trading: \"Trading terminates at 9:15 a.m. CT on the last business day of the month prior to the contract month, on which the Central Bank of Brazil is scheduled to publish its final end-of-month (EOM), \"Commercial exchange rate for Brazilian reais per U.S. dollar for cash delivery\" (PTAX rate).\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/brazilian-real/specs"
@@ -2316,7 +2316,7 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { monthly = 12, quarterly_after = 4 }
 rules = { last_trade_date = "prev_last_bd@CL" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"Trading terminates at 09:15 Chicago time on the last Santiago, Chile business day of the month prior to the contract month.\""
+last_trade_date = "CME rulebook chapter 346, rule 34601.G (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/300/346.pdf: \"Futures trading shall terminate on the last Business Day of the month, immediately preceding the contract month, on which the Banco Central de Chile (BCC) is scheduled to publish its final end-of-month (EOM) spot exchange rate of Chilean pesos per U.S. dollar. If the foregoing date for termination is a holiday for the Exchange and GLOBEX®, futures trading shall terminate on the next preceding Business Day for either the Exchange or GLOBEX®.\" Final settlement: the reciprocal of the BCC's \"Dólar Observado\", 34602.B. Also spec page, Termination of trading: \"Trading terminates at 09:15 Chicago time on the last Santiago, Chile business day of the month prior to the contract month.\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/chilean-peso-us-dollar/specs"
@@ -2347,10 +2347,10 @@ settle_calendars = ["HK", "FED"]
 generics = 2
 history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
 listing = { quarterly = 5 }
-rules = { last_trade_date = "third_wed_minus:2@HK", settlement_date = "third_wed_next_good" }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"Trading terminates at 2:00 p.m. Hong Kong local time on the second Hong Kong business day prior to the third Wednesday of the contract month.\""
-settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+last_trade_date = "CME rulebook chapter 283, rule 28301.E (read 2026-10-10): \"Futures trading shall terminate on the second Business Day immediately preceding the third Wednesday of the contract month. If the foregoing date for termination is a bank holiday in Chicago or New York City, futures trading shall terminate on the next preceding Business Day common to Chicago and New York City banks and the Exchange.\" The spec page (below, as read 2026-10-08) counts Hong Kong business days; the rulebook names Chicago and New York, so the rule counts CME's FX days and the Fed's, like the majors. spec page, Termination of trading: \"Trading terminates at 2:00 p.m. Hong Kong local time on the second Hong Kong business day prior to the third Wednesday of the contract month.\""
+settlement_date = "CME rulebook chapter 283, rule 28302.A.2 (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/250/283.pdf: \"Delivery shall be made on the third Wednesday of the contract month. If that day is not a Business Day in the country of delivery or is a bank holiday in either Chicago or New York City, then delivery shall be made on the next day which is a Business Day in the country of delivery and is not a bank holiday in Chicago or New York City.\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/cnh-usd/specs"
@@ -2391,7 +2391,7 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { monthly = 13, quarterly_after = 8 }
 rules = { last_trade_date = "third_wed_minus:2@HK" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"Trading terminates at 2:00 p.m. Hong Kong local time on the second Hong Kong business day prior to the third Wednesday of the contract month.\""
+last_trade_date = "CME rulebook chapter 284L, rule 284L01.E (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/250/284L.pdf: \"Futures trading shall terminate at 2:00 p.m. Hong Kong time on the second Hong Kong business day immediately preceding the third Wednesday of the contract month.\" Final settlement: the mid-rate of the WMR Intraday Spot Rate for USD/CNH at 2:00 p.m. Hong Kong time, 284L02.A. Also spec page, Termination of trading: \"Trading terminates at 2:00 p.m. Hong Kong local time on the second Hong Kong business day prior to the third Wednesday of the contract month.\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/cross-rates/usd-cnh/specs"
@@ -2428,7 +2428,7 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { monthly = 13, quarterly_after = 8 }
 rules = { last_trade_date = "third_wed_minus:2@CN" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:00 a.m. Beijing time on the second Beijing business day prior to the third Wednesday of the contract month (7:00 p.m. CT on Sunday during the winter and 8:00 p.m. CT on Sunday during the summer).\""
+last_trade_date = "CME rulebook chapter 270, rule 27001.G (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/250/270/270.pdf: \"Futures trading shall terminate at 9:00 a.m. Beijing time on the second Beijing Business Day immediately preceding the third Wednesday of the contract month.\" Final settlement: the reciprocal of the PBC's USD/CNY fixing (Reuters SAEC \"USDCNY=\"), 27002.B. Also spec page, Termination of trading: \"Trading terminates at 9:00 a.m. Beijing time on the second Beijing business day prior to the third Wednesday of the contract month (7:00 p.m. CT on Sunday during the winter and 8:00 p.m. CT on Sunday during the summer).\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/chinese-renminbi/specs"
@@ -2463,7 +2463,7 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { monthly = 13, quarterly_after = 2 }
 rules = { last_trade_date = "third_wed_minus:2@CN" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"Trading ceases at 9:00 a.m. Beijing time* on the second Beijing business day immediately preceding the third Wednesday of the contract month (i.e., In Chicago, 7:00 p.m. CT on Sunday night during the winter and 8:00 p.m. CT on Sunday night during the summer).\""
+last_trade_date = "CME rulebook chapter 318, rule 31801.I (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/300/318/318.pdf: \"Futures trading shall terminate at 9:00 a.m. Beijing time on the second Beijing Business Day immediately preceding the third Wednesday of the contract month.\" Final settlement: the reciprocal of the PBC's EUR/CNY fixing (Reuters SAEC \"EURCNY=\"), 31802.B. Also spec page, Termination of trading: \"Trading ceases at 9:00 a.m. Beijing time* on the second Beijing business day immediately preceding the third Wednesday of the contract month (i.e., In Chicago, 7:00 p.m. CT on Sunday night during the winter and 8:00 p.m. CT on Sunday night during the summer).\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/chinese-renminbi-euro/specs"
@@ -2496,8 +2496,8 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday).\""
-settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+last_trade_date = "CME rulebook chapter 266, rule 26601.G (read 2026-10-10): \"Futures trading shall terminate on the second Business Day immediately preceding the third Wednesday of the contract month. If the foregoing date for termination is a bank holiday in Chicago or New York City, futures trading shall terminate on the next preceding Business Day common to Chicago and New York City banks and the Exchange.\" Also spec page, Termination of trading: \"9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday).\""
+settlement_date = "CME rulebook chapter 266, rule 26602.A.2 (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/250/266/266.pdf: \"Delivery shall be made on the third Wednesday of the contract month. If that day is not a Business Day in the country of delivery or is a bank holiday in either Chicago or New York City, then delivery shall be made on the next day which is a Business Day in the country of delivery and is not a bank holiday in Chicago or New York City.\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/czech-koruna/specs"
@@ -2535,8 +2535,8 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday).\""
-settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+last_trade_date = "CME rulebook chapter 315, rule 31501.I (read 2026-10-10): \"Futures trading shall terminate on the second Business Day immediately preceding the third Wednesday of the contract month. If the foregoing date for termination is a bank holiday in Chicago or New York City, futures trading shall terminate on the next preceding Business Day common to Chicago and New York City banks and the Exchange.\" Also spec page, Termination of trading: \"9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday).\""
+settlement_date = "CME rulebook chapter 315, rule 31502.A.2 (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/300/315/315.pdf: \"Delivery shall be made on the third Wednesday of the contract month. If that day is not a Business Day in both countries of delivery or is a bank holiday in either Chicago or New York City, then delivery shall be made on the next day which is a Business Day in both countries of delivery and is not a bank holiday in Chicago or New York City.\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/euro-fx-czech-koruna/specs"
@@ -2574,8 +2574,8 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday).\""
-settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+last_trade_date = "CME rulebook chapter 267, rule 26701.G (read 2026-10-10): \"Futures trading shall terminate on the second Business Day immediately preceding the third Wednesday of the contract month. If the foregoing date for termination is a bank holiday in Chicago or New York City, futures trading shall terminate on the next preceding Business Day common to Chicago and New York City banks and the Exchange.\" Also spec page, Termination of trading: \"9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday).\""
+settlement_date = "CME rulebook chapter 267, rule 26702.A.2 (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/250/267/267.pdf: \"Delivery shall be made on the third Wednesday of the contract month. If that day is not a Business Day in the country of delivery or is a bank holiday in either Chicago or New York City, then delivery shall be made on the next day which is a Business Day in the country of delivery and is not a bank holiday in Chicago or New York City.\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/hungarian-forint/specs"
@@ -2612,8 +2612,8 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday).\""
-settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+last_trade_date = "CME rulebook chapter 316, rule 31601.I (read 2026-10-10): \"Futures trading shall terminate on the second Business Day immediately preceding the third Wednesday of the contract month. If the foregoing date for termination is a bank holiday in Chicago or New York City, futures trading shall terminate on the next preceding Business Day common to Chicago and New York City banks and the Exchange.\" Also spec page, Termination of trading: \"9:16 a.m. Central Time (CT) on the second business day immediately preceding the third Wednesday of the contract month (usually Monday).\""
+settlement_date = "CME rulebook chapter 316, rule 31602.A.2 (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/300/316/316.pdf: \"Delivery shall be made on the third Wednesday of the contract month. If that day is not a Business Day in both countries of delivery or is a bank holiday in either Chicago or New York City, then delivery shall be made on the next day which is a Business Day in both countries of delivery and is not a bank holiday in Chicago or New York City.\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/euro-fx-hungarian-forint/specs"
@@ -2650,8 +2650,8 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"Trading terminates on 2nd business day before the 3rd wednesday of the contract month.\""
-settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+last_trade_date = "CME rulebook chapter 268, rule 26801.G (read 2026-10-10): \"Futures trading shall terminate on the second Business Day immediately preceding the third Wednesday of the contract month. If the foregoing date for termination is a bank holiday in Chicago or New York City, futures trading shall terminate on the next preceding Business Day common to Chicago and New York City banks and the Exchange.\" Also spec page, Termination of trading: \"Trading terminates on 2nd business day before the 3rd wednesday of the contract month.\""
+settlement_date = "CME rulebook chapter 268, rule 26802.A.2 (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/250/268/268.pdf: \"Delivery shall be made on the third Wednesday of the contract month. If that day is not a Business Day in the country of delivery or is a bank holiday in either Chicago or New York City, then delivery shall be made on the next day which is a Business Day in the country of delivery and is not a bank holiday in Chicago or New York City.\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/polish-zloty/specs"
@@ -2686,10 +2686,10 @@ settle_calendars = ["PL", "TARGET", "FED"]
 generics = 2
 history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
 listing = { quarterly = 6 }
-rules = { last_trade_date = "second_fri_before_third_wed", settlement_date = "third_wed_next_good" }
+rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"Trading terminates on 2nd friday before the 3rd wednesday of the contract month. if that is not a business day then it is the business day before that in \"ctm\" (sic)\" The spec page's own wording (\"2nd friday before the 3rd wednesday ... the business day before that\"), unlike the other crosses' 2 business days before."
-settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+last_trade_date = "CME rulebook chapter 317, rule 31701.I (read 2026-10-10): \"Futures trading shall terminate on the second Business Day immediately preceding the third Wednesday of the contract month. If the foregoing date for termination is a bank holiday in Chicago or New York City, futures trading shall terminate on the next preceding Business Day common to Chicago and New York City banks and the Exchange.\" The spec page's \"2nd friday before the 3rd wednesday\" (below, as read 2026-10-08) disagrees with the rulebook; the rulebook's rule is used. spec page, Termination of trading: \"Trading terminates on 2nd friday before the 3rd wednesday of the contract month. if that is not a business day then it is the business day before that in \"ctm\" (sic)\" The spec page's own wording (\"2nd friday before the 3rd wednesday ... the business day before that\"), unlike the other crosses' 2 business days before."
+settlement_date = "CME rulebook chapter 317, rule 31702.A.2 (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/300/317/317.pdf: \"Delivery shall be made on the third Wednesday of the contract month. If that day is not a Business Day in both countries of delivery or is a bank holiday in either Chicago or New York City, then delivery shall be made on the next day which is a Business Day in both countries of delivery and is not a bank holiday in Chicago or New York City.\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/euro-fx-polish-zloty/specs"
@@ -2726,8 +2726,8 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"Trading terminates on the second business day prior to the third Wednesday of the contract month.\""
-settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+last_trade_date = "CME rulebook chapter 269, rule 26901.G (read 2026-10-10): \"Futures trading shall terminate on the second Business Day immediately preceding the third Wednesday of the contract month. If the foregoing date for termination is a bank holiday in Chicago or New York City, futures trading shall terminate on the next preceding Business Day common to Chicago and New York City banks and the Exchange.\" Also spec page, Termination of trading: \"Trading terminates on the second business day prior to the third Wednesday of the contract month.\""
+settlement_date = "CME rulebook chapter 269, rule 26902.A.2 (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/250/269/269.pdf: \"Delivery shall be made on the third Wednesday of the contract month. If that day is not a Business Day in the country of delivery or is a bank holiday in either Chicago or New York City, then delivery shall be made on the next day which is a Business Day in the country of delivery and is not a bank holiday in Chicago or New York City.\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/israeli-shekel/specs"
@@ -2764,7 +2764,7 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { monthly = 12, quarterly_after = 4 }
 rules = { last_trade_date = "last_bd_minus:2@IN" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"Trading terminates at 1:00 p.m. Mumbai time 2 Indian business days prior to the last Indian business day of the contract month.\""
+last_trade_date = "CME rulebook chapter 279, rule 27901.G (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/250/279.pdf: \"Futures trading shall terminate at 1:00 p.m. Mumbai time two Indian business days immediately preceding the last Indian business day of the contract month.\" Final settlement: the reciprocal of FBIL's INR rate (INR01), 27902.B. Also spec page, Termination of trading: \"Trading terminates at 1:00 p.m. Mumbai time 2 Indian business days prior to the last Indian business day of the contract month.\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/indian-rupee/specs"
@@ -2801,7 +2801,7 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { monthly = 13, quarterly_after = 2 }
 rules = { last_trade_date = "third_mon_prev_good@KR" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"Trading terminates on the 3rd Monday of the contract month. If this is not a Seoul business day, trading terminates on the previous Seoul business day.\""
+last_trade_date = "CME rulebook chapter 271, rule 27101.G (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/250/271/271.pdf: \"Futures trading shall terminate at 3:30 p.m. Seoul time on the third Monday of the contract month. If the foregoing date for termination is a bank holiday in Seoul, futures trading shall terminate on the preceding Business Day.\" Final settlement: the reciprocal of SMBS's KFTC18 rate, 27102.B. Also spec page, Termination of trading: \"Trading terminates on the 3rd Monday of the contract month. If this is not a Seoul business day, trading terminates on the previous Seoul business day.\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/korean-won/specs"
@@ -2836,7 +2836,7 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { quarterly = 4 }
 rules = { last_trade_date = "day_next_good:15@GB" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"Trading terminates on the 15th day of the contract month. If this is not a London business day, trading terminates on the next London business day.\" CME's spec page says \"Monthly contacts listed for 4 consecutive quarterly contracts\" (sic): read as 4 quarterly contracts."
+last_trade_date = "CME rulebook chapter 260, rule 26001.G (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/250/260/260.pdf: \"Futures trading shall terminate at 9:00 a.m. (London Time) on the 15th calendar day of the contract month. If the foregoing date for termination is not a business day for the London interbank foreign exchange market, futures trading shall terminate at the same time on the next business day for the London interbank foreign exchange market.\" Final settlement: the reciprocal of the WM/Refinitiv MID rate (WMR03), 26002.B. Also spec page, Termination of trading: \"Trading terminates on the 15th day of the contract month. If this is not a London business day, trading terminates on the next London business day.\" CME's spec page says \"Monthly contacts listed for 4 consecutive quarterly contracts\" (sic): read as 4 quarterly contracts."
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/russian-ruble/specs"
@@ -2869,8 +2869,8 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"Trading terminate at 4:00 p.m. London time on the 2nd Business Day immediately preceding the third Wednesday of the contract month.\" \"Business Day\" read as CME's FX business day (Chicago and New York), as for the majors."
-settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+last_trade_date = "CME rulebook chapter 273, rule 27301.G (read 2026-10-10): \"Futures trading shall terminate at 4:00 p.m. London time on the second Business Day immediately preceding the third Wednesday of the contract month. If the foregoing date for termination is a bank holiday in Chicago or New York City, futures trading shall terminate on the next preceding Business Day common to Chicago and New York City banks and the Exchange.\" Also spec page, Termination of trading: \"Trading terminate at 4:00 p.m. London time on the 2nd Business Day immediately preceding the third Wednesday of the contract month.\" \"Business Day\" read as CME's FX business day (Chicago and New York), as for the majors."
+settlement_date = "CME rulebook chapter 273, rule 27302.A.2 (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/250/273.pdf: \"Delivery shall be made on the third Wednesday of the contract month. If that day is not a Business Day in the country of delivery or is a bank holiday in either Chicago or New York City, then delivery shall be made on the next day which is a Business Day in the country of delivery and is not a bank holiday in Chicago or New York City.\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/turkish-lira-us-dollar-try-usd/specs"
@@ -2910,8 +2910,8 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { monthly = 13, quarterly_after = 4 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT, 2 business day prior to the third Wednesday of the contract month.\""
-settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+last_trade_date = "CME rulebook chapter 259, rule 25901.G (read 2026-10-10): \"Futures trading shall terminate on the second Business Day immediately preceding the third Wednesday of the contract month. If the foregoing date for termination is a bank holiday in Chicago or New York City, futures trading shall terminate on the next preceding Business Day common to Chicago and New York City banks and the Exchange.\" Also spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT, 2 business day prior to the third Wednesday of the contract month.\""
+settlement_date = "CME rulebook chapter 259, rule 25902.A.2 (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/250/259/259.pdf: \"Delivery shall be made on the third Wednesday of the contract month. If that day is not a Business Day in the country of delivery or is a bank holiday in either Chicago or New York City, then delivery shall be made on the next day which is a Business Day in the country of delivery and is not a bank holiday in Chicago or New York City.\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/south-african-rand/specs"
@@ -2949,9 +2949,10 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { monthly = 4, quarterly_after = 4 }
 rules = { last_trade_date = "third_wed_minus:2@ID" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"Trading terminates at 3:45pm Jakarta time, 2 Jakarta business days prior to the third Wednesday of the contract month.\" CME's 2026-09-15 notice amends this contract's termination and cash settlement; the rule is the spec page's as read 2026-10-08, to recheck."
+last_trade_date = "CME rulebook chapter 281, rule 28101.G (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/250/281.pdf: \"Futures trading shall terminate at 15:15 Jakarta time on the second Jakarta Business Day immediately preceding the third Wednesday of the contract month. If the foregoing date for termination is a bank holiday in Jakarta, futures trading shall terminate on the preceding Business Day.\" Final settlement: the reciprocal of Bank Indonesia's JISDOR rate (IDR04), 28102.B. Also spec page, Termination of trading: \"Trading terminates at 3:45pm Jakarta time, 2 Jakarta business days prior to the third Wednesday of the contract month.\" Re-read 2026-10-10: the spec page now says 3:15pm (chapter 281: 15:15), the date rule unchanged; the 2026-09-15 notice itself wasn't found."
 [[products.specs]]
 valid_from = 2026-10-08
+valid_to = 2026-10-09
 source = "https://www.cmegroup.com/markets/fx/emerging-market/idr-usd/specs"
 contract_unit = "1,000,000,000 Indonesian rupiah"
 minimum_price_fluctuation = """
@@ -2962,6 +2963,26 @@ CME ClearPort:
 0.001 per 1,000,000 Indonesian rupiah increments = $1.00"""
 listed_contracts = "Monthly contracts listed for 4 consecutive months and 4 quarterly contracts (Mar, Jun, Sep, Dec)"
 termination_of_trading = "Trading terminates at 3:45pm Jakarta time, 2 Jakarta business days prior to the third Wednesday of the contract month."
+settlement_method = "Financially Settled"
+settlement_procedures = "Settlement Procedures (link)"
+trading_hours = """
+CME Globex:
+Sunday - Friday 5:00 p.m. - 4:00 p.m. CT with a 60-minute break each day beginning at 4:00 p.m.
+CME ClearPort:
+Sunday 5:00 p.m. - Friday 5:45 p.m. CT with no reporting Monday - Thursday 5:45 p.m. - 6:00 p.m. CT"""
+vendor_codes = "{NVX}"
+[[products.specs]]
+valid_from = 2026-10-10
+source = "https://www.cmegroup.com/markets/fx/emerging-market/idr-usd/specs"
+contract_unit = "1,000,000,000 Indonesian rupiah"
+minimum_price_fluctuation = """
+CME Globex:
+0.01 per 1,000,000 Indonesian rupiah increments = $10.00
+Spreads: 0.005 per 1,000,000 Indonesian rupiah increments = $5.00
+CME ClearPort:
+0.001 per 1,000,000 Indonesian rupiah increments = $1.00"""
+listed_contracts = "Monthly contracts listed for 4 consecutive months and 4 quarterly contracts (Mar, Jun, Sep, Dec)"
+termination_of_trading = "Trading terminates at 3:15pm Jakarta time, 2 Jakarta business days prior to the third Wednesday of the contract month."
 settlement_method = "Financially Settled"
 settlement_procedures = "Settlement Procedures (link)"
 trading_hours = """
@@ -2987,8 +3008,8 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { monthly = 4, quarterly_after = 4 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT, 2 business days prior to the third Wednesday of the contract month.\""
-settlement_date = "rulebook (as for the majors, 6E etc.): physical delivery on the 3rd Wednesday, later if it is not a business day in the delivery country or is a Chicago or New York bank holiday; this product's chapter not read yet"
+last_trade_date = "CME rulebook chapter 282, rule 28201.G (read 2026-10-10): \"Futures trading shall terminate on the second Business Day immediately preceding the third Wednesday of the contract month. If the foregoing date for termination is a bank holiday in Chicago or New York City, futures trading shall terminate on the next preceding Business Day common to Chicago and New York City banks and the Exchange.\" Also spec page, Termination of trading: \"Trading terminates at 9:16 a.m. CT, 2 business days prior to the third Wednesday of the contract month.\""
+settlement_date = "CME rulebook chapter 282, rule 28202.A.2 (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/250/282.pdf: \"Delivery shall be made on the third Wednesday of the contract month. If that day is not a Business Day in the country of delivery or is a bank holiday in either Chicago or New York City, then delivery shall be made on the next day which is a Business Day in the country of delivery and is not a bank holiday in Chicago or New York City.\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/sgd-usd/specs"
@@ -3026,7 +3047,7 @@ history_source = "Launch date not found yet: today's listings only, as for 6M an
 listing = { monthly = 4, quarterly_after = 4 }
 rules = { last_trade_date = "last_bd_minus:1@TH" }
 [products.rule_sources]
-last_trade_date = "spec page, Termination of trading: \"Trading terminates at 11:00 a.m. Bangkok time on the first Bangkok Business Day prior to the last business day of the contract month.\""
+last_trade_date = "CME rulebook chapter 280, rule 28001.G (read 2026-10-10), https://www.cmegroup.com/rulebook/CME/III/250/280.pdf: \"Futures trading shall terminate at 11:00 a.m. Bangkok time on the first Bangkok Business Day prior to the last business day of the contract month. If the foregoing date for termination is a bank holiday in Bangkok, futures trading shall terminate on the preceding Business Day.\" Final settlement: the reciprocal of the WMR Intraday Spot Rate for USD/THB (onshore) at 11:00 a.m. Bangkok time, 28002.B. Also spec page, Termination of trading: \"Trading terminates at 11:00 a.m. Bangkok time on the first Bangkok Business Day prior to the last business day of the contract month.\""
 [[products.specs]]
 valid_from = 2026-10-08
 source = "https://www.cmegroup.com/markets/fx/emerging-market/thb-usd/specs"
