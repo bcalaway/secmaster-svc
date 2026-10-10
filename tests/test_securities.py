@@ -59,7 +59,11 @@ def test_search(seeded):
         by_text = securities.search(s, "20-year")
     assert [i["short_name"] for i in by_alias] == ["UST-1.5M-CMT"]
     assert [i["short_name"] for i in by_identifier] == ["UST-10Y-CMT"]
-    assert [i["short_name"] for i in by_text] == ["UST-20Y-CMT"]
+    # "20-year" is in the 20-year CMT's description, and the 20-year OIS swaps' (seeds/swaps.toml).
+    assert [i["short_name"] for i in by_text if i["short_name"].startswith("UST-")] == ["UST-20Y-CMT"]
+    assert {i["short_name"] for i in by_text if "-OIS-" in i["short_name"]} == {
+        "USD-SOFR-OIS-20Y", "EUR-ESTR-OIS-20Y", "GBP-SONIA-OIS-20Y", "JPY-TONA-OIS-20Y", "CHF-SARON-OIS-20Y",
+        "AUD-AONIA-OIS-20Y"}
 
 
 def test_search_pages_with_a_total(seeded):
