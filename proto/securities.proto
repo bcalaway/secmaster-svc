@@ -29,6 +29,13 @@ service Securities {
   // The auction calendar: auctions held or announced from start to end, by
   // auction date; announced ones without results yet.
   rpc ListAuctions(ListAuctionsRequest) returns (ListAuctionsResponse);
+  // Futures (mkt-data's docs/phase-4.md, step 7): every product, by kind and root, with its front contract.
+  rpc ListFuturesProducts(ListFuturesProductsRequest) returns (ListFuturesProductsResponse);
+  // One product by root (TY): its rules and sources, its contracts (listed and delivering, or every one) with
+  // their dates, and the generics on as_of. NOT_FOUND if there's none.
+  rpc GetFuturesProduct(GetFuturesProductRequest) returns (FuturesProduct);
+  // A Treasury futures contract's deliverable basket (TYZ26), by maturity, with conversion factors.
+  rpc GetBasket(GetBasketRequest) returns (Basket);
 }
 
 message GetInstrumentRequest {
@@ -184,4 +191,89 @@ message AuctionRow {
   string short_name = 2;
   map<string, string> fields = 3;  // cusip, security_type, term, reopening, announcement_date, auction_date,
                                    // issue_date, offering_amount, total_accepted, bid_to_cover, high_yield, ...
+}
+
+// --- Futures (mkt-data's docs/phase-4.md, step 7) ---
+
+message ListFuturesProductsRequest {
+  string as_of = 1;  // YYYY-MM-DD for the front contract; empty for today (New York)
+}
+
+message FuturesProductSummary {
+  string root = 1;        // TY
+  string cme_code = 2;    // ZN
+  string name = 3;        // 10-Year T-Note Futures
+  string kind = 4;        // treasury, treasury_cash, stir, fx, fx_cash
+  string currency = 5;
+  string cftc_code = 6;   // 043602; empty if the CFTC doesn't report it
+  string front = 7;       // the first generic's contract on as_of: TYZ26
+  string status = 8;      // listed, or "none listed"
+}
+
+message ListFuturesProductsResponse {
+  repeated FuturesProductSummary products = 1;
+}
+
+message GetFuturesProductRequest {
+  string root = 1;
+  bool include_expired = 2;  // expired and withdrawn contracts too
+  string as_of = 3;
+}
+
+message FuturesGeneric {
+  string generic = 1;   // TY1
+  string contract = 2;  // TYZ26
+}
+
+message FuturesContract {
+  string name = 1;      // TYZ26
+  string cme_code = 2;  // ZNZ6
+  string month = 3;     // 2026-12
+  string status = 4;    // listed, delivering, expired, withdrawn
+  int32 basket_size = 5;  // a deliverable Treasury contract's basket; -1 for any other kind
+  // YYYY-MM-DD, empty where the kind has none
+  string first_trade_date = 6;
+  string last_trade_date = 7;
+  string first_intention_date = 8;
+  string first_notice_date = 9;
+  string first_delivery_date = 10;
+  string last_delivery_date = 11;
+  string reference_start = 12;
+  string reference_end = 13;
+  string final_settlement_date = 14;
+  string settlement_date = 15;
+}
+
+message FuturesProduct {
+  FuturesProductSummary summary = 1;
+  map<string, string> rules = 2;         // date field -> rule (last_bd_minus:7)
+  map<string, string> rule_sources = 3;  // date field -> where it comes from
+  string basket_rule = 4;
+  string basket_source = 5;
+  repeated FuturesGeneric generics = 6;
+  repeated FuturesContract contracts = 7;
+}
+
+message GetBasketRequest {
+  string contract = 1;  // TYZ26
+}
+
+message Deliverable {
+  string security = 1;  // UST-4.25-2034-11-15
+  string cusip = 2;
+  string coupon_rate = 3;  // a decimal: 0.0425
+  string maturity_date = 4;
+  string issue_date = 5;
+  string conversion_factor = 6;  // 0.8732
+  int32 remaining_months = 7;    // as the factor uses it, rounded
+  string valid_from = 8;         // deliverable from (its issue date)
+}
+
+message Basket {
+  string contract = 1;
+  string product = 2;
+  string month = 3;
+  string status = 4;
+  string rule = 5;
+  repeated Deliverable deliverables = 6;
 }

@@ -16,7 +16,7 @@ from datetime import date
 import grpc
 from grpc_health.v1 import health, health_pb2, health_pb2_grpc
 
-from app import db, securities
+from app import db, futures_api, securities
 from app.grpc_gen import securities_pb2, securities_pb2_grpc
 
 SECURITIES = securities_pb2.DESCRIPTOR.services_by_name["Securities"].full_name
@@ -30,6 +30,33 @@ def _instrument(d: dict) -> securities_pb2.Instrument:
         identifiers=[securities_pb2.InstrumentIdentifier(**i) for i in d.get("identifiers", [])],
         notes=[securities_pb2.InstrumentNote(**n) for n in d.get("notes", [])],
     )
+
+
+def _futures_summary(d: dict) -> securities_pb2.FuturesProductSummary:
+    return securities_pb2.FuturesProductSummary(**{k: d[k] for k in (
+        "root", "cme_code", "name", "kind", "currency", "cftc_code", "front", "status")})
+
+
+def _futures_products(as_of: date | None) -> securities_pb2.ListFuturesProductsResponse:
+    with db.session() as s:
+        rows = futures_api.products(s, as_of)
+    return securities_pb2.ListFuturesProductsResponse(products=[_futures_summary(r) for r in rows])
+
+
+def _futures_product(root: str, include_expired: bool, as_of: date | None) -> securities_pb2.FuturesProduct:
+    with db.session() as s:
+        d = futures_api.product(s, root, include_expired, as_of)
+    return securities_pb2.FuturesProduct(
+        summary=_futures_summary(d), rules=d["rules"], rule_sources=d["rule_sources"], basket_rule=d["basket_rule"],
+        basket_source=d["basket_source"], generics=[securities_pb2.FuturesGeneric(**g) for g in d["generics"]],
+        contracts=[securities_pb2.FuturesContract(**c) for c in d["contracts"]])
+
+
+def _basket(contract: str) -> securities_pb2.Basket:
+    with db.session() as s:
+        d = futures_api.basket(s, contract)
+    return securities_pb2.Basket(**{k: d[k] for k in ("contract", "product", "month", "status", "rule")},
+                                 deliverables=[securities_pb2.Deliverable(**x) for x in d["deliverables"]])
 
 
 def _get(sec_id: int, name: str) -> securities_pb2.Instrument:
@@ -139,6 +166,29 @@ class Securities(securities_pb2_grpc.SecuritiesServicer):
         except ValueError:
             await context.abort(grpc.StatusCode.INVALID_ARGUMENT, "start and end are YYYY-MM-DD")
         return await asyncio.to_thread(_list_auctions, start, end, request.limit)
+
+    async def ListFuturesProducts(self, request, context):
+        try:
+            as_of = _date(request.as_of)
+        except ValueError:
+            await context.abort(grpc.StatusCode.INVALID_ARGUMENT, "as_of is YYYY-MM-DD")
+        return await asyncio.to_thread(_futures_products, as_of)
+
+    async def GetFuturesProduct(self, request, context):
+        try:
+            as_of = _date(request.as_of)
+        except ValueError:
+            await context.abort(grpc.StatusCode.INVALID_ARGUMENT, "as_of is YYYY-MM-DD")
+        try:
+            return await asyncio.to_thread(_futures_product, request.root, request.include_expired, as_of)
+        except securities.UnknownInstrument as e:
+            await context.abort(grpc.StatusCode.NOT_FOUND, str(e))
+
+    async def GetBasket(self, request, context):
+        try:
+            return await asyncio.to_thread(_basket, request.contract)
+        except securities.UnknownInstrument as e:
+            await context.abort(grpc.StatusCode.NOT_FOUND, str(e))
 
     async def GetSecurity(self, request, context):
         try:
