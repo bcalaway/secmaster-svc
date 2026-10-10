@@ -43,7 +43,7 @@ def test_first_run_builds_everything(migrated_db):
                                      "baskets": {"2026-12": 0, "2027-03": 0, "2027-06": 0}}  # no securities loaded here
     with db.session() as s:
         assert s.scalar(select(func.count()).select_from(FuturesProduct)) == 75
-        assert s.scalar(select(func.count()).select_from(FuturesSpec)) == 75
+        assert s.scalar(select(func.count()).select_from(FuturesSpec)) == 76  # IDR's spec page changed (2026-10-10)
         runs = list(s.scalars(select(FuturesRun)))
         assert [r.outcome for r in runs] == ["ok"]
 
