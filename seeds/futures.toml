@@ -53,13 +53,14 @@ currency = "USD"
 trade_calendars = ["CME-IR"]
 settle_calendars = ["CME-IR"]
 generics = 3
-history_source = "Launch date not confirmed (CME's 2020 article marks 30 years of the 2-year note, so 1990, day unknown): only contracts listed today until it's found."
+history_from = 1990-06-22
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), Interest Rates, \"2-Year Treasury Note\": futures 6/22/1990. CME OpenMarkets (2020-06-25) also: \"launched in June 1990\"."
 listing = { quarterly = 3 }
 rules = { last_trade_date = "last_bd", first_intention_date = "first_bd_minus:2", first_notice_date = "first_bd_minus:1", first_delivery_date = "first_bd", last_delivery_date = "last_bd_plus:3" }
 [products.rule_sources]
 last_trade_date = "spec page, Termination of trading: the last business day of the contract month"
-first_intention_date = "CBOT Treasury delivery practice: position (intention) day is two business days before the first delivery day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
-first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_intention_date = "CBOT rulebook chapter 21 (read 2026-10-10, https://www.cmegroup.com/rulebook/CBOT/II/21.pdf), rule 21104: deliveries can be made no earlier than the first business day of the contract month (rule 21103); 21104.A Day of Intention: \"No later than 6:00 p.m. on the second business day preceding the intended day of delivery, the short Clearing Member must tender to the Clearing House all notices of intention to make delivery\". So the first intention day is the second business day before the month's first business day"
+first_notice_date = "CBOT rulebook chapter 21 (read 2026-10-10), rule 21105.B Day of Notification: each short Clearing Member \"shall submit said invoices to the Clearing House by 2:00 p.m. on the business day preceding the day of delivery\", and the Clearing House furnishes them to the long Clearing Members; so the first notice day is the business day before the first delivery day"
 first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
 last_delivery_date = "spec page, Last delivery date: third business day following the last trading day"
 [products.basket]
@@ -110,8 +111,8 @@ listing = { quarterly = 3 }
 rules = { last_trade_date = "last_bd", first_intention_date = "first_bd_minus:2", first_notice_date = "first_bd_minus:1", first_delivery_date = "first_bd", last_delivery_date = "last_bd_plus:3" }
 [products.rule_sources]
 last_trade_date = "spec page, Termination of trading: the last business day of the contract month"
-first_intention_date = "CBOT Treasury delivery practice: position (intention) day is two business days before the first delivery day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
-first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_intention_date = "CBOT rulebook chapter 39 (read 2026-10-10, https://www.cmegroup.com/rulebook/CBOT/III/39.pdf), rule 39104: deliveries can be made no earlier than the first business day of the contract month (rule 39103); 39104.A Day of Intention: \"No later than 6:00 p.m. on the second business day preceding the intended day of delivery, the short Clearing Member must tender to the Clearing House all notices of intention to make delivery\". So the first intention day is the second business day before the month's first business day"
+first_notice_date = "CBOT rulebook chapter 39 (read 2026-10-10), rule 39105.B Day of Notification: each short Clearing Member \"shall submit said invoices to the Clearing House by 2:00 p.m. on the business day preceding the day of delivery\", and the Clearing House furnishes them to the long Clearing Members; so the first notice day is the business day before the first delivery day"
 first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
 last_delivery_date = "spec page, Last delivery date: third business day following the last trading day"
 [products.basket]
@@ -156,8 +157,8 @@ listing = { quarterly = 3 }
 rules = { last_trade_date = "last_bd", first_intention_date = "first_bd_minus:2", first_notice_date = "first_bd_minus:1", first_delivery_date = "first_bd", last_delivery_date = "last_bd_plus:3" }
 [products.rule_sources]
 last_trade_date = "spec page, Termination of trading: the last business day of the contract month"
-first_intention_date = "CBOT Treasury delivery practice: position (intention) day is two business days before the first delivery day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
-first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_intention_date = "CBOT rulebook chapter 20 (read 2026-10-10, https://www.cmegroup.com/rulebook/CBOT/II/20.pdf), rule 20104: deliveries can be made no earlier than the first business day of the contract month (rule 20103); 20104.A Day of Intention: \"No later than 6:00 p.m. on the second business day preceding the intended day of delivery, the short Clearing Member must tender to the Clearing House all notices of intention to make delivery\". So the first intention day is the second business day before the month's first business day"
+first_notice_date = "CBOT rulebook chapter 20 (read 2026-10-10), rule 20105.B Day of Notification: each short Clearing Member \"shall submit said invoices to the Clearing House by 2:00 p.m. on the business day preceding the day of delivery\", and the Clearing House furnishes them to the long Clearing Members; so the first notice day is the business day before the first delivery day"
 first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
 last_delivery_date = "spec page, Last delivery date: third business day following the last trading day"
 [products.basket]
@@ -210,8 +211,8 @@ listing = { quarterly = 3 }
 rules = { last_trade_date = "last_bd_minus:7", first_intention_date = "first_bd_minus:2", first_notice_date = "first_bd_minus:1", first_delivery_date = "first_bd", last_delivery_date = "last_bd" }
 [products.rule_sources]
 last_trade_date = "spec page, Termination of trading: 7 business days prior to the last business day of the contract month"
-first_intention_date = "CBOT Treasury delivery practice: position (intention) day is two business days before the first delivery day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
-first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_intention_date = "CBOT rulebook chapter 19 (read 2026-10-10, https://www.cmegroup.com/rulebook/CBOT/II/19.pdf), rule 19104: deliveries can be made no earlier than the first business day of the contract month (rule 19103); 19104.A Day of Intention: \"No later than 6:00 p.m. on the second business day preceding the intended day of delivery, the short Clearing Member must tender to the Clearing House all notices of intention to make delivery\". So the first intention day is the second business day before the month's first business day"
+first_notice_date = "CBOT rulebook chapter 19 (read 2026-10-10), rule 19105.B Day of Notification: each short Clearing Member \"shall submit said invoices to the Clearing House by 2:00 p.m. on the business day preceding the day of delivery\", and the Clearing House furnishes them to the long Clearing Members; so the first notice day is the business day before the first delivery day"
 first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
 last_delivery_date = "spec page, Last delivery date: last business day of the delivery month"
 [products.basket]
@@ -268,8 +269,8 @@ listing = { quarterly = 3 }
 rules = { last_trade_date = "last_bd_minus:7", first_intention_date = "first_bd_minus:2", first_notice_date = "first_bd_minus:1", first_delivery_date = "first_bd", last_delivery_date = "last_bd" }
 [products.rule_sources]
 last_trade_date = "spec page, Termination of trading: 7 business days prior to the last business day of the contract month"
-first_intention_date = "CBOT Treasury delivery practice: position (intention) day is two business days before the first delivery day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
-first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_intention_date = "CBOT rulebook chapter 26 (read 2026-10-10, https://www.cmegroup.com/rulebook/CBOT/III/26.pdf), rule 26104: deliveries can be made no earlier than the first business day of the contract month (rule 26103); 26104.A Day of Intention: \"No later than 6:00 p.m. on the second business day preceding the intended day of delivery, the short Clearing Member must tender to the Clearing House all notices of intention to make delivery\". So the first intention day is the second business day before the month's first business day"
+first_notice_date = "CBOT rulebook chapter 26 (read 2026-10-10), rule 26105.B Day of Notification: each short Clearing Member \"shall submit said invoices to the Clearing House by 2:00 p.m. on the business day preceding the day of delivery\", and the Clearing House furnishes them to the long Clearing Members; so the first notice day is the business day before the first delivery day"
 first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
 last_delivery_date = "spec page, Last delivery date: last business day of the delivery month"
 [products.basket]
@@ -322,8 +323,8 @@ listing = { quarterly = 3 }
 rules = { last_trade_date = "last_bd_minus:7", first_intention_date = "first_bd_minus:2", first_notice_date = "first_bd_minus:1", first_delivery_date = "first_bd", last_delivery_date = "last_bd" }
 [products.rule_sources]
 last_trade_date = "spec page, Termination of trading: 7 business days prior to the last business day of the contract month"
-first_intention_date = "CBOT Treasury delivery practice: position (intention) day is two business days before the first delivery day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
-first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_intention_date = "CBOT rulebook chapter 25 (read 2026-10-10, https://www.cmegroup.com/rulebook/CBOT/III/25.pdf), rule 25104: deliveries can be made no earlier than the first business day of the contract month (rule 25103); 25104.A Day of Intention: \"No later than 6:00 p.m. on the second business day preceding the intended day of delivery, the short Clearing Member must tender to the Clearing House all notices of intention to make delivery\". So the first intention day is the second business day before the month's first business day"
+first_notice_date = "CBOT rulebook chapter 25 (read 2026-10-10), rule 25105.B Day of Notification: each short Clearing Member \"shall submit said invoices to the Clearing House by 2:00 p.m. on the business day preceding the day of delivery\", and the Clearing House furnishes them to the long Clearing Members; so the first notice day is the business day before the first delivery day"
 first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
 last_delivery_date = "spec page, Last delivery date: last business day of the delivery month"
 [products.basket]
@@ -374,8 +375,8 @@ listing = { quarterly = 3 }
 rules = { last_trade_date = "last_bd_minus:7", first_intention_date = "first_bd_minus:2", first_notice_date = "first_bd_minus:1", first_delivery_date = "first_bd", last_delivery_date = "last_bd" }
 [products.rule_sources]
 last_trade_date = "spec page, Termination of trading: 7 business days prior to the last business day of the contract month"
-first_intention_date = "CBOT Treasury delivery practice: position (intention) day is two business days before the first delivery day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
-first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_intention_date = "CBOT rulebook chapter 18 (read 2026-10-10, https://www.cmegroup.com/rulebook/CBOT/II/18.pdf), rule 18104: deliveries can be made no earlier than the first business day of the contract month (rule 18103); 18104.A Day of Intention: \"No later than 6:00 p.m. on the second business day preceding the intended day of delivery, the short Clearing Member must tender to the Clearing House all notices of intention to make delivery\". So the first intention day is the second business day before the month's first business day"
+first_notice_date = "CBOT rulebook chapter 18 (read 2026-10-10), rule 18105.B Day of Notification: each short Clearing Member \"shall submit said invoices to the Clearing House by 2:00 p.m. on the business day preceding the day of delivery\", and the Clearing House furnishes them to the long Clearing Members; so the first notice day is the business day before the first delivery day"
 first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
 last_delivery_date = "spec page, Last delivery date: last business day of the delivery month"
 [products.basket]
@@ -432,8 +433,8 @@ listing = { quarterly = 3 }
 rules = { last_trade_date = "last_bd_minus:7", first_intention_date = "first_bd_minus:2", first_notice_date = "first_bd_minus:1", first_delivery_date = "first_bd", last_delivery_date = "last_bd" }
 [products.rule_sources]
 last_trade_date = "spec page, Termination of trading: 7 business days prior to the last business day of the contract month"
-first_intention_date = "CBOT Treasury delivery practice: position (intention) day is two business days before the first delivery day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
-first_notice_date = "CBOT Treasury delivery practice: notice day is the business day after position day. Not on the spec page; to confirm against the CBOT rulebook's delivery chapter"
+first_intention_date = "CBOT rulebook chapter 40 (read 2026-10-10, https://www.cmegroup.com/rulebook/CBOT/III/40.pdf), rule 40104: deliveries can be made no earlier than the first business day of the contract month (rule 40103); 40104.A Day of Intention: \"No later than 6:00 p.m. on the second business day preceding the intended day of delivery, the short Clearing Member must tender to the Clearing House all notices of intention to make delivery\". So the first intention day is the second business day before the month's first business day"
+first_notice_date = "CBOT rulebook chapter 40 (read 2026-10-10), rule 40105.B Day of Notification: each short Clearing Member \"shall submit said invoices to the Clearing House by 2:00 p.m. on the business day preceding the day of delivery\", and the Clearing House furnishes them to the long Clearing Members; so the first notice day is the business day before the first delivery day"
 first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
 last_delivery_date = "spec page, Last delivery date: last business day of the delivery month"
 [products.basket]
@@ -915,7 +916,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["MX", "FED"]
 generics = 4
-history_source = "Launch date not confirmed (CME's peso futures began in the mid-1990s): only contracts listed today until it's found."
+history_from = 1995-04-25
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Mexican Peso\": futures 05/16/1972, Globex futures 04/25/1995. The 1972 date is the original peso contract; the current one dates from the 1995 relaunch (FX Week, 1995-05-01, calls the launch \"last Tuesday\"), so history starts 1995-04-25."
 listing = { quarterly = 20, serial_months = 16 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -957,7 +959,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["NZ", "FED"]
 generics = 4
-history_source = "Launch date not confirmed (late 1990s): only contracts listed today until it's found."
+history_from = 1997-05-07
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"New Zealand Dollar\": futures 05/07/1997."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -997,7 +1000,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["SE", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2002-05-16
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Swedish Krona\": futures 05/16/2002."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -1036,7 +1040,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["NO", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2002-05-16
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Norwegian Krone\": futures 05/16/2002."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -1075,7 +1080,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["TARGET", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2009-03-23
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Micro EUR/USD\": futures 03/23/2009."
 listing = { quarterly = 2 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -1109,7 +1115,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["GB", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2009-03-23
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Micro GBP/USD\": futures 03/23/2009."
 listing = { quarterly = 2 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -1143,7 +1150,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["AU", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2009-03-23
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Micro AUD/USD\": futures 03/23/2009."
 listing = { quarterly = 2 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -1177,7 +1185,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["JP", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2010-12-20
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Micro JPY/USD\": futures 12/20/2010."
 listing = { quarterly = 2 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -1211,7 +1220,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["CA", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2010-12-20
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Micro CAD/USD\": futures 12/20/2010."
 listing = { quarterly = 2 }
 rules = { last_trade_date = "third_wed_minus:1", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -1245,7 +1255,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["CH", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2010-12-20
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Micro CHF/USD\": futures 12/20/2010."
 listing = { quarterly = 2 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -1279,7 +1290,8 @@ currency = "AUD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["TARGET", "AU", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2002-05-16
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"EUR/AUD\": futures 05/16/2002."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -1318,7 +1330,8 @@ currency = "CAD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["TARGET", "CA", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2002-05-16
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"EUR/CAD\": futures 05/16/2002."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -1357,7 +1370,8 @@ currency = "NOK"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["TARGET", "NO", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2004-07-11
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"EUR/NOK\": futures 07/11/2004."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -1396,7 +1410,8 @@ currency = "SEK"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["TARGET", "SE", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2002-05-16
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"EUR/SEK\": futures 05/16/2002."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -1474,7 +1489,8 @@ currency = "CHF"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["GB", "CH", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2002-05-16
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"GBP/CHF\": futures 05/16/2002."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -1514,7 +1530,8 @@ currency = "JPY"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["GB", "JP", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2002-05-16
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"GBP/JPY\": futures 05/16/2002."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -1709,7 +1726,8 @@ currency = "JPY"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["AU", "JP", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2002-05-16
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"AUD/JPY\": futures 05/16/2002."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -1826,7 +1844,8 @@ currency = "JPY"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["CA", "JP", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2002-05-16
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"CAD/JPY\": futures 05/16/2002."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -1865,7 +1884,8 @@ currency = "JPY"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["CH", "JP", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2002-05-16
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"CHF/JPY\": futures 05/16/2002."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -1945,7 +1965,8 @@ currency = "GBP"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["TARGET", "GB", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 1999-01-12
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"EUR/GBP\": futures 01/12/1999."
 listing = { quarterly = 6, serial_months = 8 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -1986,7 +2007,8 @@ currency = "JPY"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["TARGET", "JP", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 1999-01-12
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"EUR/JPY\": futures 01/12/1999."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -2025,7 +2047,8 @@ currency = "CHF"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["TARGET", "CH", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 1999-01-12
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"EUR/CHF\": futures 01/12/1999."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -2064,7 +2087,8 @@ currency = "USD"
 trade_calendars = ["CME-IR"]
 settle_calendars = ["CME-IR"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2024-03-25
+history_source = "CME Clearing Advisory 24-046 (2024-02-13, https://www.cmegroup.com/notices/clearing/2024/02/Chadv24-046.html, read 2026-10-10): \"Initial Listing of the Micro Ultra 10-Year U.S Treasury Note and Micro Ultra U.S. Treasury Bond Futures Contracts\", effective date 25 March 2024."
 listing = { quarterly = 2 }
 rules = { last_trade_date = "first_bd_minus:2" }
 [products.rule_sources]
@@ -2101,7 +2125,8 @@ currency = "USD"
 trade_calendars = ["CME-IR"]
 settle_calendars = ["CME-IR"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2024-03-25
+history_source = "CME Clearing Advisory 24-046 (2024-02-13, https://www.cmegroup.com/notices/clearing/2024/02/Chadv24-046.html, read 2026-10-10): \"Initial Listing of the Micro Ultra 10-Year U.S Treasury Note and Micro Ultra U.S. Treasury Bond Futures Contracts\", effective date 25 March 2024."
 listing = { quarterly = 2 }
 rules = { last_trade_date = "first_bd_minus:2" }
 [products.rule_sources]
@@ -2138,7 +2163,8 @@ currency = "USD"
 trade_calendars = ["CME-IR"]
 settle_calendars = ["CME-IR"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2021-08-16
+history_source = "Markets Media, 2021-08-26 (https://www.marketsmedia.com/cme-micro-treasury-yield-futures-surpass-30000-contracts-traded): \"Since their August 16 launch\"; CME's release of 2021-06-09 (https://www.cmegroup.com/media-room/press-releases/2021/6/09/cme_group_to_launchmicrotreasuryyieldfutures.html, read 2026-10-10) set the launch for August 16, pending regulatory review."
 listing = { monthly = 2 }
 rules = { last_trade_date = "last_bd" }
 [products.rule_sources]
@@ -2171,7 +2197,8 @@ currency = "USD"
 trade_calendars = ["CME-IR"]
 settle_calendars = ["CME-IR"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2021-08-16
+history_source = "Markets Media, 2021-08-26 (https://www.marketsmedia.com/cme-micro-treasury-yield-futures-surpass-30000-contracts-traded): \"Since their August 16 launch\"; CME's release of 2021-06-09 (https://www.cmegroup.com/media-room/press-releases/2021/6/09/cme_group_to_launchmicrotreasuryyieldfutures.html, read 2026-10-10) set the launch for August 16, pending regulatory review."
 listing = { monthly = 2 }
 rules = { last_trade_date = "last_bd" }
 [products.rule_sources]
@@ -2206,7 +2233,8 @@ currency = "USD"
 trade_calendars = ["CME-IR"]
 settle_calendars = ["CME-IR"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2021-08-16
+history_source = "Markets Media, 2021-08-26 (https://www.marketsmedia.com/cme-micro-treasury-yield-futures-surpass-30000-contracts-traded): \"Since their August 16 launch\"; CME's release of 2021-06-09 (https://www.cmegroup.com/media-room/press-releases/2021/6/09/cme_group_to_launchmicrotreasuryyieldfutures.html, read 2026-10-10) set the launch for August 16, pending regulatory review."
 listing = { monthly = 2 }
 rules = { last_trade_date = "last_bd" }
 [products.rule_sources]
@@ -2239,7 +2267,8 @@ currency = "USD"
 trade_calendars = ["CME-IR"]
 settle_calendars = ["CME-IR"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for ZT, 6M and 6N."
+history_from = 2021-08-16
+history_source = "Markets Media, 2021-08-26 (https://www.marketsmedia.com/cme-micro-treasury-yield-futures-surpass-30000-contracts-traded): \"Since their August 16 launch\"; CME's release of 2021-06-09 (https://www.cmegroup.com/media-room/press-releases/2021/6/09/cme_group_to_launchmicrotreasuryyieldfutures.html, read 2026-10-10) set the launch for August 16, pending regulatory review."
 listing = { monthly = 2 }
 rules = { last_trade_date = "last_bd" }
 [products.rule_sources]
@@ -2274,7 +2303,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["BR", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+history_from = 1995-11-08
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Brazilian Real\": futures 11/08/1995."
 listing = { monthly = 60 }
 rules = { last_trade_date = "prev_last_bd@BR" }
 [products.rule_sources]
@@ -2312,7 +2342,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["CL", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+history_from = 2016-01-11
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Chilean Peso\": futures 01/11/2016."
 listing = { monthly = 12, quarterly_after = 4 }
 rules = { last_trade_date = "prev_last_bd@CL" }
 [products.rule_sources]
@@ -2387,7 +2418,8 @@ currency = "CNH"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["HK", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+history_from = 2013-02-25
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Offshore RMB (CNH)\": futures 02/25/2013. Taken as this product (CME code CNH, USD/CNH); the page doesn't name 6H (CNH/USD)."
 listing = { monthly = 13, quarterly_after = 8 }
 rules = { last_trade_date = "third_wed_minus:2@HK" }
 [products.rule_sources]
@@ -2424,7 +2456,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["CN", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+history_from = 2006-08-28
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Chinese Renminbi\": futures 08/28/2006."
 listing = { monthly = 13, quarterly_after = 8 }
 rules = { last_trade_date = "third_wed_minus:2@CN" }
 [products.rule_sources]
@@ -2459,7 +2492,8 @@ currency = "EUR"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["CN", "TARGET"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+history_from = 2006-08-28
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"RMB/EUR\": futures 08/28/2006."
 listing = { monthly = 13, quarterly_after = 2 }
 rules = { last_trade_date = "third_wed_minus:2@CN" }
 [products.rule_sources]
@@ -2492,7 +2526,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["CZ", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+history_from = 2004-07-11
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Czech Koruna\": futures 07/11/2004."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -2531,7 +2566,8 @@ currency = "EUR"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["CZ", "TARGET", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+history_from = 2004-07-11
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"CZK/EUR\": futures 07/11/2004."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -2570,7 +2606,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["HU", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+history_from = 2004-07-11
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Hungarian Forint\": futures 07/11/2004."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -2608,7 +2645,8 @@ currency = "EUR"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["HU", "TARGET", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+history_from = 2004-07-11
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"HUF/EUR\": futures 07/11/2004."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -2646,7 +2684,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["PL", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+history_from = 2004-07-11
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Polish Zloty\": futures 07/11/2004."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -2684,7 +2723,8 @@ currency = "EUR"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["PL", "TARGET", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+history_from = 2004-07-11
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"PLN/EUR\": futures 07/11/2004."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -2722,7 +2762,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["IL", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+history_from = 2006-05-08
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Israeli Shekel\": futures 05/08/2006."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -2760,7 +2801,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["IN", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+history_from = 2013-01-28
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Indian Rupee\": futures 01/28/2013 (Globex 01/29/2013)."
 listing = { monthly = 12, quarterly_after = 4 }
 rules = { last_trade_date = "last_bd_minus:2@IN" }
 [products.rule_sources]
@@ -2797,7 +2839,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["KR", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+history_from = 2006-09-18
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Korean Won\": futures 09/18/2006."
 listing = { monthly = 13, quarterly_after = 2 }
 rules = { last_trade_date = "third_mon_prev_good@KR" }
 [products.rule_sources]
@@ -2832,7 +2875,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["GB", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+history_from = 1998-04-21
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Russian Ruble\": futures 04/21/1998."
 listing = { quarterly = 4 }
 rules = { last_trade_date = "day_next_good:15@GB" }
 [products.rule_sources]
@@ -2865,7 +2909,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["TR", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+history_from = 2009-01-26
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Turkish Lira\": futures 01/26/2009."
 listing = { quarterly = 6 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
@@ -2906,7 +2951,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["ZA", "FED"]
 generics = 2
-history_source = "Launch date not found yet: today's listings only, as for 6M and the crosses."
+history_from = 1997-05-07
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"South African Rand\": futures 05/07/1997."
 listing = { monthly = 13, quarterly_after = 4 }
 rules = { last_trade_date = "third_wed_minus:2", settlement_date = "third_wed_next_good" }
 [products.rule_sources]
