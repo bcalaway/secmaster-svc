@@ -45,6 +45,7 @@ from app.models import (
 )
 
 CME = "CME"
+CFTC = "CFTC"  # the CFTC's contract market code: quote-svc maps CFTC-TFF and CFTC-TFF-COMBINED keys to it
 GENERIC = "GENERIC"
 FIRST_YEAR = date(1990, 1, 1)
 HORIZON_YEARS = 15
@@ -146,8 +147,20 @@ def _product(s: Session, ps: futures_seed.ProductSeed, seed_sha: str, names: _Na
     if s.scalar(select(Identifier.id).where(Identifier.sec_id == row.sec_id, Identifier.scheme == CME,
                                             Identifier.value == p.cme_code, Identifier.removed_at.is_(None))) is None:
         s.add(Identifier(sec_id=row.sec_id, scheme=CME, value=p.cme_code, created_at=now))
+    _sync_cftc(s, row.sec_id, ps.cftc_code, now)
     out["specs_changed"] += _sync_specs(s, row.sec_id, ps.specs, now)
     return row.sec_id
+
+
+def _sync_cftc(s: Session, sec_id: int, code: str, now: datetime) -> None:
+    """The product's CFTC contract market code, as its one current CFTC identifier (none if the seed has none)."""
+    current = list(s.scalars(select(Identifier).where(Identifier.sec_id == sec_id, Identifier.scheme == CFTC,
+                                                      Identifier.removed_at.is_(None))))
+    for i in current:
+        if i.value != code:
+            i.removed_at = now
+    if code and not any(i.value == code for i in current):
+        s.add(Identifier(sec_id=sec_id, scheme=CFTC, value=code, created_at=now))
 
 
 def _description(ps: futures_seed.ProductSeed, month: date) -> str:

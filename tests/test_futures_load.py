@@ -240,3 +240,29 @@ def test_a_serial_month_expires_when_it_stops_trading(migrated_db):
         for name in ("SFRN26", "TZRV26"):
             got = securities.get(s, name=name)
             assert got["status"] == "expired" and got["contract"]["status"] == "expired"
+
+
+def test_a_product_carries_its_cftc_code(migrated_db):
+    run()
+    with db.session() as s:
+        got = securities.resolve(s, "CFTC", ["043602", "134741", "999999"])
+        assert {m["value"]: m["short_name"] for m in got["matches"]} == {"043602": "TY", "134741": "SFR"}
+        assert got["unknown"] == ["999999"]
+        assert securities.get(s, name="TY")["futures_product"]["cftc"]["code"] == "043602"
+        assert not [i for i in securities.get(s, name="3Y")["identifiers"] if i["scheme"] == "CFTC"]
+    # A corrected code replaces the old one; the product keeps its sec_id.
+    body = futures_seed.PATH.read_text().replace('cftc_code = "043602"', 'cftc_code = "043603"', 1)
+    run(seed=futures_seed.parse(body.encode()))
+    with db.session() as s:
+        assert not securities.resolve(s, "CFTC", ["043602"])["matches"]
+        assert securities.resolve(s, "CFTC", ["043603"])["matches"][0]["short_name"] == "TY"
+
+
+def test_the_seed_checks_cftc_codes():
+    body = futures_seed.PATH.read_text()
+    for bad, match in [(body.replace('cftc_code = "043602"', 'cftc_code = "43602"', 1), "bad cftc_code"),
+                       (body.replace('cftc_code = "043602"', 'cftc_code = "042601"', 1), "also TU"),
+                       (body.replace('cftc_source = "CFTC Traders in Financial Futures reports (one June a year from 2006, '
+                                     'and 2026-10-06): market 043602', 'cftc_note = "x', 1), "cftc_source")]:
+        with pytest.raises(futures_seed.FuturesSeedError, match=match):
+            futures_seed.parse(bad.encode())
