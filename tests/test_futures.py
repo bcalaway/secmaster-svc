@@ -37,6 +37,11 @@ def product(seed, root) -> f.Product:
     return next(p.product for p in seed.products if p.product.root == root)
 
 
+def todays_only(p: f.Product) -> f.Product:
+    """The product as if its launch date weren't known (only today's listings): the peso, which has one since 2026-10-10."""
+    return f.Product(**{**p.__dict__, "history_from": None})
+
+
 def contract(seed, root, year, month, today=TODAY):
     got = f.generate(product(seed, root), cals(), today)
     return next(d for d in got.contracts if d.contract.month == date(year, month, 1))
@@ -171,7 +176,7 @@ def test_fx_settlement_moves_past_a_delivery_holiday():
 
 
 def test_no_history_means_only_todays_listings(seed):
-    got = f.generate(product(seed, "PE"), cals(), TODAY)
+    got = f.generate(todays_only(product(seed, "PE")), cals(), TODAY)
     assert got.contracts and all(d.listed_today for d in got.contracts)
 
 
@@ -184,9 +189,9 @@ def test_calendar_coverage_is_checked(seed):
 
 def test_a_calendar_that_ends_early_shrinks_the_window(seed):
     # MXN lists 20 quarterlies (to 2031): a delivery calendar published only to 2032 still dates them all.
-    full, c = f.generate(product(seed, "PE"), cals(), TODAY), cals()
+    full, c = f.generate(todays_only(product(seed, "PE")), cals(), TODAY), cals()
     c.years["MX"] = (2015, 2032)
-    short = f.generate(product(seed, "PE"), c, TODAY)
+    short = f.generate(todays_only(product(seed, "PE")), c, TODAY)
     assert [(d.contract.month, d.dates) for d in short.contracts] == [(d.contract.month, d.dates) for d in full.contracts]
 
 
@@ -194,13 +199,13 @@ def test_a_listing_past_the_calendars_end_is_refused(seed):
     c = cals()
     c.years["MX"] = (2015, 2027)
     with pytest.raises(f.CalendarError, match="lists past"):
-        f.generate(product(seed, "PE"), c, TODAY)
+        f.generate(todays_only(product(seed, "PE")), c, TODAY)
 
 
 def test_a_calendar_that_starts_late_leaves_older_first_trades_unknown(seed):
     c = cals()
     c.years["MX"] = (2025, 2100)
-    got = sorted(f.generate(product(seed, "PE"), c, TODAY).contracts, key=lambda d: d.contract.month)
+    got = sorted(f.generate(todays_only(product(seed, "PE")), c, TODAY).contracts, key=lambda d: d.contract.month)
     by_month = {d.contract.month: d for d in got}
     assert by_month[date(2031, 9, 1)].dates["first_trade_date"] >= date(2025, 1, 1)  # listed lately: known
     assert by_month[date(2026, 10, 1)].dates["first_trade_date"] == date(2025, 7, 1)  # a serial, since 2025
