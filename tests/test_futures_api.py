@@ -1,10 +1,12 @@
 """Futures for the screens and voice (app/futures_api.py; mkt-data's docs/phase-4.md, step 7)."""
 
-from datetime import date
+from datetime import UTC, date, datetime
+from decimal import Decimal
 
 import pytest
 
 from app import db, futures_api
+from app.models import StrippedAmount
 from app.securities import UnknownInstrument
 from tests.test_baskets import _add_note
 from tests.test_futures_load import TODAY, run
@@ -54,3 +56,45 @@ def test_a_basket_with_conversion_factors(migrated_db):
     assert ty["contracts"][0]["basket_size"] == 1
     with pytest.raises(UnknownInstrument):
         futures_api.basket(s, "NOPE")
+
+
+def _mspd(s, cusip: str, record_date: date, outstanding: str, unstripped: str, key: str):
+    s.add(StrippedAmount(period=record_date.isoformat()[:7], source_key=key, strip_cusip="912803ZZ9",
+                         underlying_cusip=cusip, record_date=record_date, outstanding=Decimal(outstanding),
+                         unstripped=Decimal(unstripped), stripped=Decimal(outstanding) - Decimal(unstripped),
+                         reconstituted=Decimal(0), fields={}, record_id=1, capture_id=1,
+                         loaded_at=datetime(2026, 10, 10, tzinfo=UTC)))
+
+
+def test_a_basket_shows_amounts_outstanding_from_mspds_latest_month(migrated_db):
+    with db.session() as s:
+        _add_note(s, 900002, "91282CLB2", "0.0425", date(2024, 11, 15), date(2034, 11, 15))  # in TY's basket
+        _add_note(s, 900003, "91282CHT1", "0.0375", date(2023, 8, 15), date(2033, 8, 15))  # in it, not in MSPD
+        _mspd(s, "91282CLB2", date(2026, 8, 31), "125000000000", "120000000000", "a")
+        _mspd(s, "91282CLB2", date(2026, 9, 30), "126500000000", "121000000000", "b")  # the latest month wins
+        s.commit()
+    run()
+    with db.session() as s:
+        b = futures_api.basket(s, "TYZ26")
+    by = {d["cusip"]: d for d in b["deliverables"]}
+    assert (by["91282CLB2"]["outstanding"], by["91282CLB2"]["unstripped"]) == ("126500000000", "121000000000")
+    assert by["91282CLB2"]["outstanding_as_of"] == "2026-09-30"
+    assert by["91282CHT1"]["outstanding"] == by["91282CHT1"]["outstanding_as_of"] == ""
+    assert by["91282CHT1"]["valid_from"] == "2023-08-15"  # joined on its issue date
+    assert (b["outstanding_total"], b["unstripped_total"]) == ("126500000000", "121000000000")
+
+
+def test_the_contracts_a_security_is_deliverable_into(migrated_db):
+    with db.session() as s:
+        _add_note(s, 900002, "91282CLB2", "0.0425", date(2024, 11, 15), date(2034, 11, 15))
+        s.commit()
+    run()
+    with db.session() as s:
+        got = futures_api.deliverable_into(s, 900002)
+        none = futures_api.deliverable_into(s, 1)
+    assert next(g["contract"] for g in got if g["product"] == "TY") == "TYZ26"
+    z6 = next(g for g in got if g["contract"] == "TYZ26")
+    assert (z6["month"], z6["status"], z6["remaining_months"]) == ("2026-12", "listed", 93)
+    assert z6["conversion_factor"] and z6["valid_from"] == "2024-11-15" and z6["last_delivery_date"]
+    assert got == sorted(got, key=lambda g: (g["product"], g["month"]))
+    assert none == []

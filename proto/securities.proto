@@ -162,6 +162,18 @@ message Security {
   repeated OnTheRun on_the_run = 6;
   map<string, string> index_ratio = 7;  // TIPS on as_of: ref_cpi, base_cpi, index_ratio, method
   map<string, string> strip = 8;  // STRIPS: kind, maturity, underlying
+  repeated DeliverableInto deliverable_into = 9;  // listed or delivering Treasury futures it can be delivered into
+}
+
+message DeliverableInto {
+  string contract = 1;           // TYZ26
+  string product = 2;            // TY
+  string month = 3;              // 2026-12
+  string status = 4;             // listed, delivery
+  string conversion_factor = 5;
+  int32 remaining_months = 6;
+  string valid_from = 7;         // deliverable from
+  string last_delivery_date = 8;
 }
 
 message Auction {
@@ -267,6 +279,9 @@ message Deliverable {
   string conversion_factor = 6;  // 0.8732
   int32 remaining_months = 7;    // as the factor uses it, rounded
   string valid_from = 8;         // deliverable from (its issue date)
+  string outstanding = 9;        // dollars, a decimal: MSPD's latest month's amount outstanding; empty if not in MSPD yet
+  string unstripped = 10;        // dollars: the part of it not held as STRIPS
+  string outstanding_as_of = 11; // that MSPD month's record date, YYYY-MM-DD
 }
 
 message Basket {
@@ -276,4 +291,6 @@ message Basket {
   string status = 4;
   string rule = 5;
   repeated Deliverable deliverables = 6;
+  string outstanding_total = 7;  // dollars: the deliverables' amounts outstanding summed (those MSPD lists)
+  string unstripped_total = 8;
 }
