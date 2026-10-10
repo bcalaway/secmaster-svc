@@ -1,0 +1,136 @@
+# OIS par swaps: the security master's seed for the ISDA CDS Standard Model's RFR curves, published by S&P Global
+# Market Intelligence (SPGMI) and captured by mkt-data as SPGMI-RFR-<CCY> (mkt-data's docs/phase-4.md, "Swap curves";
+# Bill, 2026-10-10). No feed defines these instruments, so this file is their source of truth, changed only in a
+# reviewed PR. app/swaps.py turns each curve below into one instrument per tenor (type swap_ois, short name
+# <CCY>-<INDEX>-OIS-<TENOR>, e.g. USD-SOFR-OIS-10Y) and one swap_terms row per instrument with the curve's conventions.
+#
+# Every convention is from the SPGMI Interest Rate Curve XML Specification (RFRs), v1.3, 2026-06-15 (confidential,
+# not kept here; facts only, each section cited):
+#   3.1    the tenors each currency publishes (no 9M for any; no 2M for EUR; no 25Y for EUR or JPY)
+#   3.2.1  money-market, fixed and floating day counts; fixed and floating payment frequency 1Y; the spot date rule;
+#          bad-day convention M (modified following); holiday calendar NYM (USD), TYO (JPY), none (the rest). ACT/365
+#          "considers leap years".
+#   3.2.2  swaps up to and including the 1Y node are zero coupon, longer ones pay annual coupons; ISDA's model takes
+#          them as instrument type S; intermediate discount factors are log-linear (constant forward)
+#   4.2    maturity dates in the file are adjusted for weekends (modified following) and go into ISDA's model as given
+#   5.2    snap at 16:00 local to the currency's reference city, usually published 16:50, deadline 17:30
+#
+# Identifier schemes are mkt-data's source names and values the tenor as the file prints it (<tenor>10Y</tenor>), so
+# quote-svc maps an observation (SPGMI-RFR-USD, 10Y) straight to USD-SOFR-OIS-10Y.
+#
+# Calendars: `calendar` is the instrument's label calendar (the currency's banking calendar in calendar-svc, as for
+# the fixings); the conventions use ISDA's own: `adjust_calendar` (coupon and maturity adjustment) and
+# `spot_calendar` (whose holidays the spot lag skips), ISDA-NYM / ISDA-TYO, or empty for weekends only. ISDA's
+# calendars list only the holidays ISDA adds (mkt-data's app/calendars/isda.py), so they aren't FED or JP.
+
+[defaults]
+cite = "SPGMI Interest Rate Curve XML Specification (RFRs), v1.3, 2026-06-15"
+fixed_frequency = "P1Y"
+floating_frequency = "P1Y"
+business_day_convention = "modified_following"  # the file's M
+zero_coupon_through = "P1Y"  # tenors up to and including this are zero coupon; longer ones pay annual coupons
+model_instrument_type = "S"
+snap_time = "16:00"
+publication_time = "16:50"
+publication_deadline = "17:30"
+
+[[curves]]
+curve = "ISDA-RFR-USD"
+currency = "USD"
+country = "US"
+index = "SOFR"
+source = "SPGMI-RFR-USD"
+calendar = "FED"
+timezone = "America/New_York"  # New York
+money_market_day_count = "ACT/360"
+fixed_day_count = "ACT/360"
+floating_day_count = "ACT/360"
+spot_lag_days = 2
+spot_calendar = "ISDA-NYM"  # trade date + 2 weekdays, accounting for NYM
+adjust_calendar = "ISDA-NYM"
+tenors = ["1M", "2M", "3M", "6M", "1Y", "2Y", "3Y", "4Y", "5Y", "6Y", "7Y", "8Y", "9Y", "10Y", "12Y", "15Y", "20Y",
+          "25Y", "30Y"]
+
+[[curves]]
+curve = "ISDA-RFR-EUR"
+currency = "EUR"
+country = "EU"
+index = "ESTR"  # €STR
+source = "SPGMI-RFR-EUR"
+calendar = "TARGET"
+timezone = "Europe/Berlin"  # Frankfurt
+money_market_day_count = "ACT/360"
+fixed_day_count = "ACT/360"
+floating_day_count = "ACT/360"
+spot_lag_days = 2
+spot_calendar = ""  # trade date + 2 weekdays, ignoring holidays
+adjust_calendar = ""
+tenors = ["1M", "3M", "6M", "1Y", "2Y", "3Y", "4Y", "5Y", "6Y", "7Y", "8Y", "9Y", "10Y", "12Y", "15Y", "20Y", "30Y"]
+
+[[curves]]
+curve = "ISDA-RFR-GBP"
+currency = "GBP"
+country = "GB"
+index = "SONIA"
+source = "SPGMI-RFR-GBP"
+calendar = "GB"
+timezone = "Europe/London"  # London
+money_market_day_count = "ACT/365"
+fixed_day_count = "ACT/365"
+floating_day_count = "ACT/365"
+spot_lag_days = 0  # the trade date itself, even if it's a holiday
+spot_calendar = ""
+adjust_calendar = ""
+tenors = ["1M", "2M", "3M", "6M", "1Y", "2Y", "3Y", "4Y", "5Y", "6Y", "7Y", "8Y", "9Y", "10Y", "12Y", "15Y", "20Y",
+          "25Y", "30Y"]
+
+[[curves]]
+curve = "ISDA-RFR-JPY"
+currency = "JPY"
+country = "JP"
+index = "TONA"
+source = "SPGMI-RFR-JPY"
+calendar = "JP"
+timezone = "Asia/Tokyo"  # Tokyo
+money_market_day_count = "ACT/365"
+fixed_day_count = "ACT/365"
+floating_day_count = "ACT/365"
+spot_lag_days = 2
+spot_calendar = "ISDA-TYO"  # trade date + 2 weekdays, accounting for TYO
+adjust_calendar = "ISDA-TYO"
+tenors = ["1M", "2M", "3M", "6M", "1Y", "2Y", "3Y", "4Y", "5Y", "6Y", "7Y", "8Y", "9Y", "10Y", "12Y", "15Y", "20Y",
+          "30Y"]
+
+[[curves]]
+curve = "ISDA-RFR-CHF"
+currency = "CHF"
+country = "CH"
+index = "SARON"
+source = "SPGMI-RFR-CHF"
+calendar = "CH"
+timezone = "Europe/Zurich"  # Zurich
+money_market_day_count = "ACT/360"
+fixed_day_count = "ACT/360"
+floating_day_count = "ACT/360"
+spot_lag_days = 2
+spot_calendar = ""  # trade date + 2 weekdays, ignoring holidays
+adjust_calendar = ""
+tenors = ["1M", "2M", "3M", "6M", "1Y", "2Y", "3Y", "4Y", "5Y", "6Y", "7Y", "8Y", "9Y", "10Y", "12Y", "15Y", "20Y",
+          "25Y", "30Y"]
+
+[[curves]]
+curve = "ISDA-RFR-AUD"
+currency = "AUD"
+country = "AU"
+index = "AONIA"
+source = "SPGMI-RFR-AUD"
+calendar = "AU"
+timezone = "Australia/Sydney"  # Sydney
+money_market_day_count = "ACT/365"
+fixed_day_count = "ACT/365"
+floating_day_count = "ACT/365"
+spot_lag_days = 1  # trade date + 1 weekday, ignoring holidays
+spot_calendar = ""
+adjust_calendar = ""
+tenors = ["1M", "2M", "3M", "6M", "1Y", "2Y", "3Y", "4Y", "5Y", "6Y", "7Y", "8Y", "9Y", "10Y", "12Y", "15Y", "20Y",
+          "25Y", "30Y"]

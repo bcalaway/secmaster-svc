@@ -523,3 +523,47 @@ class FuturesFigiLookup(Base):
     bloomberg_root: Mapped[str | None] = mapped_column(String(8))
     detail: Mapped[dict | None] = mapped_column(JSON_DOC)
     looked_up_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class SwapTerms(Base):
+    """An OIS par swap's conventions (seeds/swaps.toml, app/swaps.py; mkt-data's docs/phase-4.md, "Swap curves").
+
+    One current row per swap instrument (superseded_at null); a seed change supersedes the row and records a new one,
+    so the conventions in force at any time can be told. Day counts as the spec prints them (ACT/360, ACT/365);
+    frequencies and `zero_coupon_through` as ISO 8601 durations. `spot_calendar` is the calendar whose holidays the
+    spot lag skips and `adjust_calendar` the one dates are adjusted on (calendar-svc names, ISDA-NYM / ISDA-TYO); null
+    means weekends only. `coupon` is zero for tenors up to `zero_coupon_through`, else periodic. `snap_time` is local
+    to `timezone`. `source` is mkt-data's source and `cite` where the conventions come from.
+    """
+
+    __tablename__ = "swap_terms"
+    __table_args__ = (
+        Index("uq_swap_terms_current", "sec_id", unique=True,
+              postgresql_where=text("superseded_at IS NULL"), sqlite_where=text("superseded_at IS NULL")),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sec_id: Mapped[int] = mapped_column(ForeignKey("instrument.sec_id"))
+    curve: Mapped[str] = mapped_column(String(20))  # ISDA-RFR-USD
+    floating_index: Mapped[str] = mapped_column(String(20))  # SOFR
+    money_market_day_count: Mapped[str] = mapped_column(String(16))
+    fixed_day_count: Mapped[str] = mapped_column(String(16))
+    floating_day_count: Mapped[str] = mapped_column(String(16))
+    fixed_frequency: Mapped[str] = mapped_column(String(10))  # P1Y
+    floating_frequency: Mapped[str] = mapped_column(String(10))
+    coupon: Mapped[str] = mapped_column(String(10))  # zero | periodic
+    zero_coupon_through: Mapped[str] = mapped_column(String(10))  # P1Y
+    spot_lag_days: Mapped[int] = mapped_column(SmallInteger)  # weekdays after the trade date
+    spot_calendar: Mapped[str | None] = mapped_column(String(20))
+    adjust_calendar: Mapped[str | None] = mapped_column(String(20))
+    business_day_convention: Mapped[str] = mapped_column(String(20))  # modified_following
+    model_instrument_type: Mapped[str] = mapped_column(String(4))  # ISDA standard model: S
+    snap_time: Mapped[str] = mapped_column(String(5))  # 16:00
+    publication_time: Mapped[str] = mapped_column(String(5))  # usual
+    publication_deadline: Mapped[str] = mapped_column(String(5))
+    timezone: Mapped[str] = mapped_column(String(40))  # America/New_York
+    source: Mapped[str] = mapped_column(String(40))  # SPGMI-RFR-USD
+    source_key: Mapped[str] = mapped_column(String(10))  # 10Y, as the file prints it
+    cite: Mapped[str] = mapped_column(Text)
+    recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    superseded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

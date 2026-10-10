@@ -31,9 +31,9 @@ from sqlalchemy.orm import Session
 from app.models import Identifier, Instrument, InstrumentName, InstrumentNote, SeedRun
 
 SEEDS = Path(__file__).resolve().parent.parent / "seeds"
-# Seed files that aren't instrument seeds: the futures product seed (app/futures_seed.py) and the
-# futures root candidates (app/futures_roots.py).
-NOT_INSTRUMENT_SEEDS = frozenset({"futures.toml", "futures_candidates.toml"})
+# Seed files that aren't plain instrument seeds: the futures product seed (app/futures_seed.py), the
+# futures root candidates (app/futures_roots.py) and the swap curves (app/swaps.py, applied by apply_all).
+NOT_INSTRUMENT_SEEDS = frozenset({"futures.toml", "futures_candidates.toml", "swaps.toml"})
 
 NAME = re.compile(r"^[A-Z0-9][A-Z0-9.\-]{1,39}$")
 TENOR = re.compile(r"^P(\d+(\.\d+)?[DWMY])+$")
@@ -267,9 +267,17 @@ def apply(s: Session, seed: Seed, now: datetime | None = None) -> dict:
 
 def apply_all(s: Session, directory: Path = SEEDS) -> list[dict]:
     """Apply every instrument seed (seeds/*.toml but futures.toml, which app/futures_load.py reads), in name
-    order. Parses all first, so a bad file changes nothing."""
+    order, then the swap curves (swaps.toml: instruments and their conventions, app/swaps.py). Parses all
+    first, so a bad file changes nothing."""
+    from app import swaps
+
     seeds = [load(p) for p in sorted(directory.glob("*.toml")) if p.name not in NOT_INSTRUMENT_SEEDS]
-    return [apply(s, seed) for seed in seeds]
+    swap_path = directory / "swaps.toml"
+    swap_seed = swaps.load(swap_path) if swap_path.exists() else None
+    out = [apply(s, seed) for seed in seeds]
+    if swap_seed is not None:
+        out.append(swaps.apply(s, swap_seed))
+    return out
 
 
 def main() -> int:
