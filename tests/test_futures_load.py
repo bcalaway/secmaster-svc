@@ -58,7 +58,7 @@ def test_contract_lookup(migrated_db):
     run()
     with db.session() as s:
         got = securities.get(s, name="TYZ26")
-        assert got["type"] == "fut_treasury" and got["status"] == "active"
+        assert got["type"] == "future" and got["status"] == "active"
         assert got["description"] == "10-Year T-Note Futures, December 2026"
         c = got["contract"]
         assert c["product"] == "TY" and c["contract_month"] == "2026-12-01"
@@ -101,7 +101,7 @@ def test_next_day_rolls_status_and_keeps_first_trade(migrated_db):
     with db.session() as s:
         before = s.scalar(select(FuturesContract).join(Instrument, Instrument.sec_id == FuturesContract.sec_id)
                           .where(FuturesContract.contract_month == date(2026, 12, 1),
-                                 FuturesContract.superseded_at.is_(None), Instrument.type == "fut_treasury",
+                                 FuturesContract.superseded_at.is_(None), Instrument.type == "future",
                                  Instrument.description.like("10-Year%")))
         first_trade = before.first_trade_date
         sec_id = before.sec_id

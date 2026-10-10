@@ -74,8 +74,9 @@ QUARTERLY = frozenset({3, 6, 9, 12})
 # fx_cash: an FX future settled in cash against a fixing (most emerging-market contracts; step 2d), so no
 # delivery date is required.
 KINDS = frozenset({"treasury", "treasury_cash", "stir", "fx", "fx_cash"})
-TYPES = {"treasury": "fut_treasury", "treasury_cash": "fut_treasury", "stir": "fut_stir", "fx": "fut_fx",
-         "fx_cash": "fut_fx"}
+# Every contract is an instrument of type `future`, whatever its kind (Bill, 2026-10-10); the kind (treasury,
+# stir, fx, ...) is its product's, and products are `fut_product`.
+CONTRACT_TYPE = "future"
 
 # Date fields a contract can carry, in display order.
 DATE_FIELDS = (

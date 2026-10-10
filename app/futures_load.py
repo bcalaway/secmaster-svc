@@ -7,7 +7,7 @@ generates each product's contracts (app/futures.py) and brings the security mast
   identified by CME's code (scheme `CME`, `ZN`), and found again by that code, so a root change
   renames the product and its contracts and keeps their sec_ids. Specs are futures_spec rows,
   superseded (never edited) when the seed changes them.
-- **Contracts** are instruments of type `fut_treasury`, `fut_stir` or `fut_fx`, one per product and
+- **Contracts** are instruments of type `future` (every kind; Bill, 2026-10-10), one per product and
   contract month, short-named `TYZ26`, with CME's code (`ZNZ6`, scheme `CME`) valid from the day
   it's listed (or the day after the same code last expired, ten years before, when the listing day
   isn't known) to its last trading day. Their dates are futures_contract rows, superseded when a
@@ -234,7 +234,7 @@ def _contracts(s: Session, ps: futures_seed.ProductSeed, product_sec_id: int, ge
     new = [d for d in gen.contracts if d.contract.month not in rows]
     insts = {}
     for d in new:
-        inst = Instrument(type=futures.TYPES[p.kind], currency=ps.currency, country="US", curve=None, tenor=None,
+        inst = Instrument(type=futures.CONTRACT_TYPE, currency=ps.currency, country="US", curve=None, tenor=None,
                           calendar=p.trade_calendars[0], status=_instrument_status(d.status),
                           description=_description(ps, d.contract.month), created_at=now, updated_at=now)
         s.add(inst)
@@ -261,7 +261,7 @@ def _contracts(s: Session, ps: futures_seed.ProductSeed, product_sec_id: int, ge
                                       recorded_at=now, **values))
                 out["contracts_changed"] += 1
             inst = existing[sec_id]
-            want = (_instrument_status(d.status), _description(ps, m), futures.TYPES[p.kind], p.trade_calendars[0])
+            want = (_instrument_status(d.status), _description(ps, m), futures.CONTRACT_TYPE, p.trade_calendars[0])
             if (inst.status, inst.description, inst.type, inst.calendar) != want:
                 inst.status, inst.description, inst.type, inst.calendar = want
                 inst.updated_at = now
