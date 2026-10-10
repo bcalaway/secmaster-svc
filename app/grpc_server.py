@@ -55,7 +55,8 @@ def _futures_product(root: str, include_expired: bool, as_of: date | None) -> se
 def _basket(contract: str) -> securities_pb2.Basket:
     with db.session() as s:
         d = futures_api.basket(s, contract)
-    return securities_pb2.Basket(**{k: d[k] for k in ("contract", "product", "month", "status", "rule")},
+    return securities_pb2.Basket(**{k: d[k] for k in ("contract", "product", "month", "status", "rule",
+                                                       "outstanding_total", "unstripped_total")},
                                  deliverables=[securities_pb2.Deliverable(**x) for x in d["deliverables"]])
 
 
@@ -113,12 +114,14 @@ def _list_securities(r) -> securities_pb2.ListSecuritiesResponse:
 def _get_security(sec_id: int, name: str, as_of: date | None) -> securities_pb2.Security:
     with db.session() as s:
         d = securities.security(s, sec_id=sec_id, name=name, as_of=as_of)
+        into = futures_api.deliverable_into(s, d["sec_id"])
     return securities_pb2.Security(
         instrument=_instrument(d), terms=_strings(d.get("terms")), provenance=_strings(d.get("provenance")),
         checks=[str(c) for c in d.get("checks") or []],
         auctions=[securities_pb2.Auction(fields=_strings(a)) for a in d.get("auctions", [])],
         on_the_run=[securities_pb2.OnTheRun(**o) for o in d["on_the_run"]],
         index_ratio=_strings(d.get("index_ratio")), strip=_strings(d.get("strip")),
+        deliverable_into=[securities_pb2.DeliverableInto(**x) for x in into],
     )
 
 

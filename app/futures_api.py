@@ -1,10 +1,12 @@
 """Futures for the screens and voice (mkt-data's docs/phase-4.md, step 7): products, a product's contracts and
-today's generics, and a Treasury contract's deliverable basket. Read-only, from what the futures job stored.
+today's generics, a Treasury contract's deliverable basket (with each security's amount outstanding from MSPD's
+latest month), and the contracts a security is deliverable into. Read-only, from what the futures job stored.
 """
 
 from datetime import date
+from decimal import Decimal
 
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.models import (
@@ -15,12 +17,13 @@ from app.models import (
     Instrument,
     InstrumentName,
     SecurityTerms,
+    StrippedAmount,
 )
 from app.securities import UnknownInstrument, _names, today_ny
 
 DATES = ("first_trade_date", "last_trade_date", "first_intention_date", "first_notice_date", "first_delivery_date",
          "last_delivery_date", "reference_start", "reference_end", "final_settlement_date", "settlement_date")
-CONTRACT_STATUSES = ("listed", "delivering")  # what "current" means; expired and withdrawn only when asked
+CONTRACT_STATUSES = ("listed", "delivery")  # what "current" means; expired and withdrawn only when asked
 
 
 def _iso(d) -> str:
@@ -121,14 +124,65 @@ def basket(s: Session, name: str) -> dict:
         .where(FuturesDeliverable.contract_sec_id == contract.sec_id, FuturesDeliverable.superseded_at.is_(None))
         .order_by(SecurityTerms.maturity_date, SecurityTerms.cusip)).all()
     names = _names(s, [d.security_sec_id for d, _ in rows] + [contract.sec_id])
+    mspd = latest_outstanding(s, [t.cusip for _, t in rows])
+    amounts = [mspd.get(t.cusip) for _, t in rows]
+    deliverables = [{
+        "security": names[d.security_sec_id]["short_name"], "cusip": t.cusip,
+        "coupon_rate": format(t.coupon_rate.normalize(), "f") if t.coupon_rate is not None else "",
+        "maturity_date": _iso(t.maturity_date), "issue_date": _iso(t.issue_date),
+        "conversion_factor": format(d.conversion_factor, "f"), "remaining_months": d.remaining_months,
+        "valid_from": _iso(d.valid_from),
+        "outstanding": _dec(a.outstanding) if a and a.outstanding is not None else "",
+        "unstripped": _dec(a.unstripped) if a and a.unstripped is not None else "",
+        "outstanding_as_of": _iso(a.record_date) if a else ""} for (d, t), a in zip(rows, amounts, strict=True)]
     return {
         "contract": names[contract.sec_id]["short_name"], "product": p.root if p else "",
         "month": contract.contract_month.isoformat()[:7], "status": contract.status,
         "rule": ((p.info or {}).get("basket") or {}).get("rule", "") if p else "",
-        "deliverables": [{
-            "security": names[d.security_sec_id]["short_name"], "cusip": t.cusip,
-            "coupon_rate": format(t.coupon_rate.normalize(), "f") if t.coupon_rate is not None else "",
-            "maturity_date": _iso(t.maturity_date), "issue_date": _iso(t.issue_date),
-            "conversion_factor": format(d.conversion_factor, "f"), "remaining_months": d.remaining_months,
-            "valid_from": _iso(d.valid_from)} for d, t in rows],
+        "deliverables": deliverables,
+        "outstanding_total": _dec(sum((a.outstanding for a in amounts if a and a.outstanding is not None), Decimal(0)))
+        if any(a and a.outstanding is not None for a in amounts) else "",
+        "unstripped_total": _dec(sum((a.unstripped for a in amounts if a and a.unstripped is not None), Decimal(0)))
+        if any(a and a.unstripped is not None for a in amounts) else "",
     }
+
+
+def _dec(v: Decimal) -> str:
+    """A Decimal as a plain string, no exponent (72000000000, not 7.2E+10)."""
+    return format(v.normalize(), "f")
+
+
+def latest_outstanding(s: Session, cusips: list[str]) -> dict[str, StrippedAmount]:
+    """Each security's MSPD row for its latest month (amount outstanding and the part not held as STRIPS), by CUSIP.
+
+    MSPD's stripped-securities table covers every STRIPS-eligible note and bond, so a basket security without a row
+    is one MSPD hasn't listed yet (a new issue before its first month-end).
+    """
+    if not cusips:
+        return {}
+    live = and_(StrippedAmount.underlying_cusip.in_(cusips), StrippedAmount.removed_at.is_(None))
+    latest = (select(StrippedAmount.underlying_cusip, func.max(StrippedAmount.record_date).label("record_date"))
+              .where(live).group_by(StrippedAmount.underlying_cusip).subquery())
+    rows = s.scalars(select(StrippedAmount).join(latest, and_(
+        StrippedAmount.underlying_cusip == latest.c.underlying_cusip,
+        StrippedAmount.record_date == latest.c.record_date)).where(live).order_by(StrippedAmount.id))
+    return {r.underlying_cusip: r for r in rows}
+
+
+def deliverable_into(s: Session, security_sec_id: int, statuses: tuple[str, ...] = CONTRACT_STATUSES) -> list[dict]:
+    """The listed or delivering Treasury futures contracts a security is deliverable into, by product and month."""
+    rows = s.execute(select(FuturesDeliverable, FuturesContract).join(
+        FuturesContract, and_(FuturesContract.sec_id == FuturesDeliverable.contract_sec_id,
+                              FuturesContract.superseded_at.is_(None)))
+        .where(FuturesDeliverable.security_sec_id == security_sec_id, FuturesDeliverable.superseded_at.is_(None),
+               FuturesContract.status.in_(statuses))).all()
+    if not rows:
+        return []
+    roots = dict(s.execute(select(FuturesProduct.sec_id, FuturesProduct.root)
+                           .where(FuturesProduct.sec_id.in_({c.product_sec_id for _, c in rows}))).all())
+    names = _names(s, [c.sec_id for _, c in rows])
+    out = [{"contract": names[c.sec_id]["short_name"], "product": roots.get(c.product_sec_id, ""),
+            "month": c.contract_month.isoformat()[:7], "status": c.status,
+            "conversion_factor": format(d.conversion_factor, "f"), "remaining_months": d.remaining_months,
+            "valid_from": _iso(d.valid_from), "last_delivery_date": _iso(c.last_delivery_date)} for d, c in rows]
+    return sorted(out, key=lambda x: (x["product"], x["month"]))
