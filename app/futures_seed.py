@@ -19,6 +19,7 @@ from app.futures import KINDS, RULE_FIELDS, Listing, Product, RuleError, check_r
 PATH = Path(__file__).resolve().parent.parent / "seeds" / "futures.toml"
 ROOT = re.compile(r"^[A-Z0-9]{2,4}$")
 CODE = re.compile(r"^[A-Z0-9]{1,4}$")
+CFTC_CODE = re.compile(r"^[0-9A-Z]{5}[0-9A-Z+]$")  # 043602, 04360Y, 12460+
 CALENDAR = re.compile(r"^[A-Z][A-Z0-9\-]{1,19}$")
 SPEC_FIELDS = ("contract_unit", "minimum_price_fluctuation", "listed_contracts", "termination_of_trading",
                "settlement_method", "settlement_procedures", "trading_hours", "vendor_codes")
@@ -58,6 +59,8 @@ class ProductSeed:
     listing_source: str = "spec page, Listed contracts"
     basket: BasketRule | None = None  # Treasury futures: the deliverable grade (step 3)
     basket_source: str = ""
+    cftc_code: str = ""  # the CFTC's contract market code, where its TFF report has one (step 5)
+    cftc_source: str = ""
 
     @property
     def info(self) -> dict:
@@ -72,6 +75,7 @@ class ProductSeed:
             "history_from": p.history_from.isoformat() if p.history_from else None,
             "history_source": self.history_source,
             "basket": ({"rule": self.basket.text, "source": self.basket_source} if self.basket else None),
+            "cftc": ({"code": self.cftc_code, "source": self.cftc_source} if self.cftc_code else None),
         }
 
 
@@ -150,7 +154,12 @@ def parse(body: bytes) -> FuturesSeed:
             raise FuturesSeedError(f"{where}: bad root")
         if not CODE.match(code):
             raise FuturesSeedError(f"{where}: bad cme_code")
-        for key in (root, f"cme:{code}"):
+        cftc = str(item.get("cftc_code", ""))
+        if cftc and not CFTC_CODE.match(cftc):
+            raise FuturesSeedError(f"{where}: bad cftc_code")
+        if cftc and not str(item.get("cftc_source", "")).strip():
+            raise FuturesSeedError(f"{where}: cftc_source must say which CFTC reports name {cftc}")
+        for key in (root, f"cme:{code}", *([f"cftc:{cftc}"] if cftc else [])):
             if key in seen:
                 raise FuturesSeedError(f"{where}: {key} is also {seen[key]}'s")
             seen[key] = root
@@ -209,7 +218,8 @@ def parse(body: bytes) -> FuturesSeed:
             root_source=_text(item, "root_source", where), history_source=_text(item, "history_source", where),
             rule_sources={k: str(v) for k, v in sources.items()}, specs=_specs(item.get("specs"), where),
             listing_source=str(item.get("listing_source") or "spec page, Listed contracts"),
-            basket=basket, basket_source=basket_source))
+            basket=basket, basket_source=basket_source,
+            cftc_code=cftc, cftc_source=str(item.get("cftc_source", "")).strip()))
     if not products:
         raise FuturesSeedError("futures seed: no products")
     return FuturesSeed(hashlib.sha256(body).hexdigest(), read_on, tuple(products))
