@@ -216,7 +216,7 @@ first_notice_date = "CBOT rulebook chapter 19 (read 2026-10-10), rule 19105.B Da
 first_delivery_date = "CBOT rulebook chapter (read 2026-10-08): delivery on any business day of the contract month"
 last_delivery_date = "spec page, Last delivery date: last business day of the delivery month"
 [products.basket]
-source = "CBOT 19 (current text): original term not more than 10 years; remaining term at least 6 years 6 months and less than 8 years; factor term rounded down to quarters"
+source = "CBOT 19 (current text): original term not more than 10 years; remaining term at least 6 years 6 months and less than 8 years; factor term rounded down to quarters. In force from the September 2023 contract month: CME's Product Modification of 2022-12-05 (https://www.cmegroup.com/articles/files/2022/10-year-ty-delivery-basket-proposal.pdf, read 2026-10-10) redefined the longest maturity as 8 years, \"beginning with the September 2023 contract month\", prior listings unaffected; before it the basket \"spans 6y 6m to 10 years\". Baskets are kept only for listed or delivering contracts, all on this rule; the earlier one isn't modelled. The same notice: \"Prior to the March 2000 expiry month, an 8% coupon was used.\""
 remaining_min_months = 78
 remaining_max_months = 96
 max_inclusive = false
