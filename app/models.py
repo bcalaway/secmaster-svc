@@ -40,7 +40,7 @@ class Instrument(Base):
     __tablename__ = "instrument"
 
     sec_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    type: Mapped[str] = mapped_column(String(20))  # cmt_yield; ust_*; fut_product, fut_treasury, fut_stir, fut_fx
+    type: Mapped[str] = mapped_column(String(20))  # cmt_yield; ust_*; fut_product, future; ...
     currency: Mapped[str] = mapped_column(String(3))
     country: Mapped[str] = mapped_column(String(2))
     curve: Mapped[str | None] = mapped_column(String(20))  # UST
