@@ -2456,8 +2456,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["CN", "FED"]
 generics = 2
-history_from = 2006-08-28
-history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Chinese Renminbi\": futures 08/28/2006."
+history_from = 2008-01-01
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Chinese Renminbi\": futures 08/28/2006. History starts 2008-01-01, not at the 2006-08-28 launch: the CN calendar starts in 2008 (mkt-data docs/phase-4.md, step 2d), and a contract can't be dated before its calendars do."
 listing = { monthly = 13, quarterly_after = 8 }
 rules = { last_trade_date = "third_wed_minus:2@CN" }
 [products.rule_sources]
@@ -2492,8 +2492,8 @@ currency = "EUR"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["CN", "TARGET"]
 generics = 2
-history_from = 2006-08-28
-history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"RMB/EUR\": futures 08/28/2006."
+history_from = 2008-01-01
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"RMB/EUR\": futures 08/28/2006. History starts 2008-01-01, not at the 2006-08-28 launch: the CN calendar starts in 2008 (mkt-data docs/phase-4.md, step 2d), and a contract can't be dated before its calendars do."
 listing = { monthly = 13, quarterly_after = 2 }
 rules = { last_trade_date = "third_wed_minus:2@CN" }
 [products.rule_sources]
@@ -2801,8 +2801,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["IN", "FED"]
 generics = 2
-history_from = 2013-01-28
-history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Indian Rupee\": futures 01/28/2013 (Globex 01/29/2013)."
+history_from = 2017-01-01
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Indian Rupee\": futures 01/28/2013 (Globex 01/29/2013). History starts 2017-01-01, not at the 2013-01-28 launch: the IN calendar starts in 2017 (mkt-data docs/phase-4.md, step 2d), and a contract can't be dated before its calendars do."
 listing = { monthly = 12, quarterly_after = 4 }
 rules = { last_trade_date = "last_bd_minus:2@IN" }
 [products.rule_sources]
@@ -2839,8 +2839,8 @@ currency = "USD"
 trade_calendars = ["CME-FX", "FED"]
 settle_calendars = ["KR", "FED"]
 generics = 2
-history_from = 2006-09-18
-history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Korean Won\": futures 09/18/2006."
+history_from = 2010-01-01
+history_source = "CME Group, Historical First Trade Dates (https://www.cmegroup.com/media-room/historical-first-trade-dates.html, read 2026-10-10), FX, \"Korean Won\": futures 09/18/2006. History starts 2010-01-01, not at the 2006-09-18 launch: the KR calendar starts in 2010 (mkt-data docs/phase-4.md, step 2d), and a contract can't be dated before its calendars do."
 listing = { monthly = 13, quarterly_after = 2 }
 rules = { last_trade_date = "third_mon_prev_good@KR" }
 [products.rule_sources]
