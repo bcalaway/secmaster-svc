@@ -62,6 +62,16 @@ def test_search(seeded):
     assert [i["short_name"] for i in by_text] == ["UST-20Y-CMT"]
 
 
+def test_search_pages_with_a_total(seeded):
+    with db.session() as s:
+        every = securities.search_page(s, "CMT", 100)
+        first = securities.search_page(s, "CMT", 5)
+        second = securities.search_page(s, "CMT", 5, offset=5)
+    assert every["total"] == first["total"] == second["total"] == len(every["instruments"]) == 14
+    names = [i["short_name"] for i in every["instruments"]]
+    assert [i["short_name"] for i in first["instruments"] + second["instruments"]] == names[:10]
+
+
 def test_tenor_days_orders_weeks_and_months():
     assert securities.tenor_days("P1M") < securities.tenor_days("P6W") < securities.tenor_days("P2M")
 
@@ -93,6 +103,11 @@ def test_list_securities_by_maturity_with_on_the_run(migrated_db):
         bills = securities.list_securities(s, security_type="bill", include_inactive=True, as_of=today, limit=3)
         assert {x["security_type"] for x in bills["securities"]} == {"bill"} and len(bills["securities"]) == 3
         assert bills["total"] > 3 and "matured" in {x["status"] for x in bills["securities"]}
+        # A page at a time, in the same order.
+        all_bills = securities.list_securities(s, security_type="bill", include_inactive=True, as_of=today)
+        page2 = securities.list_securities(s, security_type="bill", include_inactive=True, as_of=today, limit=3, offset=3)
+        assert page2["total"] == all_bills["total"]
+        assert [x["cusip"] for x in page2["securities"]] == [x["cusip"] for x in all_bills["securities"][3:6]]
         later = securities.list_securities(s, maturing_from=date(2030, 1, 1), as_of=today)
         assert all(x["maturity_date"] >= "2030-01-01" for x in later["securities"])
 
