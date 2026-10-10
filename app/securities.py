@@ -253,9 +253,14 @@ def resolve(s: Session, scheme: str, values: list[str], as_of: date | None = Non
 
 def search(s: Session, query: str, limit: int = 20) -> list[dict]:
     """Instruments whose name, alias, identifier or description contains the query."""
+    return search_page(s, query, limit)["instruments"]
+
+
+def search_page(s: Session, query: str, limit: int = 20, offset: int = 0) -> dict:
+    """One page of search's matches, in the same order, and how many there are in all."""
     q = query.strip()
     if not q:
-        return []
+        return {"total": 0, "instruments": []}
     like = f"%{q}%"
     ids = set(s.scalars(select(InstrumentName.sec_id).where(
         InstrumentName.name.ilike(like), InstrumentName.removed_at.is_(None))))
@@ -263,7 +268,8 @@ def search(s: Session, query: str, limit: int = 20) -> list[dict]:
         Identifier.value.ilike(like), Identifier.removed_at.is_(None))))
     ids |= set(s.scalars(select(Instrument.sec_id).where(Instrument.description.ilike(like))))
     insts = _order(list(s.execute(select(*SUMMARY).where(Instrument.sec_id.in_(ids))))) if ids else []
-    return _describe(s, insts[:limit], full=False)
+    offset = max(offset, 0)
+    return {"total": len(insts), "instruments": _describe(s, insts[offset:offset + limit], full=False)}
 
 
 # --- Treasury securities (mkt-data's docs/phase-3.md, step 9): lists for screens, and one security in full ---
@@ -293,12 +299,12 @@ def _otr(s: Session, sec_ids, on: date) -> dict[int, list[dict]]:
 
 def list_securities(s: Session, security_type: str = "", include_inactive: bool = False,
                     maturing_from: date | None = None, maturing_to: date | None = None,
-                    as_of: date | None = None, limit: int = 0) -> dict:
+                    as_of: date | None = None, limit: int = 0, offset: int = 0) -> dict:
     """Treasury securities by maturity: outstanding ones (active) unless include_inactive, of one type or all.
 
     Each with the terms a list shows (CUSIP, type, coupon, dates) and its
     on-the-run aliases on `as_of` (default today). `total` counts every match;
-    at most `limit` (default LIST_LIMIT, at most LIST_MAX) come back.
+    at most `limit` (default LIST_LIMIT, at most LIST_MAX) come back, after skipping `offset`.
     """
     on = as_of or today_ny()
     limit = min(limit or LIST_LIMIT, LIST_MAX)
@@ -316,7 +322,8 @@ def list_securities(s: Session, security_type: str = "", include_inactive: bool 
     if maturing_to:
         q = q.where(SecurityTerms.maturity_date <= maturing_to)
     rows = s.execute(q.order_by(SecurityTerms.maturity_date, SecurityTerms.security_type, SecurityTerms.cusip)).all()
-    shown = rows[:limit]
+    offset = max(offset, 0)
+    shown = rows[offset:offset + limit]
     ids = [t.sec_id for t in shown]
     names = _names(s, ids)
     otr = _otr(s, ids, on)

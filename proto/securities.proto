@@ -46,6 +46,7 @@ message ListInstrumentsRequest {
 
 message ListInstrumentsResponse {
   repeated Instrument instruments = 1;
+  int32 total = 2;  // Search: every match (the instruments are one page of them); ListInstruments: unset
 }
 
 message ResolveRequest {
@@ -71,6 +72,7 @@ message Match {
 message SearchRequest {
   string query = 1;
   int32 limit = 2;  // 0 means 20
+  int32 offset = 3;  // skip this many matches, in the same order (a page at a time)
 }
 
 message Instrument {
@@ -109,6 +111,7 @@ message ListSecuritiesRequest {
   string maturing_to = 4;
   string as_of = 5;  // YYYY-MM-DD for the on-the-run aliases; empty for today (New York)
   int32 limit = 6;  // 0 means 1000; at most 6000
+  int32 offset = 7;  // skip this many matches, in maturity order (a page at a time)
 }
 
 message ListSecuritiesResponse {

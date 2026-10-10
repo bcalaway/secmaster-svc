@@ -50,10 +50,11 @@ def _resolve(scheme: str, values: list[str], as_of: date | None) -> securities_p
         scheme=r["scheme"], matches=[securities_pb2.Match(**m) for m in r["matches"]], unknown=r["unknown"])
 
 
-def _search(query: str, limit: int) -> securities_pb2.ListInstrumentsResponse:
+def _search(query: str, limit: int, offset: int = 0) -> securities_pb2.ListInstrumentsResponse:
     with db.session() as s:
-        rows = securities.search(s, query, limit or 20)
-    return securities_pb2.ListInstrumentsResponse(instruments=[_instrument(r) for r in rows])
+        got = securities.search_page(s, query, limit or 20, offset)
+    return securities_pb2.ListInstrumentsResponse(instruments=[_instrument(r) for r in got["instruments"]],
+                                                  total=got["total"])
 
 
 def _strings(d: dict | None) -> dict[str, str]:
@@ -76,7 +77,7 @@ def _date(text: str) -> date | None:
 def _list_securities(r) -> securities_pb2.ListSecuritiesResponse:
     with db.session() as s:
         got = securities.list_securities(s, r.security_type, r.include_inactive, _date(r.maturing_from),
-                                         _date(r.maturing_to), _date(r.as_of), r.limit)
+                                         _date(r.maturing_to), _date(r.as_of), r.limit, r.offset)
     return securities_pb2.ListSecuritiesResponse(
         as_of=got["as_of"], total=got["total"],
         securities=[securities_pb2.SecuritySummary(**x) for x in got["securities"]])
@@ -122,7 +123,7 @@ class Securities(securities_pb2_grpc.SecuritiesServicer):
         return await asyncio.to_thread(_resolve, request.scheme, list(request.values), as_of)
 
     async def Search(self, request, context):
-        return await asyncio.to_thread(_search, request.query, request.limit)
+        return await asyncio.to_thread(_search, request.query, request.limit, request.offset)
 
     async def ListSecurities(self, request, context):
         try:
