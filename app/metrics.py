@@ -30,6 +30,7 @@ from app.models import (
     LoadRun,
     SecurityTerms,
     SeedRun,
+    SwapCheck,
     UntypedRecord,
 )
 from app.treasuries import check_code
@@ -184,6 +185,13 @@ def render(s) -> str:
     out.metric("secmaster_svc_futures_figi_lookups", "gauge",
                "Listed futures contracts by what OpenFIGI said (confirmed, mismatch, not_found, error), by product.",
                [({"product": r, "outcome": o}, n) for r, o, n in sorted(lookups)])
+    # The swap curves' conventions check (app/swap_check.py): per source, 1 when the files agree with swap_terms.
+    checks = list(s.scalars(select(SwapCheck)))
+    out.metric("secmaster_svc_swap_conventions_ok", "gauge",
+               "1 when an SPGMI swap curve's recent files state the conventions in swap_terms, 0 on a difference.",
+               [({"source": c.source}, int(c.outcome == "ok")) for c in checks if c.outcome != "no_files"])
+    out.metric("secmaster_svc_swap_check_timestamp_seconds", "gauge", "When each swap curve was last checked.",
+               [({"source": c.source}, _epoch(c.checked_at)) for c in checks])
     return out.text()
 
 

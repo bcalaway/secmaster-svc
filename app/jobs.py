@@ -96,6 +96,23 @@ def run_futures() -> dict:
         raise HTTPException(502, str(e)) from None
 
 
+@router.post("/swap-check", dependencies=[Depends(require_token)])
+def run_swap_check() -> dict:
+    """Check the SPGMI swap curve files' stated conventions against swap_terms (app/swap_check.py).
+
+    Reads mkt-data's curve records and calendar-svc's ISDA calendars; 502 if either can't be read.
+    """
+    from app import swap_check
+    from app.calendars import CalendarUnavailable, GrpcCalendars
+    from app.upstream import GrpcRecords
+
+    try:
+        with db.session() as s, GrpcRecords(settings.mkt_data_grpc) as up, GrpcCalendars(settings.calendar_svc_grpc) as cals:
+            return swap_check.run(s, up, cals)
+    except CalendarUnavailable as e:
+        raise HTTPException(502, str(e)) from None
+
+
 @router.post("/figi", dependencies=[Depends(require_token)])
 def run_figi() -> dict:
     """Ask OpenFIGI about Treasury CUSIPs not looked up yet; keep FIGI, composite FIGI and ticker. 502 if unreachable."""
