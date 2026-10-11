@@ -567,3 +567,18 @@ class SwapTerms(Base):
     cite: Mapped[str] = mapped_column(Text)
     recorded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     superseded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class SwapCheck(Base):
+    """The latest check of an SPGMI swap curve's files against swap_terms (app/swap_check.py): one row per source,
+    replaced each run. `outcome` is ok, mismatch or no_files; `detail` lists the differences (period, field, the
+    file's value, the seed's)."""
+
+    __tablename__ = "swap_check"
+
+    source: Mapped[str] = mapped_column(String(40), primary_key=True)  # SPGMI-RFR-USD
+    checked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    outcome: Mapped[str] = mapped_column(String(10))
+    files: Mapped[int] = mapped_column(Integer)
+    last_period: Mapped[str | None] = mapped_column(String(10))
+    detail: Mapped[list] = mapped_column(JSON_DOC)
